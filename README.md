@@ -3,10 +3,19 @@ The Neuromatch Academy Discord Bot.
 
 ## Dependencies
 
+* os
+* email
+* base64
 * gspread
 * logging
 * discord
 * pandas
+* googleapiclient.discovery
+* google_auth_oauthlib.flow
+* google.oauth2.credentials
+* oauth2client.service_account
+* google.auth.transport.requests
+
 
 ## Commands
 
