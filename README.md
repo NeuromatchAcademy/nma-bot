@@ -17,6 +17,7 @@ Command | Function | Display
 `auth` | Checks whether user is authorized to use admin commands. | Context Channel.
 `debug` | Prints out debugging information. | Console
 `init` | Creates new channels for registered pods. | #bot-log
+`testmail` | Tests email functionality. | #bot-log
 `quit` | Shuts down the bot. | Context Channel.
 
 ## Feature List
@@ -26,4 +27,4 @@ Command | Function | Display
 - [x] Student verification.
 - [ ] Dynamic multi-guild support.
 - [ ] Smart initialization.
-- [ ] Add email notifications to user verification.
+- [x] Add email notifications to user verification.
