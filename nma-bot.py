@@ -5,11 +5,18 @@ Created on Tue May 11 19:57:02 2021
 @author: sep27
 """
 
+from __future__ import print_function
+import os.path
+from email.mime.text import MIMEText
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 import gspread
 import logging
+import base64
 import discord
 import pandas as pd
-from discord.ext import commands
 from oauth2client.service_account import ServiceAccountCredentials
 
 #Auth
@@ -18,13 +25,33 @@ discordToken = 'ODQxOTE5NTU3NDA3ODY2ODkx.YJtwsA.Xt79Ji2xYs9TGY6_PUXJf2QCq2o'
 
 #Google Set-up
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+scopeMail = ['https://www.googleapis.com/auth/gmail.readonly','https://www.googleapis.com/auth/gmail.send','https://www.googleapis.com/auth/gmail.compose','https://mail.google.com/']
 creds = ServiceAccountCredentials.from_json_keyfile_name(gAuthJson, scope)
-shClient = gspread.authorize(creds)
+credsMail = None
 
+shClient = gspread.authorize(creds)
 sheet = shClient.open("CN Pre-pod TAs").sheet1
 records_data = sheet.get_all_records()
 df = pd.DataFrame.from_dict(records_data)
-print(df.head()) #For debugging...
+print(df.head())
+
+if os.path.exists('token.json'):
+    credsMail = Credentials.from_authorized_user_file('token.json', scopeMail)
+    
+if not credsMail or not credsMail.valid:
+    if credsMail and credsMail.expired and credsMail.refresh_token:
+        credsMail.refresh(Request())
+    else:
+        flow = InstalledAppFlow.from_client_secrets_file(
+            'credentials.json', scopeMail)
+        credsMail = flow.run_local_server(port=0)
+    # Save the credentials for the next run
+    with open('token.json', 'w') as token:
+        token.write(credsMail.to_json())
+
+service = build('gmail', 'v1', credentials=credsMail)
+results = service.users().labels().list(userId='me').execute()
+labels = results.get('labels', [])
 
 #Logging Set-up
 logger = logging.getLogger('discord')
@@ -35,6 +62,21 @@ logger.addHandler(handler)
 
 staffIndex = [855972293486313529,855972293486313530]
 chanDict = {}
+
+def create_mail(sender, to, subject, message_text):
+    message = MIMEText(message_text)
+    message['to'] = to
+    message['from'] = sender
+    message['subject'] = subject
+    raw = base64.urlsafe_b64encode(message.as_bytes())
+    raw = raw.decode()
+    return {'raw': raw}
+
+def send_mail(service, user_id, message):
+    message = (service.users().messages().send(userId=user_id, body=message)
+               .execute())
+    print ('Message Id: %s' % message['id'])
+    return message
 
 def embedGen(title,description,student = None):
     if student != None:
@@ -89,10 +131,10 @@ class nmaClient(discord.Client):
         if not message.guild:
             print(f"\nDM received:\n\"{message.content}\"")
             if "@" in message.content:
-                print(f"Student attempting to verify...")
+                print("Student attempting to verify...")
                 try:
                     cellInfo = sheet.find(message.content)
-                    print(f"Student identified...")
+                    print("Student identified...")
                     studentInfo = {
                         'name' : sheet.cell(cellInfo.row, 4).value,
                         #'type' = sheet.cell(cellInfo.row, ?).value,
@@ -114,11 +156,16 @@ class nmaClient(discord.Client):
                     else:
                         await logChan.send(embed=embedGen("User Verified!",f"Student {studentInfo['name']} has successfully verified and can now access #{studentInfo['pod']}."))
                     await message.channel.send(embed=embedGen("","", student=studentInfo))
-                    print(f"Verification processed.\n")
+                    veriMail = create_mail('discordsupport@neuromatch.io',studentInfo['email'],'Discord Verification Completed.','You have successfully verified your identity on the NMA discord.')
+                    send_mail(service,'me',veriMail)
+                    print("Verification processed.\n")
                 except:
                     await message.channel.send(embed=embedGen("Error!","That email does not appear to have been registered...\nPlease contact support@neuromatch.io."))
             else:
                 await message.channel.send(embed=embedGen("Error!","Sorry, that didn't work. Please be sure to *only* send your email."))
+        
+        #if message.channel == 'support-transcripts':
+            #Will be added once matching is finalized.            
         
         if message.content.startswith('--nma '):
             
@@ -156,6 +203,15 @@ class nmaClient(discord.Client):
                         except:
                             print(f"Failed to grab {allCont}\n")
                     await logChan.send(embed=embedGen("Administrative Message.","Debugging requested. Check console log for details."))
+                    
+                if cmd.startswith('testmail'):
+                    try:
+                        testMail = create_mail('discordsupport@neuromatch.io','kevin.rusch@neuromatch.io','Discord Test.','You have successfully sent an email.')
+                        send_mail(service,'me',testMail)
+                        await message.channel.send(embed=embedGen("Administrative Message.","Test email succeeded."))
+                    except:
+                        await message.channel.send(embed=embedGen("Administrative Message.","Test email failed."))
+                        
                 
                 if cmd.startswith('quit'):
                     await logChan.send(embed=embedGen("Administrative Message.","Bot shutting down."))
