@@ -8,9 +8,9 @@ The Neuromatch Academy Discord Bot.
 * pandas
 * base64
 * google
-* gspread
 * logging
 * discord
+* gspread
 * googleapiclient
 * google_auth_oauthlib
 * oauth2client
