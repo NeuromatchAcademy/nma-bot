@@ -33,7 +33,7 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-staffIndex = [833876845082443776,841953585251745793]
+staffIndex = [855972293486313529,855972293486313530]
 chanDict = {}
 
 def embedGen(title,description,student = None):
@@ -66,7 +66,7 @@ class nmaClient(discord.Client):
         global staffRoles
         global allPods
         global logChan
-        guild = client.get_guild(833821292717277204)
+        guild = client.get_guild(855972293472550913)
         staffRoles = []
         staffRoles += [guild.get_role(x) for x in staffIndex]
         logChan = discord.utils.get(guild.channels, name='bot-log')
@@ -90,9 +90,8 @@ class nmaClient(discord.Client):
             print(f"\nDM received:\n\"{message.content}\"")
             if "@" in message.content:
                 print(f"Student attempting to verify...")
-                cellInfo = sheet.find(message.content)
-                
-                if len(cellInfo.value) > 0:
+                try:
+                    cellInfo = sheet.find(message.content)
                     print(f"Student identified...")
                     studentInfo = {
                         'name' : sheet.cell(cellInfo.row, 4).value,
@@ -107,15 +106,16 @@ class nmaClient(discord.Client):
                     podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
                     await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
                     if studentInfo['ta'] == 't':
-                        taChan = guild.get_channel(847644358559137822)
-                        await taChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await targUser.add_roles(guild.get_role(834599043208052738))
+                        for eachChan in [834605904188014634,834599205238472774,834599346782732329,834599233364557855,834605854702960730,834605880746049537]:
+                            taChan = guild.get_channel(eachChan)
+                            await taChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await targUser.add_roles(guild.get_role(855972293486313526))
                         await logChan.send(embed=embedGen("User Verified!",f"TA {studentInfo['name']} has successfully verified and can now access the appropriate channels."))
                     else:
                         await logChan.send(embed=embedGen("User Verified!",f"Student {studentInfo['name']} has successfully verified and can now access #{studentInfo['pod']}."))
                     await message.channel.send(embed=embedGen("","", student=studentInfo))
                     print(f"Verification processed.\n")
-                else:
+                except:
                     await message.channel.send(embed=embedGen("Error!","That email does not appear to have been registered...\nPlease contact support@neuromatch.io."))
             else:
                 await message.channel.send(embed=embedGen("Error!","Sorry, that didn't work. Please be sure to *only* send your email."))
