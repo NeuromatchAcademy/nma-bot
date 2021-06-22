@@ -5,8 +5,8 @@ The Neuromatch Academy Discord Bot.
 
 * os
 * email
-* pandas
 * base64
+* pandas
 * google
 * logging
 * discord
