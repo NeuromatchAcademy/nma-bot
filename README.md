@@ -5,16 +5,15 @@ The Neuromatch Academy Discord Bot.
 
 * os
 * email
+* pandas
 * base64
+* google
 * gspread
 * logging
 * discord
-* pandas
-* googleapiclient.discovery
-* google_auth_oauthlib.flow
-* google.oauth2.credentials
-* oauth2client.service_account
-* google.auth.transport.requests
+* googleapiclient
+* google_auth_oauthlib
+* oauth2client
 
 
 ## Commands
