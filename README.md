@@ -11,9 +11,9 @@ The Neuromatch Academy Discord Bot.
 * logging
 * discord
 * gspread
+* oauth2client
 * googleapiclient
 * google_auth_oauthlib
-* oauth2client
 
 
 ## Commands
