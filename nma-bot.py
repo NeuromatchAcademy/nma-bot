@@ -88,11 +88,11 @@ def embedGen(title,description,student = None):
         pod = student['pod']
         embed=discord.Embed(title=student['name'], url="https://neuromatch.io/", description=f'Welcome to Neuromatch Academy, {name[0]}!\nYou have been assigned to {pod}.', color=0x109319)
         embed.set_thumbnail(url="https://i.imgur.com/SKdmY9F.png")
-        embed.set_footer(text="Need help? You can email support@neuromatch.io or check out our discord tutorial [here](https://www.youtube.com/watch?v=7oFfPbitReQ&list=PLkBQOLLbi18NNDaFoa8gHSfDJHeDsJra9).")
+        embed.set_footer(text="Need help? You can email support@neuromatch.io or check out our discord tutorial @ https://youtu.be/7oFfPbitReQ.")
     else:
         embed=discord.Embed(title=title, url="https://neuromatch.io/", description=description, color=0x109319)
         embed.set_thumbnail(url="https://i.imgur.com/SKdmY9F.png")
-        embed.set_footer(text="Need help? You can email support@neuromatch.io or check out our discord tutorial [here](https://www.youtube.com/watch?v=7oFfPbitReQ&list=PLkBQOLLbi18NNDaFoa8gHSfDJHeDsJra9).")
+        embed.set_footer(text="Need help? You can email support@neuromatch.io or check out our discord tutorial @ https://youtu.be/7oFfPbitReQ.")
     return embed            
 
 #Actual Discord bot.
@@ -254,7 +254,7 @@ class nmaClient(discord.Client):
     async def on_member_join(self, member):
         embed=discord.Embed(title="Welcome to the Neuromatch Academy (CN) Discord Server!", url="https://neuromatch.io/", description="In order to sort you into the appropriate channels, please tell me the email address you used to sign up for Neuromatch Academy.", color=0x109319)
         embed.set_thumbnail(url="https://i.imgur.com/SKdmY9F.png")
-        embed.set_footer(text="Need help? You can email support@neuromatch.io for assistance or check out our discord tutorial [here](https://www.youtube.com/watch?v=7oFfPbitReQ&list=PLkBQOLLbi18NNDaFoa8gHSfDJHeDsJra9).")
+        embed.set_footer(text="Need help? You can email support@neuromatch.io for assistance or check out our discord tutorial @ https://youtu.be/7oFfPbitReQ.")
         await member.send(embed=embed)
 
 description = "The official NMA Discord Bot."
