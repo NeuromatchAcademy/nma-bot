@@ -30,10 +30,10 @@ creds = ServiceAccountCredentials.from_json_keyfile_name(gAuthJson, scope)
 credsMail = None
 
 shClient = gspread.authorize(creds)
-sheet = shClient.open("CN Pre-pod TAs").sheet1
+sheet = shClient.open("TAsheet").sheet1
 records_data = sheet.get_all_records()
 df = pd.DataFrame.from_dict(records_data)
-print(df.head())
+#print(df.head())
 
 if os.path.exists('token.json'):
     credsMail = Credentials.from_authorized_user_file('token.json', scopeMail)
@@ -61,6 +61,11 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 staffIndex = [855972293486313529,855972293486313530]
+timezoneRoles = {
+        'A' : 856931154773803058,
+        'B' : 856931206935347200,
+        'C' : 856931228993060875,
+    }
 chanDict = {}
 
 def create_mail(sender, to, subject, message_text):
@@ -89,17 +94,7 @@ def embedGen(title,description,student = None):
         embed=discord.Embed(title=title, url="https://neuromatch.io/", description=description, color=0x109319)
         embed.set_thumbnail(url="https://i.imgur.com/SKdmY9F.png")
         embed.set_footer(text="Need help? You can email support@neuromatch.io or check out our discord tutorial by clicking <here>.")
-    return embed
-
-def podFinder(row):
-    pod = None
-    cursor = 0
-    while pod == None:
-        cursor += 1
-        if sheet.cell(row-cursor,3).value.startswith("GROUP"):
-            pod = sheet.cell(row-cursor,2).value
-    return f"pod-{pod[4:].lower()}"
-            
+    return embed            
 
 #Actual Discord bot.
 class nmaClient(discord.Client):      
@@ -108,14 +103,29 @@ class nmaClient(discord.Client):
         global staffRoles
         global allPods
         global logChan
+        global allMegas
+        global podDict
+        global masterSheet
+        
         guild = client.get_guild(855972293472550913)
+        
         staffRoles = []
         staffRoles += [guild.get_role(x) for x in staffIndex]
+        
         logChan = discord.utils.get(guild.channels, name='bot-log')
-        allPods = []
-        for eachCell in sheet.col_values(2):
-            if eachCell.startswith('POD'):
-                allPods += [f"pod-{eachCell[4:]}"]
+        
+        masterSheet = pd.DataFrame(sheet.get_all_records())
+        print(masterSheet.head())
+        
+        podDict = {}
+        allPods = list(set(masterSheet['pod']))
+        allMegas = list(set(masterSheet['megapod']))
+        
+        for eachMega in allMegas:
+            podDict[eachMega] = []
+        for eachPod in masterSheet['pod']:
+            podDict[df.at[df[df['pod']==eachPod].index.values[0],'megapod']] += [eachPod.replace(" ", "-")]
+            
         print('\n==============')
         print('Logged in as')
         print(self.user.name)
@@ -132,35 +142,50 @@ class nmaClient(discord.Client):
             print(f"\nDM received:\n\"{message.content}\"")
             if "@" in message.content:
                 print("Student attempting to verify...")
-                try:
-                    cellInfo = sheet.find(message.content)
-                    print("Student identified...")
-                    studentInfo = {
-                        'name' : sheet.cell(cellInfo.row, 4).value,
-                        #'type' = sheet.cell(cellInfo.row, ?).value,
-                        'pod' : podFinder(cellInfo.row),
-                        'id' : sheet.cell(cellInfo.row, 3).value,
-                        'email' : sheet.cell(cellInfo.row, cellInfo.row).value,
-                        'status' : sheet.cell(cellInfo.row, 6).value,
-                        'ta' : sheet.cell(cellInfo.row,7).value,
-                        }
-                    targUser = guild.get_member(message.author.id)
-                    podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
-                    await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                    if studentInfo['ta'] == 't':
-                        for eachChan in [834605904188014634,834599205238472774,834599346782732329,834599233364557855,834605854702960730,834605880746049537]:
-                            taChan = guild.get_channel(eachChan)
-                            await taChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await targUser.add_roles(guild.get_role(855972293486313526))
-                        await logChan.send(embed=embedGen("User Verified!",f"TA {studentInfo['name']} has successfully verified and can now access the appropriate channels."))
-                    else:
-                        await logChan.send(embed=embedGen("User Verified!",f"Student {studentInfo['name']} has successfully verified and can now access #{studentInfo['pod']}."))
-                    await message.channel.send(embed=embedGen("","", student=studentInfo))
-                    veriMail = create_mail('discordsupport@neuromatch.io',studentInfo['email'],'Discord Verification Completed.','You have successfully verified your identity on the NMA discord.')
-                    send_mail(service,'me',veriMail)
-                    print("Verification processed.\n")
-                except:
-                    await message.channel.send(embed=embedGen("Error!","That email does not appear to have been registered...\nPlease contact support@neuromatch.io."))
+                cellInfo = df[df['email']==message.content].index.values[0]
+                print("Student identified...")
+                studentInfo = {
+                    'name' : df.at[cellInfo, 'name'],
+                    'pod' : df.at[cellInfo, 'pod'],
+                    'role' : df.at[cellInfo, 'role'],
+                    'email' : message.content,
+                    'megapod' : df.at[cellInfo, 'megapod'],
+                    'timezone' : df.at[cellInfo, 'timezone'],
+                    }
+                studentInfo['pod'] = studentInfo['pod'].replace(" ", "-")
+                targUser = guild.get_member(message.author.id)
+                podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
+                megaChan = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
+                megaChan = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
+                await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                await megaChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                
+                if studentInfo['role'] == 'leadTA':
+                    await targUser.add_roles(guild.get_role(858144978555109387))
+                    await targUser.add_roles(guild.get_role(855972293486313526))
+                    await megaChan.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                
+                if studentInfo['role'] == 'TA' or studentInfo['role'] == 'leadTA':
+                    for eachChan in ['onboarding','ta-announcements','content-help','pod-dynamics-helpdesk','attendance-helpdesk','finance-helpdesk','lead-ta-discussion','project-ta-discussion','bot-testing']:
+                        taChan = discord.utils.get(guild.channels, name=eachChan)
+                        await taChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                    await podChan.set_permissions(targUser, view_channel=True,send_messages=True, manage_messages=True)
+                    await podChan.set_permissions(targUser, view_channel=True,send_messages=True, manage_messages=True)
+                    await targUser.add_roles(guild.get_role(855972293486313526))
+                
+                await logChan.send(embed=embedGen("User Verified!",f"{studentInfo['role']} {studentInfo['name']} of pod-{studentInfo['pod']} has successfully verified and can now access the appropriate channels."))
+                await message.channel.send(embed=embedGen("","", student=studentInfo))
+                
+                #This bit is for verification confirmation emails.
+                #veriMail = create_mail('discordsupport@neuromatch.io',studentInfo['email'],'Discord Verification Completed.','You have successfully verified your identity on the NMA discord.')
+                #send_mail(service,'me',veriMail)
+                
+                print("Verification processed.\n")
+                #try:
+                    
+                #except:
+                    #await message.channel.send(embed=embedGen("Error!","That email does not appear to have been registered...\nPlease contact support@neuromatch.io."))
             else:
                 await message.channel.send(embed=embedGen("Error!","Sorry, that didn't work. Please be sure to *only* send your email."))
         
@@ -180,23 +205,29 @@ class nmaClient(discord.Client):
                     
                 if cmd.startswith('init'):  
                     print('Initializing server...\n')
-                    for eachPod in allPods:
-                        try:
-                            newChan = await guild.create_text_channel(f"{eachPod}")
-                            try:    
+                    for eachMega in podDict.keys():
+                        await guild.create_category(eachMega)
+                        megaCat = discord.utils.get(guild.categories, name=eachMega)
+                        
+                        newChan = await guild.create_text_channel(f"{eachMega.replace(' ','-')}-general", category=megaCat)
+                        await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False)
+                        newChan = await guild.create_text_channel(f"{eachMega.replace(' ','-')}-ta-chat", category=megaCat)
+                        await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False)
+                        
+                        for eachPod in podDict[eachMega]:
+                            try:
+                                newChan = await guild.create_text_channel(f"{eachPod}", category=megaCat)
                                 await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False)
                                 for eachRole in staffRoles:
                                     await newChan.set_permissions(eachRole, view_channel=True, send_messages=True)
                             except:
-                                print(f"Failed to set {eachPod} permissions.")
-                            await logChan.send(embed=embedGen("Administrative Message.",f"Channel creation succeeded for {eachPod}."))
-                        except:                            
-                            await logChan.send(embed=embedGen("Administrative Message.",f"Channel creation failed for {eachPod}."))
-                        
-                    print('Server initialization complete.')
+                                await logChan.send(embed=embedGen("Administrative Message.",f"Channel creation failed for {eachPod}."))
+                                    
+                    await logChan.send(embed=embedGen("Administrative Message.",f"SERVER INITIALIZATION COMPLETE."))     
+                    print ('Server initialization complete.')
                     
                 if cmd.startswith('debug'):
-                    debugCont = {'Current message channel':message.channel,'chanDict':chanDict,'staffRoles':staffRoles,'allPods':allPods}
+                    debugCont = {'Current message channel':message.channel,'chanDict':chanDict,'staffRoles':staffRoles,'podDict':podDict,'allPods':allPods,'allMegas':allMegas}
                     for allCont in debugCont.keys():
                         try:
                             print(f"{allCont}:\n{debugCont[allCont]}\n")
