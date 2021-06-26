@@ -185,6 +185,7 @@ class nmaClient(discord.Client):
                  
                 except:
                     await message.channel.send(embed=embedGen("Error!","That email does not appear to have been registered...\nPlease contact support@neuromatch.io or seek help in the #support channel."))
+                    await logChan.send(embed=embedGen("WARNING!!",f"{message.author} unsuccessfully tried to verify. Please reach out and investigate."))
             else:
                 await message.channel.send(embed=embedGen("Error!","Sorry, that didn't work. Please be sure to *only* send your email."))
         
