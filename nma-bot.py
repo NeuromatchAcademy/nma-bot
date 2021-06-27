@@ -152,9 +152,10 @@ class nmaClient(discord.Client):
                         'megapod' : df.at[cellInfo, 'megapod'],
                         'timezone' : df.at[cellInfo, 'timezone'],
                         }
+                    
+                    targUser = guild.get_member(message.author.id)
                     if studentInfo['pod'] != 'None':
                         studentInfo['pod'] = studentInfo['pod'].replace(" ", "-")
-                        targUser = guild.get_member(message.author.id)
                         podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
                         megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
                         megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
@@ -174,7 +175,7 @@ class nmaClient(discord.Client):
                             await megaTA.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
                             await podChan.set_permissions(targUser, view_channel=True,send_messages=True, manage_messages=True)
                             await targUser.add_roles(guild.get_role(855972293486313526))    
-
+    
                     if studentInfo['role'] == 'projectTA':
                         await targUser.add_roles(guild.get_role(858748990429855795))
                         for eachChan in ['onboarding','ta-announcements','content-help','pod-dynamics-helpdesk','attendance-helpdesk','finance-helpdesk','lead-ta-discussion','project-ta-discussion','bot-testing']:
