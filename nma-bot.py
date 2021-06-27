@@ -155,22 +155,22 @@ class nmaClient(discord.Client):
                     studentInfo['pod'] = studentInfo['pod'].replace(" ", "-")
                     targUser = guild.get_member(message.author.id)
                     podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
-                    megaChan = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
-                    megaChan = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
+                    megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
+                    megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
                     await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
-                    await megaChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                    await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
                     await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
                     
                     if studentInfo['role'] == 'leadTA':
                         await targUser.add_roles(guild.get_role(858144978555109387))
                         await targUser.add_roles(guild.get_role(855972293486313526))
-                        await megaChan.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                        await megaTA.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
                     
                     if studentInfo['role'] == 'TA' or studentInfo['role'] == 'leadTA':
                         for eachChan in ['onboarding','ta-announcements','content-help','pod-dynamics-helpdesk','attendance-helpdesk','finance-helpdesk','lead-ta-discussion','project-ta-discussion','bot-testing']:
                             taChan = discord.utils.get(guild.channels, name=eachChan)
                             await taChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await podChan.set_permissions(targUser, view_channel=True,send_messages=True, manage_messages=True)
+                        await megaTA.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
                         await podChan.set_permissions(targUser, view_channel=True,send_messages=True, manage_messages=True)
                         await targUser.add_roles(guild.get_role(855972293486313526))
                     
@@ -234,6 +234,55 @@ class nmaClient(discord.Client):
                         except:
                             print(f"Failed to grab {allCont}\n")
                     await logChan.send(embed=embedGen("Administrative Message.","Debugging requested. Check console log for details."))
+                    
+                if cmd.startswith('repod'):
+                    cmdMsg = cmd.split(' ')
+                    targUser = cmdMsg[1]
+                    targMail = cmdMsg[2]
+                    targPod = cmdMsg[3]
+                    
+                    try:
+                        cellInfo = df[df['email']==targMail].index.values[0]
+                        print("Student identified...")
+                        studentInfo = {
+                            'name' : df.at[cellInfo, 'name'],
+                            'pod' : df.at[cellInfo, 'pod'],
+                            'role' : df.at[cellInfo, 'role'],
+                            'email' : targMail,
+                            'megapod' : df.at[cellInfo, 'megapod'],
+                            'timezone' : df.at[cellInfo, 'timezone'],
+                            }
+                        prevChan = discord.utils.get(guild.channels, name=studentInfo['pod'].replace(' ', '-'))
+                        prevMegaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
+                        prevMegaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
+                        targUser = discord.utils.get(guild.members,id=int(targUser))
+                        podChan = discord.utils.get(guild.channels, name=targPod)
+                        megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==targPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
+                        megaTA = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==targPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-ta-chat")
+                        print(f'targUser = {targUser}\ntargMail = {targMail}\ntargPod = {targPod}\nprevChan = {prevChan}\nprevMegaGen = {prevMegaGen}\nprevMegaTA = {prevMegaTA}\nmegaGen = {megaGen}\nmegaTA = {megaTA}')
+                        await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await prevChan.set_permissions(targUser, view_channel=False,send_messages=False)
+                        await prevMegaGen.set_permissions(targUser, view_channel=False,send_messages=False)
+                        await prevMegaTA.set_permissions(targUser, view_channel=False,send_messages=False)
+                        
+                        if studentInfo['role'] == 'leadTA':
+                            await targUser.add_roles(guild.get_role(858144978555109387))
+                            await targUser.add_roles(guild.get_role(855972293486313526))
+                            await megaTA.set_permissions(targUser, view_channel=True,send_messages=True)
+                        
+                        if studentInfo['role'] == 'TA' or studentInfo['role'] == 'leadTA':
+                            for eachChan in ['onboarding','ta-announcements','content-help','pod-dynamics-helpdesk','attendance-helpdesk','finance-helpdesk','lead-ta-discussion','project-ta-discussion','bot-testing']:
+                                taChan = discord.utils.get(guild.channels, name=eachChan)
+                                await taChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                            await megaTA.set_permissions(targUser, view_channel=True,send_messages=True)
+                            await podChan.set_permissions(targUser, view_channel=True,send_messages=True, manage_messages=True)
+                            await targUser.add_roles(guild.get_role(855972293486313526))
+                        
+                        await logChan.send(embed=embedGen("User Repodded!",f"{studentInfo['role']} {studentInfo['name']} has been successfully moved to pod-{studentInfo['pod']} and can now access the appropriate channels."))
+                    except:
+                        await logChan.send(embed=embedGen("WARNING!","Repodding failed."))
                     
                 if cmd.startswith('testmail'):
                     try:
