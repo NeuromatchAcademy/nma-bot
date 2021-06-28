@@ -171,7 +171,7 @@ class nmaClient(discord.Client):
                             await megaTA.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
                         
                         if studentInfo['role'] == 'TA' or studentInfo['role'] == 'leadTA' or studentInfo['role'] == 'projectTA':
-                            for eachChan in ['onboarding','ta-announcements','content-help','pod-dynamics-helpdesk','attendance-helpdesk','finance-helpdesk','lead-ta-discussion','project-ta-discussion','bot-testing']:
+                            for eachChan in ['onboarding','ta-announcements','content-help','pod-dynamics-helpdesk','attendance-helpdesk','finance-helpdesk','lead-ta-discussion','bot-testing']:
                                 taChan = discord.utils.get(guild.channels, name=eachChan)
                                 await taChan.set_permissions(targUser, view_channel=True,send_messages=True)
                             await megaTA.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
