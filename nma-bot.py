@@ -262,7 +262,7 @@ class nmaClient(discord.Client):
                             'megapod' : df.at[cellInfo, 'megapod'],
                             'timezone' : df.at[cellInfo, 'timezone'],
                             }
-                        
+                        prevTZ = studentInfo['timezone']
                         studentInfo['timezone'] = df.at[df[df['pod']==targPod.replace('-',' ')].index.values[0],'timezone']
                         prevChan = discord.utils.get(guild.channels, name=studentInfo['pod'].replace(' ', '-'))
                         prevMegaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
@@ -273,6 +273,7 @@ class nmaClient(discord.Client):
                         megaTA = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==targPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-ta-chat")
                         print(f'targUser = {targUser}\ntargMail = {targMail}\ntargPod = {targPod}\nprevChan = {prevChan}\nprevMegaGen = {prevMegaGen}\nprevMegaTA = {prevMegaTA}\nmegaGen = {megaGen}\nmegaTA = {megaTA}')
                         await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        await targUser.remove_roles(guild.get_role(timezoneRoles[prevTZ]))
                         await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
                         await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
                         await prevChan.set_permissions(targUser, view_channel=False,send_messages=False)
