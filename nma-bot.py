@@ -154,6 +154,7 @@ class nmaClient(discord.Client):
                         }
                     
                     targUser = guild.get_member(message.author.id)
+                    await targUser.edit(nick=studentInfo['name'])
                     await targUser.add_roles(guild.get_role(855972293486313525))
                     if studentInfo['pod'] != 'None':
                         studentInfo['pod'] = studentInfo['pod'].replace(" ", "-")
