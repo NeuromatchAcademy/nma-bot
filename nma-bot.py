@@ -161,7 +161,8 @@ class nmaClient(discord.Client):
                         megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
                         megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
                         await targUser.add_roles(guild.get_role(855972293486313525))
-                        await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)  
+                        await targUser.add_roles(guild.get_role(859309487156625440))
                         await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
                         
                     if studentInfo['role'] == 'leadTA':
@@ -184,7 +185,7 @@ class nmaClient(discord.Client):
                         for eachChan in ['onboarding','ta-announcements','content-help','pod-dynamics-helpdesk','attendance-helpdesk','finance-helpdesk','lead-ta-discussion','project-ta-discussion','bot-testing']:
                             taChan = discord.utils.get(guild.channels, name=eachChan)
                             await taChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await targUser.add_roles(guild.get_role(855972293486313526))    
+                        await targUser.add_roles(guild.get_role(855972293486313526))  
                     
                     await logChan.send(embed=embedGen("User Verified!",f"{studentInfo['role']} {studentInfo['name']} of pod-{studentInfo['pod']} has successfully verified and can now access the appropriate channels."))
                     await message.channel.send(embed=embedGen("","", student=studentInfo))
@@ -280,7 +281,8 @@ class nmaClient(discord.Client):
                         await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
                         await prevChan.set_permissions(targUser, view_channel=False,send_messages=False)
                         await prevMegaGen.set_permissions(targUser, view_channel=False,send_messages=False)
-                        await prevMegaTA.set_permissions(targUser, view_channel=False,send_messages=False)
+                        await prevMegaTA.set_permissions(targUser, view_channel=False,send_messages=False)  
+                        await targUser.add_roles(guild.get_role(859309487156625440))
                         
                         if studentInfo['role'] == 'leadTA':
                             await targUser.add_roles(guild.get_role(858144978555109387))
