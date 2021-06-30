@@ -219,8 +219,6 @@ class nmaClient(discord.Client):
                 
                 cmd = message.content[6:]
                 
-                print(f"{cmder} used {cmd}.")
-                
                 if cmd.startswith('auth'):
                     await message.channel.send(embed=embedGen("Administrative Message.",f"Authorized user recognized: <@{message.author.id}>."))
                     
@@ -335,22 +333,29 @@ class nmaClient(discord.Client):
                     except:
                         await message.channel.send(embed=embedGen("Administrative Message.",f"That didn't work. Please note that this command may only be used in pod channels."))
                 
+                if cmd.startswith('zoombatch'):
+                    zoomies = shClient.open("Zooms").sheet1
+                    zoomRecs = zoomies.get_all_records()
+                    dZoom = pd.DataFrame.from_dict(zoomRecs)
+                    for eachVal in dZoom['pod_name']:
+                        zoomLink = dZoom[dZoom['pod_name']==eachVal].index.values[0]
+                        zoomLink = dZoom.at[zoomLink, 'zoom_link']
+                        podChannel = discord.utils.get(guild.channels, name=eachVal.replace(' ', '-'))
+                        zoomRem = await podChannel.send(embed=embedGen("Zoom Reminder",f"The zoom link for {eachVal} is\n{zoomLink}"))
+                        await zoomRem.pin()
+                
                 if cmd.startswith('identify'):
-                    print(f"{cmder} used identify...")
                     targUser = cmder
                     queerChan = discord.utils.get(guild.channels, name='lgbtq-in-neuro')
                     genderChan = discord.utils.get(guild.channels, name='gender-in-neuro')
                     raceChan = discord.utils.get(guild.channels, name='race-in-neuro')
                     if 'lgbtq' in cmd:
-                        print("Identified as LGBTQ.")
                         await queerChan.set_permissions(targUser, view_channel=True,send_messages=True)
                         await message.delete()
                     elif 'gender' in cmd:
-                        print("Identified as gender minority.")
                         await genderChan.set_permissions(targUser, view_channel=True,send_messages=True)
                         await message.delete()
                     elif 'race' in cmd:
-                        print("Identified as racial minority.")
                         await raceChan.set_permissions(targUser, view_channel=True,send_messages=True)
                         await message.delete()
                 
