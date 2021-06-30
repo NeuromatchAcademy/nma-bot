@@ -383,13 +383,7 @@ class nmaClient(discord.Client):
                         await raceChan.set_permissions(targUser, view_channel=True,send_messages=True)
                         await message.delete()
                 
-                if cmd.startswith('update'):
-                    global allPods
-                    global logChan
-                    global allMegas
-                    global podDict
-                    global masterSheet
-                    
+                if cmd.startswith('update'):                    
                     try:
                         masterSheet = pd.DataFrame(sheet.get_all_records())
                         print(masterSheet.head())
