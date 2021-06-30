@@ -343,6 +343,30 @@ class nmaClient(discord.Client):
                         podChannel = discord.utils.get(guild.channels, name=eachVal.replace(' ', '-'))
                         zoomRem = await podChannel.send(embed=embedGen("Zoom Reminder",f"The zoom link for {eachVal} is\n{zoomLink}"))
                         await zoomRem.pin()
+                        
+                if cmd.startswith('leadfix'):
+                    for eachMega in allMegas:
+                        if eachMega != None or eachMega != 'None':
+                            megaLead = "NOT FOUND"
+                            megaGen = eachMega.replace(' ', '-')
+                            megaGen = discord.utils.get(guild.channels, name=f"{megaGen}-general")
+                            for user in megaGen.members:
+                                if guild.get_role(858144978555109387) in user.roles:
+                                    megaLead = user
+                                else:
+                                    continue
+                            try:
+                                for eachPod in podDict[eachMega]:
+                                    try:
+                                        podChan = discord.utils.get(guild.channels, name=eachPod)
+                                        await podChan.set_permissions(megaLead, view_channel=True,send_messages=True) 
+                                    except:
+                                        await logChan.send(embed=embedGen("Administrative Message.",f"Could not grant Lead TA {megaLead} access to pod-{podChan}."))
+                            except:
+                                await logChan.send(embed=embedGen("Administrative Message.",f"Error while trying to grant Lead TA {megaLead} access to all pods in the megapod {eachMega}."))
+                            await logChan.send(embed=embedGen("Administrative Message.",f"Lead TA {megaLead} now has access to all pods in the megapod {eachMega}."))
+                        else:
+                            continue
                 
                 if cmd.startswith('identify'):
                     targUser = cmder
@@ -382,6 +406,7 @@ class nmaClient(discord.Client):
                         await message.delete()
                 
                 if cmd.startswith('podcheck'):
+                    
                     try:                
                         rollCall = []
                         for user in message.channel.members:
@@ -399,7 +424,6 @@ class nmaClient(discord.Client):
                     except:
                         await message.channel.send(embed=embedGen("Administrative Message.",f"That didn't work. Please note that this command may only be used in pod channels."))
             else:     
-                
                 cmd = message.content[6:]
                 
                 if cmd.startswith('identify'):
