@@ -219,6 +219,8 @@ class nmaClient(discord.Client):
                 
                 cmd = message.content[6:]
                 
+                print(f"{cmder} used {cmd}.")
+                
                 if cmd.startswith('auth'):
                     await message.channel.send(embed=embedGen("Administrative Message.",f"Authorized user recognized: <@{message.author.id}>."))
                     
@@ -333,12 +335,46 @@ class nmaClient(discord.Client):
                     except:
                         await message.channel.send(embed=embedGen("Administrative Message.",f"That didn't work. Please note that this command may only be used in pod channels."))
                 
+                if cmd.startswith('identify'):
+                    print(f"{cmder} used identify...")
+                    targUser = cmder
+                    queerChan = discord.utils.get(guild.channels, name='lgbtq-in-neuro')
+                    genderChan = discord.utils.get(guild.channels, name='gender-in-neuro')
+                    raceChan = discord.utils.get(guild.channels, name='race-in-neuro')
+                    if 'lgbtq' in cmd:
+                        print("Identified as LGBTQ.")
+                        await queerChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
+                    elif 'gender' in cmd:
+                        print("Identified as gender minority.")
+                        await genderChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
+                    elif 'race' in cmd:
+                        print("Identified as racial minority.")
+                        await raceChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
+                
                 if cmd.startswith('quit'):
                     await logChan.send(embed=embedGen("Administrative Message.","Bot shutting down."))
                     quit()
                 
             elif any(guild.get_role(x) in cmder.roles for x in [855972293486313526,858144978555109387,858748990429855795]) == True:
                 cmd = message.content[6:]
+                
+                if cmd.startswith('identify'):
+                    targUser = cmder
+                    queerChan = discord.utils.get(guild.channels, name='lgbtq-in-neuro')
+                    genderChan = discord.utils.get(guild.channels, name='gender-in-neuro')
+                    raceChan = discord.utils.get(guild.channels, name='race-in-neuro')
+                    if 'lgbtq' in cmd:
+                        await queerChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
+                    elif 'gender' in cmd:
+                        await genderChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
+                    elif 'race' in cmd:
+                        await raceChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
                 
                 if cmd.startswith('podcheck'):
                     try:                
@@ -357,8 +393,27 @@ class nmaClient(discord.Client):
                             await message.channel.send(embed=embedGen("Pod Rollcall.",f"TA {cmder} requested a rollcall.\nThe following members have verified for this pod:\n{rollcallGen(rollCall)}."))
                     except:
                         await message.channel.send(embed=embedGen("Administrative Message.",f"That didn't work. Please note that this command may only be used in pod channels."))
-            else:                
-                await message.channel.send(embed=embedGen("Administrative Message.",f"Unauthorized user: <@{message.author.id}>."))
+            else:     
+                
+                cmd = message.content[6:]
+                
+                if cmd.startswith('identify'):
+                    targUser = cmder
+                    queerChan = discord.utils.get(guild.channels, name='lgbtq-in-neuro')
+                    genderChan = discord.utils.get(guild.channels, name='gender-in-neuro')
+                    raceChan = discord.utils.get(guild.channels, name='race-in-neuro')
+                    if 'lgbtq' in cmd:
+                        await queerChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
+                    elif 'gender' in cmd:
+                        await genderChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
+                    elif 'race' in cmd:
+                        await raceChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
+                
+                else:
+                    await message.channel.send(embed=embedGen("Administrative Message.",f"Unauthorized user: <@{message.author.id}>."))
 
     async def on_member_join(self, member):
         embed=discord.Embed(title="Welcome to the Neuromatch Academy (CN) Discord Server!", url="https://neuromatch.io/", description="In order to sort you into the appropriate channels, please tell me the email address you used to sign up for Neuromatch Academy.", color=0x109319)
