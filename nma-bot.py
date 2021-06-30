@@ -383,6 +383,30 @@ class nmaClient(discord.Client):
                         await raceChan.set_permissions(targUser, view_channel=True,send_messages=True)
                         await message.delete()
                 
+                if cmd.startswith('update'):
+                    global allPods
+                    global logChan
+                    global allMegas
+                    global podDict
+                    global masterSheet
+                    
+                    try:
+                        masterSheet = pd.DataFrame(sheet.get_all_records())
+                        print(masterSheet.head())
+                        
+                        podDict = {}
+                        allPods = list(set(masterSheet['pod']))
+                        allMegas = list(set(masterSheet['megapod']))
+                        
+                        for eachMega in allMegas:
+                            podDict[eachMega] = []
+                        for eachPod in masterSheet['pod']:
+                            podDict[df.at[df[df['pod']==eachPod].index.values[0],'megapod']] += [eachPod.replace(" ", "-")]
+                        
+                        await message.channel.send(embed=embedGen("Administrative Message.",f"Student sheet successfully updated."))
+                    except:
+                        await message.channel.send(embed=embedGen("Administrative Message.",f"Uh-oh. Something went wrong when tryng to update the sheet."))
+                
                 if cmd.startswith('quit'):
                     await logChan.send(embed=embedGen("Administrative Message.","Bot shutting down."))
                     quit()
