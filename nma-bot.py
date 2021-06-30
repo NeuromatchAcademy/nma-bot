@@ -95,6 +95,12 @@ def embedGen(title,description,student = None):
         embed.set_footer(text="Need help? You can email support@neuromatch.io or check out our discord tutorial @ https://youtu.be/7oFfPbitReQ.")
     return embed            
 
+def rollcallGen(roll):
+    finList = ''
+    for user in roll:
+        finList += f'\n{user}'
+    return finList
+
 #Actual Discord bot.
 class nmaClient(discord.Client):      
     async def on_ready(self):
@@ -308,13 +314,50 @@ class nmaClient(discord.Client):
                         await message.channel.send(embed=embedGen("Administrative Message.","Test email succeeded."))
                     except:
                         await message.channel.send(embed=embedGen("Administrative Message.","Test email failed."))
-                        
+                
+                if cmd.startswith('podcheck'):
+                    try:                
+                        rollCall = []
+                        for user in message.channel.members:
+                            if any(guild.get_role(x) in user.roles for x in [855972293486313530,855972293486313529,855972293472550914]) == True:
+                                continue
+                            else:
+                                if user.nick == None:
+                                    rollCall += [user]
+                                else:
+                                    rollCall += [user.nick]
+                        if len(rollCall) == 0:
+                            await message.channel.send(embed=embedGen("Administrative Message.",f"Uh-oh. The only people in this channel are administrators, support staff, and robots. If that's wrong, please open a tech ticket in #support."))
+                        else:
+                            await message.channel.send(embed=embedGen("Pod Rollcall.",f"TA {cmder} requested a rollcall.\nThe following members have verified for this pod:\n{rollcallGen(rollCall)}."))
+                    except:
+                        await message.channel.send(embed=embedGen("Administrative Message.",f"That didn't work. Please note that this command may only be used in pod channels."))
                 
                 if cmd.startswith('quit'):
                     await logChan.send(embed=embedGen("Administrative Message.","Bot shutting down."))
                     quit()
                 
-            else:
+            elif any(guild.get_role(x) in cmder.roles for x in [855972293486313526,858144978555109387,858748990429855795]) == True:
+                cmd = message.content[6:]
+                
+                if cmd.startswith('podcheck'):
+                    try:                
+                        rollCall = []
+                        for user in message.channel.members:
+                            if any(guild.get_role(x) in user.roles for x in [855972293486313530,855972293486313529,855972293472550914]) == True:
+                                continue
+                            else:
+                                if user.nick == None:
+                                    rollCall += [user]
+                                else:
+                                    rollCall += [user.nick]
+                        if len(rollCall) == 0:
+                            await message.channel.send(embed=embedGen("Administrative Message.",f"Uh-oh. The only people in this channel are administrators, support staff, and robots. If that's wrong, please open a tech ticket in #support."))
+                        else:
+                            await message.channel.send(embed=embedGen("Pod Rollcall.",f"TA {cmder} requested a rollcall.\nThe following members have verified for this pod:\n{rollcallGen(rollCall)}."))
+                    except:
+                        await message.channel.send(embed=embedGen("Administrative Message.",f"That didn't work. Please note that this command may only be used in pod channels."))
+            else:                
                 await message.channel.send(embed=embedGen("Administrative Message.",f"Unauthorized user: <@{message.author.id}>."))
 
     async def on_member_join(self, member):
