@@ -9,6 +9,7 @@ from __future__ import print_function
 import os.path
 from email.mime.text import MIMEText
 from googleapiclient.discovery import build
+import sys
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -349,7 +350,8 @@ class nmaClient(discord.Client):
                         if eachMega != None or eachMega != 'None':
                             megaLead = "NOT FOUND"
                             megaGen = eachMega.replace(' ', '-')
-                            megaGen = discord.utils.get(guild.channels, name=f"{megaGen}-general")
+                            megaTA = discord.utils.get(guild.channels, name=f"{megaGen}-general")
+                            megaGen = discord.utils.get(guild.channels, name=f"{megaGen}-ta-chat")
                             for user in megaGen.members:
                                 if guild.get_role(858144978555109387) in user.roles:
                                     megaLead = user
@@ -359,7 +361,8 @@ class nmaClient(discord.Client):
                                 for eachPod in podDict[eachMega]:
                                     try:
                                         podChan = discord.utils.get(guild.channels, name=eachPod)
-                                        await podChan.set_permissions(megaLead, view_channel=True,send_messages=True) 
+                                        await podChan.set_permissions(megaLead, view_channel=True,send_messages=True)
+                                        await megaTA.set_permissions(megaLead, view_channel=True,send_messages=True) 
                                     except:
                                         await logChan.send(embed=embedGen("Administrative Message.",f"Could not grant Lead TA {megaLead} access to pod-{podChan}."))
                             except:
@@ -384,22 +387,7 @@ class nmaClient(discord.Client):
                         await message.delete()
                 
                 if cmd.startswith('update'):                    
-                    try:
-                        masterSheet = pd.DataFrame(sheet.get_all_records())
-                        print(masterSheet.head())
-                        
-                        podDict = {}
-                        allPods = list(set(masterSheet['pod']))
-                        allMegas = list(set(masterSheet['megapod']))
-                        
-                        for eachMega in allMegas:
-                            podDict[eachMega] = []
-                        for eachPod in masterSheet['pod']:
-                            podDict[df.at[df[df['pod']==eachPod].index.values[0],'megapod']] += [eachPod.replace(" ", "-")]
-                        
-                        await message.channel.send(embed=embedGen("Administrative Message.",f"Student sheet successfully updated."))
-                    except:
-                        await message.channel.send(embed=embedGen("Administrative Message.",f"Uh-oh. Something went wrong when tryng to update the sheet."))
+                    os.execv(sys.executable, ['python'] + sys.argv)
                 
                 if cmd.startswith('quit'):
                     await logChan.send(embed=embedGen("Administrative Message.","Bot shutting down."))
