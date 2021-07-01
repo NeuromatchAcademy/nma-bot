@@ -104,13 +104,13 @@ def rollcallGen(roll):
 #Actual Discord bot.
 class nmaClient(discord.Client):      
     async def on_ready(self):
-        '''global guild
+        global guild
         global staffRoles
         global allPods
         global logChan
         global allMegas
         global podDict
-        global masterSheet'''
+        global masterSheet
         
         guild = client.get_guild(855972293472550913)
         
