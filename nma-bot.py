@@ -162,6 +162,7 @@ class nmaClient(discord.Client):
                     targUser = guild.get_member(message.author.id)
                     await targUser.edit(nick=studentInfo['name'])
                     await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                    await targUser.add_roles(guild.get_role(855972293486313525))
                     if studentInfo['pod'] != 'None':
                         studentInfo['pod'] = studentInfo['pod'].replace(" ", "-")
                         podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
@@ -385,6 +386,12 @@ class nmaClient(discord.Client):
                     elif 'race' in cmd:
                         await raceChan.set_permissions(targUser, view_channel=True,send_messages=True)
                         await message.delete()
+                        
+                if cmd.startswith('secure'):
+                    for chanCat in [discord.utils.get(guild.categories, id=catID) for catID in [855972294898483226,855972295192477706,855972295192477710]]:
+                        for eachChan in chanCat.channels:
+                            await eachChan.set_permissions(guild.default_role, view_channel=True,send_messages=False)
+                            await eachChan.set_permissions(guild.get_role(855972293486313525), view_channel=True,send_messages=True)
                 
                 if cmd.startswith('update'):                    
                     os.execv(sys.executable, ['python'] + sys.argv)
