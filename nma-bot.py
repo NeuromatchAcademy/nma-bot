@@ -277,31 +277,31 @@ class nmaClient(discord.Client):
                     
                 if cmd.startswith('assign'):
                     cmdMsg = cmd.split(' ')
-                    targUser = cmdMsg[1]
+                    targUser = discord.utils.get(guild.members,id=int(cmdMsg[1]))
                     for eachPod in cmdMsg:
                         if eachPod != targUser and eachPod != '--nma' and eachPod != 'assign':
                             try:
-                                targUser = discord.utils.get(guild.members,id=int(targUser))
                                 podChan = discord.utils.get(guild.channels, name=eachPod)
                                 megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
                                 await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
                                 await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
                             except:
-                                await logChan.send(embed=embedGen("WARNING!","Could not add {targUser} to pod-{eachPod}."))
+                                print('THAT WENT WRONG!')
+                                #await logChan.send(embed=embedGen("WARNING!",f"Could not add {targUser} to pod-{eachPod}."))
                     
                 if cmd.startswith('unassign'):
                     cmdMsg = cmd.split(' ')
-                    targUser = cmdMsg[1]
+                    targUser = discord.utils.get(guild.members,id=int(cmdMsg[1]))
                     for eachPod in cmdMsg:
                         if eachPod != targUser and eachPod != '--nma' and eachPod != 'unassign':
                             try:
-                                targUser = discord.utils.get(guild.members,id=int(targUser))
                                 podChan = discord.utils.get(guild.channels, name=eachPod)
                                 megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
                                 await megaGen.set_permissions(targUser, view_channel=False,send_messages=False)
                                 await podChan.set_permissions(targUser, view_channel=False,send_messages=False)
                             except:
-                                await logChan.send(embed=embedGen("WARNING!","Could not remove {targUser} from pod-{eachPod}."))
+                                print('THAT WENT WRONG!')
+                                #await logChan.send(embed=embedGen("WARNING!",f"Could not remove {targUser} from pod-{eachPod}."))
                     
                 if cmd.startswith('debug'):
                     debugCont = {'Current message channel':message.channel,'chanDict':chanDict,'staffRoles':staffRoles,'podDict':podDict,'allPods':allPods,'allMegas':allMegas}
