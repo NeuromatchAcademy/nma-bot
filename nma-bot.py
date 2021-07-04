@@ -35,6 +35,10 @@ sheet = shClient.open("TAsheet").sheet1
 records_data = sheet.get_all_records()
 df = pd.DataFrame.from_dict(records_data)
 
+projSheet = shClient.open("TAsheet").get_worksheet(1)
+proj_data = projSheet.get_all_records()
+dProj = pd.DataFrame.from_dict(proj_data)
+
 if os.path.exists('token.json'):
     credsMail = Credentials.from_authorized_user_file('token.json', scopeMail)
     
@@ -206,6 +210,18 @@ class nmaClient(discord.Client):
                                 taChan = discord.utils.get(guild.channels, name=eachChan)
                                 await taChan.set_permissions(targUser, view_channel=True,send_messages=True)
                             await targUser.add_roles(guild.get_role(855972293486313526))  
+                            cellInfo = dProj[dProj['email']==message.content].index.values[0]
+                            projInfo = {'pods' : dProj.at[cellInfo, 'pods']}
+                            projPods = projInfo['pods'].split(',')
+                            for eachPod in projPods:
+                                if eachPod[0].isalpha() == False:
+                                    eachPod = eachPod[1:]
+                                podChan = discord.utils.get(guild.channels, name=eachPod.replace(" ", "-"))
+                                await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                                megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
+                                await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
+                            studentInfo['pod'] = projPods
+                                
                         
                     await logChan.send(embed=embedGen("User Verified!",f"{studentInfo['role']} {studentInfo['name']} of pod-{studentInfo['pod']} has successfully verified and can now access the appropriate channels."))
                     await message.channel.send(embed=embedGen("","", student=studentInfo))
@@ -258,6 +274,34 @@ class nmaClient(discord.Client):
                                     
                     await logChan.send(embed=embedGen("Administrative Message.",f"SERVER INITIALIZATION COMPLETE."))     
                     print ('Server initialization complete.')
+                    
+                if cmd.startswith('assign'):
+                    cmdMsg = cmd.split(' ')
+                    targUser = cmdMsg[1]
+                    for eachPod in cmdMsg:
+                        if eachPod != targUser and eachPod != '--nma' and eachPod != 'assign':
+                            try:
+                                targUser = discord.utils.get(guild.members,id=int(targUser))
+                                podChan = discord.utils.get(guild.channels, name=eachPod)
+                                megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
+                                await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
+                                await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                            except:
+                                await logChan.send(embed=embedGen("WARNING!","Could not add {targUser} to pod-{eachPod}."))
+                    
+                if cmd.startswith('unassign'):
+                    cmdMsg = cmd.split(' ')
+                    targUser = cmdMsg[1]
+                    for eachPod in cmdMsg:
+                        if eachPod != targUser and eachPod != '--nma' and eachPod != 'unassign':
+                            try:
+                                targUser = discord.utils.get(guild.members,id=int(targUser))
+                                podChan = discord.utils.get(guild.channels, name=eachPod)
+                                megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
+                                await megaGen.set_permissions(targUser, view_channel=False,send_messages=False)
+                                await podChan.set_permissions(targUser, view_channel=False,send_messages=False)
+                            except:
+                                await logChan.send(embed=embedGen("WARNING!","Could not remove {targUser} from pod-{eachPod}."))
                     
                 if cmd.startswith('debug'):
                     debugCont = {'Current message channel':message.channel,'chanDict':chanDict,'staffRoles':staffRoles,'podDict':podDict,'allPods':allPods,'allMegas':allMegas}
