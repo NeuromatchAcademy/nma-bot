@@ -176,6 +176,15 @@ class nmaClient(discord.Client):
                             await targUser.add_roles(guild.get_role(859309487156625440))
                             await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
                             
+                        if studentInfo['role'] == 'mentor':
+                            await targUser.add_roles(guild.get_role(855972293486313527))
+                            
+                        if studentInfo['role'] == 'sponsor':
+                            await targUser.add_roles(guild.get_role(855972293486313528))
+                            
+                        if studentInfo['role'] == 'support':
+                            await targUser.add_roles(guild.get_role(855972293486313529))
+                        
                         if studentInfo['role'] == 'leadTA':
                             await targUser.add_roles(guild.get_role(858144978555109387))
                             await targUser.add_roles(guild.get_role(855972293486313526))
