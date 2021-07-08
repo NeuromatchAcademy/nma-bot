@@ -304,7 +304,7 @@ class nmaClient(discord.Client):
                                 #await logChan.send(embed=embedGen("WARNING!",f"Could not remove {targUser} from pod-{eachPod}."))
                     
                 if cmd.startswith('debug'):
-                    debugCont = {'Current message channel':message.channel,'chanDict':chanDict,'staffRoles':staffRoles,'podDict':podDict,'allPods':allPods,'allMegas':allMegas}
+                    debugCont = {'Current message channel':message.channel,'chanDict':chanDict,'staffRoles':staffRoles,'podDict':podDict,'allPods':allPods,'allMegas':allMegas,'podCount':len(allPods)}
                     for allCont in debugCont.keys():
                         try:
                             print(f"{allCont}:\n{debugCont[allCont]}\n")
@@ -364,6 +364,26 @@ class nmaClient(discord.Client):
                         await logChan.send(embed=embedGen("User Repodded!",f"{studentInfo['role']} {studentInfo['name']} has been successfully moved to pod-{studentInfo['pod']} and can now access the appropriate channels."))
                     except:
                         await logChan.send(embed=embedGen("WARNING!","Repodding failed."))
+                    
+                if cmd.startswith('podmerge'):
+                    cmdMsg = cmd.split(' ')
+                    oldPod = discord.utils.get(guild.channels, name=cmdMsg[1])
+                    newPod = discord.utils.get(guild.channels, name=cmdMsg[2])          
+                    rollCall = []
+                    staffCount = 0
+                    for user in oldPod.members:
+                        if any(guild.get_role(x) in user.roles for x in [855972293486313530,855972293486313529,855972293472550914]) == True:
+                            staffCount += 1
+                            continue
+                        else:
+                            await oldPod.set_permissions(user, view_channel=False,send_messages=False)
+                            await newPod.set_permissions(user, view_channel=True,send_messages=True)
+                    if len(oldPod.members) <= staffCount:
+                        try:
+                            await oldPod.delete()
+                        except:
+                            await message.channel(embed=embedGen("Administrative Message.",f"Could not delete channel {cmdMsg[1]}."))
+                    
                     
                 if cmd.startswith('testmail'):
                     try:
