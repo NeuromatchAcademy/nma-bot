@@ -186,6 +186,9 @@ class nmaClient(discord.Client):
                         if studentInfo['role'] == 'sponsor':
                             await targUser.add_roles(guild.get_role(855972293486313528))
                             
+                        if studentInfo['role'] == 'speaker':
+                            await targUser.add_roles(guild.get_role(863584886434693130))
+                            
                         if studentInfo['role'] == 'support':
                             await targUser.add_roles(guild.get_role(855972293486313529))
                         
@@ -365,25 +368,45 @@ class nmaClient(discord.Client):
                     except:
                         await logChan.send(embed=embedGen("WARNING!","Repodding failed."))
                     
+                if cmd.startswith('tafix'):
+                    for eachChannel in guild.channels:
+                        if ' ' in str(eachChannel):
+                            continue
+                        else:                    
+                            for entity, overwrite in eachChannel.overwrites.items():
+                                if overwrite.manage_messages:
+                                    if str(entity) not in ['@everyone','NMA Staffers','Interactive Student','NMA Organizers','Robots']:
+                                        if all(guild.get_role(x) in entity.roles for x in [855972293486313530,855972293486313529,855972293472550914]) == False:
+                                            try:
+                                                await eachChannel.set_permissions(entity, view_channel=True,send_messages=True,manage_messages=True)
+                                                await logChan.send(embed=embedGen("Administrative Message",f"TA {entity} has regained access to pod {eachChannel}."))
+                                            except:
+                                                await logChan.send(embed=embedGen("Administrative Message",f"Could not grant TA {entity} to pod {eachChannel}."))
+                    
                 if cmd.startswith('podmerge'):
                     cmdMsg = cmd.split(' ')
                     oldPod = discord.utils.get(guild.channels, name=cmdMsg[1])
                     newPod = discord.utils.get(guild.channels, name=cmdMsg[2])          
                     rollCall = []
                     staffCount = 0
+                    totalCount = 0
                     for user in oldPod.members:
                         if any(guild.get_role(x) in user.roles for x in [855972293486313530,855972293486313529,855972293472550914]) == True:
                             staffCount += 1
                             continue
                         else:
-                            await oldPod.set_permissions(user, view_channel=False,send_messages=False)
-                            await newPod.set_permissions(user, view_channel=True,send_messages=True)
+                            try:
+                                await oldPod.set_permissions(user, view_channel=False,send_messages=False)
+                                await newPod.set_permissions(user, view_channel=True,send_messages=True)
+                                totalCount += 1
+                            except:
+                                continue
+                    await message.channel(embed=embedGen("Administrative Message",f"Successfully moved {totalCount} out of {len(oldPod.members)} users to {cmdMsg[2]}."))
                     if len(oldPod.members) <= staffCount:
                         try:
                             await oldPod.delete()
                         except:
                             await message.channel(embed=embedGen("Administrative Message.",f"Could not delete channel {cmdMsg[1]}."))
-                    
                     
                 if cmd.startswith('testmail'):
                     try:
@@ -424,7 +447,8 @@ class nmaClient(discord.Client):
                         
                 if cmd.startswith('leadfix'):
                     for eachMega in allMegas:
-                        if eachMega != None or eachMega != 'None':
+                        if eachMega != None and eachMega != 'None' and eachMega != '':
+                            print(eachMega)
                             megaLead = "NOT FOUND"
                             megaGen = eachMega.replace(' ', '-')
                             megaTA = discord.utils.get(guild.channels, name=f"{megaGen}-general")
