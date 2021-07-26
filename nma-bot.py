@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue May 11 19:57:02 2021
-
-@author: sep27
-"""
-
 from __future__ import print_function
 import os.path
 from email.mime.text import MIMEText
@@ -19,10 +12,13 @@ import base64
 import discord
 import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
+import discord
+from discord.ext import commands
+import random
 
 #Auth
 gAuthJson = 'sound-country-274503-cd99a71b16ae.json'
-discordToken = 'ODQxOTE5NTU3NDA3ODY2ODkx.YJtwsA.Xt79Ji2xYs9TGY6_PUXJf2QCq2o'
+discordToken = 'ODY4MTI2MDE0MTUxMjE3MTYy.YPrHWg.JorDpdcGFlZhMQeWKXwt5opS-F8'
 
 #Google Set-up
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
@@ -31,11 +27,11 @@ creds = ServiceAccountCredentials.from_json_keyfile_name(gAuthJson, scope)
 credsMail = None
 
 shClient = gspread.authorize(creds)
-sheet = shClient.open("TAsheet").sheet1
+sheet = shClient.open("dlmastersheet").sheet1
 records_data = sheet.get_all_records()
 df = pd.DataFrame.from_dict(records_data)
 
-projSheet = shClient.open("TAsheet").get_worksheet(1)
+projSheet = shClient.open("dlmastersheet").get_worksheet(1)
 proj_data = projSheet.get_all_records()
 dProj = pd.DataFrame.from_dict(proj_data)
 
@@ -64,13 +60,19 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-staffIndex = [855972293486313529,855972293486313530]
+staffIndex = [867751492417355836,867751492417355835]
 timezoneRoles = {
-        'A' : 856931154773803058,
-        'B' : 856931206935347200,
-        'C' : 856931228993060875,
+        'A' : 867751492408573986,
+        'B' : 867751492408573985,
+        'C' : 867751492408573984,
     }
 chanDict = {}
+masterEmb=discord.Embed(title="", url="https://www.neuromatch.io", description="Click on the appropriate reactions below to initiate a bot action. If that doesn't work, you can use the commands listed below as a back-up.", color=0xa400d1)
+masterEmb.set_author(name="Administrative Interface", url="https://www.neuromatch.io", icon_url="https://i.imgur.com/NwOh9XV.png")
+masterEmb.add_field(name="Reaction-Based Interface", value="To repod a user, click :busts_in_silhouette:.\nTo merge two pods, click :people_hugging:\nTo assign a user to multiple pods, click :zap:.\nTo unassign a user from multiple pods, click :cloud_tornado:.", inline=False)
+masterEmb.add_field(name="Pod-Related Commands", value="To repod a user, use `--nma repod <discord-id> <user-email> <new-pod>`.   \nTo merge two pods, use `--nma podmerge <old-pod> <new-pod>`. \nTo assign a user to pods, use `--nma assign <user-id> <pod-n>`.                 \nTo unassign a user from pods, use `--nma unassign <user-id> <pod-n>`.     \nTo check who has verified for a pod, use `--nma podcheck` in the pod channel.", inline=False)
+masterEmb.add_field(name="Hotfix Commands", value="To give interactive students access to all public channels, use `--nma unlock`. \nTo grant lead TAs access to all their pods, use `--nma leadfix`. \nTo restore TA access to their pods, use `--nma tafix`.", inline=False)
+masterEmb.add_field(name="Debugging Commands", value="To check whether you can use administrative commands, use `--nma auth`.\nTo print all variables to console, use `--nma debug`.", inline=False)
 
 def create_mail(sender, to, subject, message_text):
     message = MIMEText(message_text)
@@ -92,11 +94,11 @@ def embedGen(title,description,student = None):
         name = student['name'].split(' ')
         pod = student['pod']
         embed=discord.Embed(title=student['name'], url="https://neuromatch.io/", description=f'Welcome to Neuromatch Academy, {name[0]}!\nYou have been assigned to {pod}.', color=0x109319)
-        embed.set_thumbnail(url="https://i.imgur.com/SKdmY9F.png")
+        embed.set_thumbnail(url="https://i.imgur.com/hAyp5Vr.png")
         embed.set_footer(text="Need help? You can email support@neuromatch.io or check out our discord tutorial @ https://youtu.be/7oFfPbitReQ.")
     else:
         embed=discord.Embed(title=title, url="https://neuromatch.io/", description=description, color=0x109319)
-        embed.set_thumbnail(url="https://i.imgur.com/SKdmY9F.png")
+        #embed.set_thumbnail(url="https://i.imgur.com/hAyp5Vr.png")
         embed.set_footer(text="Need help? You can email support@neuromatch.io or check out our discord tutorial @ https://youtu.be/7oFfPbitReQ.")
     return embed            
 
@@ -116,13 +118,27 @@ class nmaClient(discord.Client):
         global allMegas
         global podDict
         global masterSheet
+        global masterChan
+        global masterMsg
+        global veriChan
         
-        guild = client.get_guild(855972293472550913)
+        guild = client.get_guild(867751492408573982)
         
         staffRoles = []
         staffRoles += [guild.get_role(x) for x in staffIndex]
         
         logChan = discord.utils.get(guild.channels, name='bot-log')
+        
+        masterChan = discord.utils.get(guild.channels, name='command-center')
+        masterMsg = await masterChan.send(embed=masterEmb)
+        reactions = ["👥","🫂","🕵️","👀","⚡","🌪️"]
+        
+        for eachReaction in reactions:
+            await masterMsg.add_reaction(eachReaction)
+        
+        veriChan = discord.utils.get(guild.channels, name='verify')
+        
+        await veriChan.send(embed=embedGen("Welcome to the Neuromatch Academy DL Server!","To unlock access to all channels, please copy and paste the email address with which you log into the Neuromatch portal into this chat."))
         
         masterSheet = pd.DataFrame(sheet.get_all_records())
         print(masterSheet.head())
@@ -142,122 +158,200 @@ class nmaClient(discord.Client):
         print(self.user.id)
         print('==============')
 
-    async def on_message(self, message):
+    async def on_reaction_add(self, reaction, user):
         
-        if message.author == self.user:
+        if user == self.user:
             return
         
-        if not message.guild:
-            print(f"\nDM received:\n\"{message.content}\"")
-            if "@" in message.content:
-                print("Student attempting to verify...")
-                try:
-                    cellInfo = df[df['email']==message.content].index.values[0]
-                    print("Student identified...")
-                    studentInfo = {
-                        'name' : df.at[cellInfo, 'name'],
-                        'pod' : df.at[cellInfo, 'pod'],
-                        'role' : df.at[cellInfo, 'role'],
-                        'email' : message.content,
-                        'megapod' : df.at[cellInfo, 'megapod'],
-                        'timezone' : df.at[cellInfo, 'timezone'],
-                        }
-                    
-                    targUser = guild.get_member(message.author.id)
-                    await targUser.edit(nick=studentInfo['name'])                        
-                    if studentInfo['role'] == 'observer':
-                        await targUser.add_roles(guild.get_role(855972293486313524))
-                    else:     
-                        await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
-                        await targUser.add_roles(guild.get_role(855972293486313525))
-                        if studentInfo['pod'] != 'None':
-                            studentInfo['pod'] = studentInfo['pod'].replace(" ", "-")
-                            podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
-                            megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
-                            megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
-                            await targUser.add_roles(guild.get_role(855972293486313525))
-                            await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)  
-                            await targUser.add_roles(guild.get_role(859309487156625440))
-                            await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                            
-                        if studentInfo['role'] == 'mentor':
-                            await targUser.add_roles(guild.get_role(855972293486313527))
-                            
-                        if studentInfo['role'] == 'sponsor':
-                            await targUser.add_roles(guild.get_role(855972293486313528))
-                            
-                        if studentInfo['role'] == 'speaker':
-                            await targUser.add_roles(guild.get_role(863584886434693130))
-                            
-                        if studentInfo['role'] == 'support':
-                            await targUser.add_roles(guild.get_role(855972293486313529))
-                        
-                        if studentInfo['role'] == 'leadTA':
-                            await targUser.add_roles(guild.get_role(858144978555109387))
-                            await targUser.add_roles(guild.get_role(855972293486313526))
-                            if studentInfo['pod'] != 'None':
-                                await megaTA.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
-                        
-                        if studentInfo['role'] == 'TA' or studentInfo['role'] == 'leadTA' or studentInfo['role'] == 'projectTA':
-                            for eachChan in ['onboarding','ta-announcements','content-help','pod-dynamics-helpdesk','attendance-helpdesk','finance-helpdesk','lead-ta-discussion','bot-testing']:
-                                taChan = discord.utils.get(guild.channels, name=eachChan)
-                                await taChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                            await targUser.add_roles(guild.get_role(855972293486313526))  
-                            if studentInfo['pod'] != 'None':
-                                await megaTA.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
-                                await podChan.set_permissions(targUser, view_channel=True,send_messages=True, manage_messages=True)
+        await masterMsg.remove_reaction(reaction,user)
         
-                        if studentInfo['role'] == 'projectTA':
-                            await targUser.add_roles(guild.get_role(858748990429855795))
-                            for eachChan in ['onboarding','ta-announcements','content-help','pod-dynamics-helpdesk','attendance-helpdesk','finance-helpdesk','lead-ta-discussion','project-ta-discussion','bot-testing']:
-                                taChan = discord.utils.get(guild.channels, name=eachChan)
-                                await taChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                            await targUser.add_roles(guild.get_role(855972293486313526))  
-                            cellInfo = dProj[dProj['email']==message.content].index.values[0]
-                            projInfo = {'pods' : dProj.at[cellInfo, 'pods']}
-                            projPods = projInfo['pods'].split(',')
-                            for eachPod in projPods:
-                                if eachPod[0].isalpha() == False:
-                                    eachPod = eachPod[1:]
-                                podChan = discord.utils.get(guild.channels, name=eachPod.replace(" ", "-"))
+        cmder = user
+        
+        reactionMap = {
+            "👥" : 'repod', 
+            "🫂" : 'podmerge',
+            "🕵️" : 'check',
+            "👀" : 'podcheck',
+            "⚡" : 'assign',
+            "🌪️" : 'unassign',
+            }
+        
+        reqVars = {
+            'repod' : [['the target user\'s discord ID','user\'s email address','new pod name (formatted a la \'sneaky-pandas\')'],['User:','User\'s Email:','New pod:']],
+            'podmerge' : [['the old pod (will be deleted)','the new pod (which everyone will join)'],['Pod to be deleted:','New pod:']],
+            'check' : [['the discord ID of the user you want to check'],['User\'s ID:']],
+            'podcheck' : [['the name of the pod you want to check (formatted a la \'sneaky-pandas\')'],['Pod to be checked:']],
+            'assign' : [['the target user\'s discord ID','any pods you want to add them to (formatted a la \'sneaky-pandas sweet-spiders open-dogs\')'],["User:","Pods to add them to:"]],
+            'unassign' : [['the target user\'s discord ID','any pods you want to remove them from (formatted a la \'sneaky-pandas sweet-spiders open-dogs\')'],["User:","Pods to remove them from:"]]
+            }
+        
+        if reaction.message == masterMsg and reaction.message.channel == masterChan:
+            
+            def check(m):
+                return m.author == cmder and m.channel == masterChan
+            
+            argList = []
+            
+            if reaction.emoji in reactionMap.keys():
+                for eachPrompt in reqVars[reactionMap[reaction.emoji]][0]:
+                    lastPrompt = await masterChan.send(embed=embedGen('Administrative Message',f'Please send {eachPrompt}.'))
+                    reply = await self.wait_for('message', check=check)
+                    argList += [reply.content]
+                    await reply.delete()
+                    await lastPrompt.delete()
+                    
+                allLines = []
+                for eachItem in range(len(argList)):
+                    allLines += [f"**{reqVars[reactionMap[reaction.emoji]][1][eachItem]}** {argList[eachItem]}"]
+                
+                finStr = "\n".join(allLines)
+                lastPrompt = await masterChan.send(embed=embedGen('Administrative Message',f'You want to use the {reactionMap[reaction.emoji]} command with the following details:\n\n{finStr}\n\nTo confirm, reply "Y". To cancel, reply "N".'))
+                reply = await self.wait_for('message', check=check)
+                procRep = reply.content
+                if procRep == 'Y' or procRep == 'y':
+                    finCmd = " ".join(argList)
+                    cmdMsg = await logChan.send(f'--csrun --nma {reactionMap[reaction.emoji]} {finCmd}')
+                    print(cmdMsg.content)
+                    await cmdMsg.delete()
+                    await logChan.send(f"{user.mention}, command has been executed.")
+                    
+                elif procRep == 'N' or procRep == 'n':
+                    await logChan.send(f"{user.mention}, command has been canceled.")
+                else:
+                    await logChan.send(f"{user.mention}, invalid response. Command has been canceled.")
+                await reply.delete()
+                await lastPrompt.delete()
+        
+    async def on_message(self, message):
+        
+        if message.author != self.user or message.content.startswith('--csrun '):
+            if message.content.startswith('--csrun '):
+                message.content = message.content[8:]
+                print(f"Bot used the command: {message.content}")
+            
+            if not message.guild:
+                print(f"\nDM received:\n{message.author} said: \"{message.content}\"")
+                await message.channel.send(embed=embedGen("Warning!","Hey there.\nIt looks like you tried to send me a direct message. That's no longer support -- instead, please refer to the #verify channel in the NMA server."))     
+            
+            if message.channel == veriChan: #If the message sent in the verification channel...
+                print(message.content)
+                if "@" in message.content: #If the message contains an email address...
+                    #await message.add_reaction(discord.utils.get(guild.emojis, name=':load:'))
+                    #await message.delete() #Delete the message.
+                    
+                    print("Student attempting to verify...")
+                    errCode = 'Email not registered.'
+                    errMsg = f'The email in question could not be found.'
+                    
+                    try:
+                        cellInfo = df[df['email']==message.content].index.values[0]
+                        print("Student identified...")
+                        studentInfo = {
+                            'name' : df.at[cellInfo, 'name'],
+                            'pod' : df.at[cellInfo, 'pod'],
+                            'role' : df.at[cellInfo, 'role'],
+                            'email' : message.content,
+                            'megapod' : df.at[cellInfo, 'megapod'],
+                            'timezone' : df.at[cellInfo, 'timezone'],
+                            }
+                        studentInfo['pod'] = studentInfo['pod'].replace(' ', '-')
+                        targUser = guild.get_member(message.author.id)
+                        await targUser.edit(nick=studentInfo['name'])    
+                        if studentInfo['role'] == 'observer':
+                            await targUser.add_roles(guild.get_role(867751492417355827))
+                        elif studentInfo['role'] == 'student':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                            if studentInfo['pod'] != 'None':
+                                podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
+                                megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
                                 await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                                megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
                                 await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
-                            studentInfo['pod'] = projPods
-                                
+                        elif studentInfo['role'] == 'TA':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355829))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                            if studentInfo['pod'] != 'None':
+                                podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
+                                megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
+                                megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
+                                await podChan.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                                await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
+                                await megaTA.set_permissions(targUser, view_channel=True,send_messages=True)
+                        elif studentInfo['role'] == 'leadTA':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355829))
+                            await targUser.add_roles(guild.get_role(867751492417355830))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                            if studentInfo['pod'] != 'None':
+                                podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
+                                megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
+                                megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
+                                await podChan.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                                await megaGen.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                                await megaTA.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                        elif studentInfo['role'] == 'projectTA':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355829))
+                            await targUser.add_roles(guild.get_role(867751492417355831))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        elif studentInfo['role'] == 'consultant':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(868124117067509770))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        elif studentInfo['role'] == 'mentor':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355832))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        elif studentInfo['role'] == 'speaker':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355833))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        elif studentInfo['role'] == 'sponsor':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355834))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        elif studentInfo['role'] == 'support':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355835))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        else:
+                            errCode = 'Invalid Role'
+                            errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
+                            raise ValueError
                         
-                    await logChan.send(embed=embedGen("User Verified!",f"{studentInfo['role']} {studentInfo['name']} of pod-{studentInfo['pod']} has successfully verified and can now access the appropriate channels."))
-                    await message.channel.send(embed=embedGen("","", student=studentInfo))
-                    
-                    #This bit is for verification confirmation emails.
-                    #veriMail = create_mail('discordsupport@neuromatch.io',studentInfo['email'],'Discord Verification Completed.','You have successfully verified your identity on the NMA discord.')
-                    #send_mail(service,'me',veriMail)
-                
-                    print("Verification processed.\n")
-                 
-                except:
-                    await message.channel.send(embed=embedGen("Error!","That email does not appear to have been registered...\nPlease contact support@neuromatch.io or seek help in the #support channel."))
-                    await logChan.send(embed=embedGen("WARNING!!",f"{message.author} unsuccessfully tried to verify with the following message:\n{message.content}\nPlease reach out and investigate."))
-            else:
-                await message.channel.send(embed=embedGen("Error!","Sorry, that didn't work. Please be sure to *only* send your email."))
-        
-        #if message.channel == 'support-transcripts':
-            #Will be added once matching is finalized.            
-        
-        if message.content.startswith('--nma '):
+                        await message.delete() #Delete the message.
+                        
+                        #This bit is for verification confirmation emails.
+                        #veriMail = create_mail('discordsupport@neuromatch.io',studentInfo['email'],'Discord Verification Completed.','You have successfully verified your identity on the NMA discord.')
+                        #send_mail(service,'me',veriMail)
+                        
+                        print("Verification processed.\n")
+                        
+                    except: #If something goes wrong during verification...
+                        print("Verification failed.\n")
+                        #await message.add_reaction(discord.utils.get(guild.emojis, name='x'))
+                        suppRole = guild.get_role(867751492417355835)
+                        adminCat = discord.utils.get(guild.categories, name='administrative')
+                        newChan = await guild.create_text_channel(f"onboard-ticket-{str(message.author)[:5]}", category=adminCat) #Create a channel dedicated to the mucked-up verification.
+                        await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False) #Set up permissions so the channel is private.
+                        await newChan.set_permissions(message.author, view_channel=True, send_messages=True) #Grant the problem user access to the new channel.
+                        await newChan.send(embed=embedGen(f"{errCode}",f"{errMsg}...\nIf no one assists you within the next two hours, please contact support@neuromatch.io.")) #Send an error message.
+                        await logChan.send(embed=embedGen("Warning!",f"{message.author} unsuccessfully tried to verify with the following message:\n{message.content}\nPlease reach out and investigate @ #{newChan}.")) #Log the issue.'''
+                        await message.delete() #Delete the message.
+                        
+                else:
+                    await message.delete() #Delete the message.
             
-            cmder = guild.get_member(message.author.id)
-            
-            if any(x in cmder.roles for x in staffRoles) == True:
+            if message.content.startswith('--nma '): #If the message contains a command...
                 
-                cmd = message.content[6:]
+                cmder = guild.get_member(message.author.id) #Grab the discord user trying to use the command.
+                cmd = message.content[6:] #Trim the message.
                 
-                if cmd.startswith('auth'):
-                    await message.channel.send(embed=embedGen("Administrative Message.",f"Authorized user recognized: <@{message.author.id}>."))
-                    
-                if cmd.startswith('init'):  
+                if cmd.startswith('init'): #This command creates channel categories and pod channels for all pods and megapods in the bot's database.
                     print('Initializing server...\n')
                     for eachMega in podDict.keys():
+                        podDict[eachMega] = set(podDict[eachMega])
                         await guild.create_category(eachMega)
                         megaCat = discord.utils.get(guild.categories, name=eachMega)
                         
@@ -274,25 +368,25 @@ class nmaClient(discord.Client):
                                     await newChan.set_permissions(eachRole, view_channel=True, send_messages=True)
                             except:
                                 await logChan.send(embed=embedGen("Administrative Message.",f"Channel creation failed for {eachPod}."))
-                                    
-                    await logChan.send(embed=embedGen("Administrative Message.",f"SERVER INITIALIZATION COMPLETE."))     
-                    print ('Server initialization complete.')
-                    
-                if cmd.startswith('assign'):
+                                
+                        await logChan.send(embed=embedGen("Administrative Message.",f"SERVER INITIALIZATION COMPLETE."))     
+                        print ('Server initialization complete.')
+                        
+                elif cmd.startswith('assign'): #Grants given user access to all pod channels mentioned and their respective megapods.
                     cmdMsg = cmd.split(' ')
                     targUser = discord.utils.get(guild.members,id=int(cmdMsg[1]))
                     for eachPod in cmdMsg:
-                        if eachPod != targUser and eachPod != '--nma' and eachPod != 'assign':
+                        if eachPod != targUser and eachPod != cmdMsg[1] and eachPod != '--nma' and eachPod != 'assign':
                             try:
                                 podChan = discord.utils.get(guild.channels, name=eachPod)
                                 megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
                                 await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
                                 await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                                await logChan.send(embed=embedGen("Administrative Message",f"{targUser} was successfully assigned to {eachPod}."))
                             except:
-                                print('THAT WENT WRONG!')
-                                #await logChan.send(embed=embedGen("WARNING!",f"Could not add {targUser} to pod-{eachPod}."))
-                    
-                if cmd.startswith('unassign'):
+                                await logChan.send(embed=embedGen("WARNING!",f"Could not add {targUser} to pod-{eachPod}."))
+                                
+                elif cmd.startswith('unassign'): #Removes given user's access to all pod channels mentioned and their respective megapods.
                     cmdMsg = cmd.split(' ')
                     targUser = discord.utils.get(guild.members,id=int(cmdMsg[1]))
                     for eachPod in cmdMsg:
@@ -302,11 +396,29 @@ class nmaClient(discord.Client):
                                 megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
                                 await megaGen.set_permissions(targUser, view_channel=False,send_messages=False)
                                 await podChan.set_permissions(targUser, view_channel=False,send_messages=False)
+                                await logChan.send(embed=embedGen("Administrative Message",f"{targUser} was successfully removed from {eachPod}."))
                             except:
-                                print('THAT WENT WRONG!')
-                                #await logChan.send(embed=embedGen("WARNING!",f"Could not remove {targUser} from pod-{eachPod}."))
-                    
-                if cmd.startswith('debug'):
+                                await logChan.send(embed=embedGen("WARNING!",f"Could not remove {targUser} from pod-{eachPod}."))
+                
+                elif cmd.startswith('identify'):
+                    targUser = cmder
+                    queerChan = discord.utils.get(guild.channels, name='lgbtq-in-neuro')
+                    genderChan = discord.utils.get(guild.channels, name='gender-in-neuro')
+                    raceChan = discord.utils.get(guild.channels, name='race-in-neuro')
+                    if 'lgbtq' in cmd:
+                        await queerChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
+                    elif 'gender' in cmd:
+                        await genderChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
+                    elif 'race' in cmd:
+                        await raceChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                        await message.delete()
+                
+                elif cmd.startswith('auth'): #Debugging command that tells the user whether they are authorized to use administrative commands.
+                    await message.channel.send(embed=embedGen("Administrative Message.",f"Authorized user recognized: <@{message.author.id}>."))
+            
+                elif cmd.startswith('debug'): #Debug command that prints a bunch of variables in the console.
                     debugCont = {'Current message channel':message.channel,'chanDict':chanDict,'staffRoles':staffRoles,'podDict':podDict,'allPods':allPods,'allMegas':allMegas,'podCount':len(allPods)}
                     for allCont in debugCont.keys():
                         try:
@@ -315,7 +427,7 @@ class nmaClient(discord.Client):
                             print(f"Failed to grab {allCont}\n")
                     await logChan.send(embed=embedGen("Administrative Message.","Debugging requested. Check console log for details."))
                     
-                if cmd.startswith('repod'):
+                elif cmd.startswith('repod'): #Reassings the given user to the given pod.
                     cmdMsg = cmd.split(' ')
                     targUser = cmdMsg[1]
                     targMail = cmdMsg[2]
@@ -368,22 +480,7 @@ class nmaClient(discord.Client):
                     except:
                         await logChan.send(embed=embedGen("WARNING!","Repodding failed."))
                     
-                if cmd.startswith('tafix'):
-                    for eachChannel in guild.channels:
-                        if ' ' in str(eachChannel):
-                            continue
-                        else:                    
-                            for entity, overwrite in eachChannel.overwrites.items():
-                                if overwrite.manage_messages:
-                                    if str(entity) not in ['@everyone','NMA Staffers','Interactive Student','NMA Organizers','Robots']:
-                                        if all(guild.get_role(x) in entity.roles for x in [855972293486313530,855972293486313529,855972293472550914]) == False:
-                                            try:
-                                                await eachChannel.set_permissions(entity, view_channel=True,send_messages=True,manage_messages=True)
-                                                await logChan.send(embed=embedGen("Administrative Message",f"TA {entity} has regained access to pod {eachChannel}."))
-                                            except:
-                                                await logChan.send(embed=embedGen("Administrative Message",f"Could not grant TA {entity} to pod {eachChannel}."))
-                    
-                if cmd.startswith('podmerge'):
+                elif cmd.startswith('podmerge'): #Merges the two pods by deleting the first one mentioned and migrating its users to the second one mentioned.
                     cmdMsg = cmd.split(' ')
                     oldPod = discord.utils.get(guild.channels, name=cmdMsg[1])
                     newPod = discord.utils.get(guild.channels, name=cmdMsg[2])          
@@ -407,45 +504,23 @@ class nmaClient(discord.Client):
                             await oldPod.delete()
                         except:
                             await message.channel(embed=embedGen("Administrative Message.",f"Could not delete channel {cmdMsg[1]}."))
-                    
-                if cmd.startswith('testmail'):
-                    try:
-                        testMail = create_mail('discordsupport@neuromatch.io','kevin.rusch@neuromatch.io','Discord Test.','You have successfully sent an email.')
-                        send_mail(service,'me',testMail)
-                        await message.channel.send(embed=embedGen("Administrative Message.","Test email succeeded."))
-                    except:
-                        await message.channel.send(embed=embedGen("Administrative Message.","Test email failed."))
-                
-                if cmd.startswith('podcheck'):
-                    try:                
-                        rollCall = []
-                        for user in message.channel.members:
-                            if any(guild.get_role(x) in user.roles for x in [855972293486313530,855972293486313529,855972293472550914]) == True:
-                                continue
-                            else:
-                                if user.nick == None:
-                                    rollCall += [user]
-                                else:
-                                    rollCall += [user.nick]
-                        if len(rollCall) == 0:
-                            await message.channel.send(embed=embedGen("Administrative Message.",f"Uh-oh. The only people in this channel are administrators, support staff, and robots. If that's wrong, please open a tech ticket in #support."))
-                        else:
-                            await message.channel.send(embed=embedGen("Pod Rollcall.",f"TA {cmder} requested a rollcall.\nThe following members have verified for this pod:\n{rollcallGen(rollCall)}."))
-                    except:
-                        await message.channel.send(embed=embedGen("Administrative Message.",f"That didn't work. Please note that this command may only be used in pod channels."))
-                
-                if cmd.startswith('zoombatch'):
-                    zoomies = shClient.open("Zooms").sheet1
-                    zoomRecs = zoomies.get_all_records()
-                    dZoom = pd.DataFrame.from_dict(zoomRecs)
-                    for eachVal in dZoom['pod_name']:
-                        zoomLink = dZoom[dZoom['pod_name']==eachVal].index.values[0]
-                        zoomLink = dZoom.at[zoomLink, 'zoom_link']
-                        podChannel = discord.utils.get(guild.channels, name=eachVal.replace(' ', '-'))
-                        zoomRem = await podChannel.send(embed=embedGen("Zoom Reminder",f"The zoom link for {eachVal} is\n{zoomLink}"))
-                        await zoomRem.pin()
-                        
-                if cmd.startswith('leadfix'):
+                      
+                elif cmd.startswith('tafix'): #Grants all teaching assistants access to the appropriate pods should it somehow be lost.
+                    for eachChannel in guild.channels:
+                        if ' ' in str(eachChannel):
+                            continue
+                        else:                    
+                            for entity, overwrite in eachChannel.overwrites.items():
+                                if overwrite.manage_messages:
+                                    if str(entity) not in ['@everyone','NMA Staffers','Interactive Student','NMA Organizers','Robots']:
+                                        if all(guild.get_role(x) in entity.roles for x in [855972293486313530,855972293486313529,855972293472550914]) == False:
+                                            try:
+                                                await eachChannel.set_permissions(entity, view_channel=True,send_messages=True,manage_messages=True)
+                                                await logChan.send(embed=embedGen("Administrative Message",f"TA {entity} has regained access to pod {eachChannel}."))
+                                            except:
+                                                await logChan.send(embed=embedGen("Administrative Message",f"Could not grant TA {entity} to pod {eachChannel}."))
+                 
+                elif cmd.startswith('leadfix'): #Grants all lead TAs access to all the pod channels they supervise.
                     for eachMega in allMegas:
                         if eachMega != None and eachMega != 'None' and eachMega != '':
                             print(eachMega)
@@ -470,101 +545,21 @@ class nmaClient(discord.Client):
                                 await logChan.send(embed=embedGen("Administrative Message.",f"Error while trying to grant Lead TA {megaLead} access to all pods in the megapod {eachMega}."))
                             await logChan.send(embed=embedGen("Administrative Message.",f"Lead TA {megaLead} now has access to all pods in the megapod {eachMega}."))
                         else:
-                            continue
-                
-                if cmd.startswith('identify'):
-                    targUser = cmder
-                    queerChan = discord.utils.get(guild.channels, name='lgbtq-in-neuro')
-                    genderChan = discord.utils.get(guild.channels, name='gender-in-neuro')
-                    raceChan = discord.utils.get(guild.channels, name='race-in-neuro')
-                    if 'lgbtq' in cmd:
-                        await queerChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await message.delete()
-                    elif 'gender' in cmd:
-                        await genderChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await message.delete()
-                    elif 'race' in cmd:
-                        await raceChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await message.delete()
+                            continue    
                         
-                if cmd.startswith('secure'):
+                elif cmd.startswith('unlock'): #Gives interactive students access to all public channels.
                     for chanCat in [discord.utils.get(guild.categories, id=catID) for catID in [855972294898483226,855972295192477706,855972295192477710]]:
                         for eachChan in chanCat.channels:
-                            await eachChan.set_permissions(guild.default_role, view_channel=True,send_messages=False)
                             await eachChan.set_permissions(guild.get_role(855972293486313525), view_channel=True,send_messages=True)
-                
-                if cmd.startswith('update'):                    
-                    os.execv(sys.executable, ['python'] + sys.argv)
-                
-                if cmd.startswith('quit'):
-                    await logChan.send(embed=embedGen("Administrative Message.","Bot shutting down."))
-                    quit()
-                
-            elif any(guild.get_role(x) in cmder.roles for x in [855972293486313526,858144978555109387,858748990429855795]) == True:
-                cmd = message.content[6:]
-                
-                if cmd.startswith('identify'):
-                    targUser = cmder
-                    queerChan = discord.utils.get(guild.channels, name='lgbtq-in-neuro')
-                    genderChan = discord.utils.get(guild.channels, name='gender-in-neuro')
-                    raceChan = discord.utils.get(guild.channels, name='race-in-neuro')
-                    if 'lgbtq' in cmd:
-                        await queerChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await message.delete()
-                    elif 'gender' in cmd:
-                        await genderChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await message.delete()
-                    elif 'race' in cmd:
-                        await raceChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await message.delete()
-                
-                if cmd.startswith('podcheck'):
-                    
-                    try:                
-                        rollCall = []
-                        for user in message.channel.members:
-                            if any(guild.get_role(x) in user.roles for x in [855972293486313530,855972293486313529,855972293472550914]) == True:
-                                continue
-                            else:
-                                if user.nick == None:
-                                    rollCall += [user]
-                                else:
-                                    rollCall += [user.nick]
-                        if len(rollCall) == 0:
-                            await message.channel.send(embed=embedGen("Administrative Message.",f"Uh-oh. The only people in this channel are administrators, support staff, and robots. If that's wrong, please open a tech ticket in #support."))
-                        else:
-                            await message.channel.send(embed=embedGen("Pod Rollcall.",f"TA {cmder} requested a rollcall.\nThe following members have verified for this pod:\n{rollcallGen(rollCall)}."))
-                    except:
-                        await message.channel.send(embed=embedGen("Administrative Message.",f"That didn't work. Please note that this command may only be used in pod channels."))
-            else:     
-                cmd = message.content[6:]
-                
-                if cmd.startswith('identify'):
-                    targUser = cmder
-                    queerChan = discord.utils.get(guild.channels, name='lgbtq-in-neuro')
-                    genderChan = discord.utils.get(guild.channels, name='gender-in-neuro')
-                    raceChan = discord.utils.get(guild.channels, name='race-in-neuro')
-                    if 'lgbtq' in cmd:
-                        await queerChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await message.delete()
-                    elif 'gender' in cmd:
-                        await genderChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await message.delete()
-                    elif 'race' in cmd:
-                        await raceChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                        await message.delete()
-                
+            
                 else:
-                    await message.channel.send(embed=embedGen("Administrative Message.",f"Unauthorized user: <@{message.author.id}>."))
-
-    async def on_member_join(self, member):
-        embed=discord.Embed(title="Welcome to the Neuromatch Academy (CN) Discord Server!", url="https://neuromatch.io/", description="In order to sort you into the appropriate channels, please tell me the email address you used to sign up for Neuromatch Academy.", color=0x109319)
-        embed.set_thumbnail(url="https://i.imgur.com/SKdmY9F.png")
-        embed.set_footer(text="Need help? You can email support@neuromatch.io for assistance or check out our discord tutorial @ https://youtu.be/7oFfPbitReQ.")
-        await member.send(embed=embed)
+                    await message.channel.send(embed=embedGen("Warning!",f"Command {cmd.split(' ')[0]} does not exist."))
+                    
+        else:
+            return
 
 description = "The official NMA Discord Bot."
-intents = discord.Intents(messages=True, guilds=True, typing=True, members=True, presences=True)
+intents = discord.Intents(messages=True, guilds=True, typing=True, members=True, presences=True, reactions=True)
 
 client = nmaClient(intents=intents)
 client.run(discordToken)
