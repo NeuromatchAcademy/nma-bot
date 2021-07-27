@@ -163,8 +163,6 @@ class nmaClient(discord.Client):
         if user == self.user:
             return
         
-        await masterMsg.remove_reaction(reaction,user)
-        
         cmder = user
         
         reactionMap = {
@@ -185,7 +183,11 @@ class nmaClient(discord.Client):
             'unassign' : [['the target user\'s discord ID','any pods you want to remove them from (formatted a la \'sneaky-pandas sweet-spiders open-dogs\')'],["User:","Pods to remove them from:"]]
             }
         
+        print(str(reaction.message.channel)[:7])
+        
         if reaction.message == masterMsg and reaction.message.channel == masterChan:
+            
+            await masterMsg.remove_reaction(reaction,user)
             
             def check(m):
                 return m.author == cmder and m.channel == masterChan
@@ -221,6 +223,9 @@ class nmaClient(discord.Client):
                     await logChan.send(f"{user.mention}, invalid response. Command has been canceled.")
                 await reply.delete()
                 await lastPrompt.delete()
+        
+        elif reaction.emoji == '🔒' and str(reaction.message.channel)[:7] == 'onboard':
+            await reaction.message.channel.delete()
         
     async def on_message(self, message):
         
@@ -337,7 +342,8 @@ class nmaClient(discord.Client):
                         newChan = await guild.create_text_channel(f"onboard-ticket-{str(message.author)[:5]}", category=adminCat) #Create a channel dedicated to the mucked-up verification.
                         await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False) #Set up permissions so the channel is private.
                         await newChan.set_permissions(message.author, view_channel=True, send_messages=True) #Grant the problem user access to the new channel.
-                        await newChan.send(embed=embedGen(f"{errCode}",f"{errMsg}...\nIf no one assists you within the next two hours, please contact support@neuromatch.io.")) #Send an error message.
+                        onbTick = await newChan.send(embed=embedGen(f"{errCode}",f"{errMsg}...\nIf no one assists you within the next two hours, please contact support@neuromatch.io.\nClick the 🔒 reaction to close this ticket.")) #Send an error message.
+                        await onbTick.add_reaction('🔒')
                         await logChan.send(embed=embedGen("Warning!",f"{message.author} unsuccessfully tried to verify with the following message:\n{message.content}\nPlease reach out and investigate @ #{newChan}.")) #Log the issue.'''
                         await message.delete() #Delete the message.
                         
