@@ -277,7 +277,7 @@ class nmaClient(discord.Client):
                                 podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
                                 megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
                                 await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
-                                await podChan.send(embed=embedGen('Pod Announcement',f"{targUser} has joined the pod."))
+                                await podChan.send(embed=embedGen('Pod Announcement',f"{studentInfo['name']} has joined the pod."))
                                 await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
                         elif studentInfo['role'] == 'TA':
                             await targUser.add_roles(guild.get_role(867751492417355828))
@@ -288,7 +288,7 @@ class nmaClient(discord.Client):
                                 megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
                                 megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
                                 await podChan.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
-                                await podChan.send(embed=embedGen('Pod Announcement',f"{targUser} has joined the pod."))
+                                await podChan.send(embed=embedGen('Pod Announcement',f"{studentInfo['name']} has joined the pod."))
                                 await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
                                 await megaTA.set_permissions(targUser, view_channel=True,send_messages=True)
                         elif studentInfo['role'] == 'leadTA':
@@ -301,7 +301,7 @@ class nmaClient(discord.Client):
                                 megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
                                 megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
                                 await podChan.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
-                                await podChan.send(embed=embedGen('Pod Announcement',f"{targUser} has joined the pod."))
+                                await podChan.send(embed=embedGen('Pod Announcement',f"{studentInfo['name']} has joined the pod."))
                                 await megaGen.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
                                 await megaTA.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
                         elif studentInfo['role'] == 'projectTA':
