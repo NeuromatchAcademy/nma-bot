@@ -66,6 +66,7 @@ timezoneRoles = {
         'B' : 867751492408573985,
         'C' : 867751492408573984,
     }
+probDict = {}
 chanDict = {}
 masterEmb=discord.Embed(title="", url="https://www.neuromatch.io", description="Click on the appropriate reactions below to initiate a bot action. If that doesn't work, you can use the commands listed below as a back-up.", color=0xa400d1)
 masterEmb.set_author(name="Administrative Interface", url="https://www.neuromatch.io", icon_url="https://i.imgur.com/NwOh9XV.png")
@@ -335,16 +336,25 @@ class nmaClient(discord.Client):
                         print("Verification processed.\n")
                         
                     except: #If something goes wrong during verification...
+                        if message.author not in probDict.keys:
+                            probDict[message.author] = 1
+                        else:
+                            probDict[message.author] += 1
+                            if probDict[message.author] == 2:
+                                await logChan.send(embed=embedGen("Warning!",f"{message.author} has failed to verify twice now. Please investigate.")) #Log the issue.'''
+                            elif probDict[message.author] > 2:
+                                suppRole = guild.get_role(867751492417355835)
+                                adminCat = discord.utils.get(guild.categories, name='administrative')
+                                newChan = await guild.create_text_channel(f"onboard-ticket-{str(message.author)[:5]}", category=adminCat) #Create a channel dedicated to the mucked-up verification.
+                                await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False) #Set up permissions so the channel is private.
+                                await newChan.set_permissions(message.author, view_channel=True, send_messages=True) #Grant the problem user access to the new channel.
+                                onbTick = await newChan.send(embed=embedGen(f"{errCode}",f"{errMsg}...\nIf no one assists you within the next two hours, please contact support@neuromatch.io.\nClick the 🔒 reaction to close this ticket.")) #Send an error message.
+                                await onbTick.add_reaction('🔒')
+                                await logChan.send(embed=embedGen("Warning!",f"{message.author} unsuccessfully tried to verify with the following message:\n{message.content}\nPlease reach out and investigate @ #{newChan}.")) #Log the issue.'''
+                                probDict[message.author] = -9
+                                
                         print("Verification failed.\n")
                         #await message.add_reaction(discord.utils.get(guild.emojis, name='x'))
-                        suppRole = guild.get_role(867751492417355835)
-                        adminCat = discord.utils.get(guild.categories, name='administrative')
-                        newChan = await guild.create_text_channel(f"onboard-ticket-{str(message.author)[:5]}", category=adminCat) #Create a channel dedicated to the mucked-up verification.
-                        await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False) #Set up permissions so the channel is private.
-                        await newChan.set_permissions(message.author, view_channel=True, send_messages=True) #Grant the problem user access to the new channel.
-                        onbTick = await newChan.send(embed=embedGen(f"{errCode}",f"{errMsg}...\nIf no one assists you within the next two hours, please contact support@neuromatch.io.\nClick the 🔒 reaction to close this ticket.")) #Send an error message.
-                        await onbTick.add_reaction('🔒')
-                        await logChan.send(embed=embedGen("Warning!",f"{message.author} unsuccessfully tried to verify with the following message:\n{message.content}\nPlease reach out and investigate @ #{newChan}.")) #Log the issue.'''
                         await message.delete() #Delete the message.
                         
                 else:
@@ -483,6 +493,69 @@ class nmaClient(discord.Client):
                             await podChan.set_permissions(targUser, view_channel=True,send_messages=True, manage_messages=True)
                             await targUser.add_roles(guild.get_role(855972293486313526))
                         
+                        if studentInfo['role'] == 'observer':
+                            await targUser.add_roles(guild.get_role(867751492417355827))
+                        elif studentInfo['role'] == 'student':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                            if studentInfo['pod'] != 'None':
+                                podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
+                                megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
+                                await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                                await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
+                        elif studentInfo['role'] == 'TA':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355829))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                            if studentInfo['pod'] != 'None':
+                                podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
+                                megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
+                                megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
+                                await podChan.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                                await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
+                                await megaTA.set_permissions(targUser, view_channel=True,send_messages=True)
+                        elif studentInfo['role'] == 'leadTA':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355829))
+                            await targUser.add_roles(guild.get_role(867751492417355830))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                            if studentInfo['pod'] != 'None':
+                                podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
+                                megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
+                                megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
+                                await podChan.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                                await megaGen.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                                await megaTA.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                        elif studentInfo['role'] == 'projectTA':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355829))
+                            await targUser.add_roles(guild.get_role(867751492417355831))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        elif studentInfo['role'] == 'consultant':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(868124117067509770))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        elif studentInfo['role'] == 'mentor':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355832))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        elif studentInfo['role'] == 'speaker':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355833))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        elif studentInfo['role'] == 'sponsor':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355834))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        elif studentInfo['role'] == 'support':
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355835))
+                            await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                        else:
+                            errCode = 'Invalid Role'
+                            errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
+                            raise ValueError
+                        
                         await logChan.send(embed=embedGen("User Repodded!",f"{studentInfo['role']} {studentInfo['name']} has been successfully moved to pod-{studentInfo['pod']} and can now access the appropriate channels."))
                     except:
                         await logChan.send(embed=embedGen("WARNING!","Repodding failed."))
@@ -495,7 +568,7 @@ class nmaClient(discord.Client):
                     staffCount = 0
                     totalCount = 0
                     for user in oldPod.members:
-                        if any(guild.get_role(x) in user.roles for x in [855972293486313530,855972293486313529,855972293472550914]) == True:
+                        if any(guild.get_role(x) in user.roles for x in [867751492417355836,867751492417355835,867751492408573988]) == True:
                             staffCount += 1
                             continue
                         else:
@@ -536,7 +609,7 @@ class nmaClient(discord.Client):
                             megaTA = discord.utils.get(guild.channels, name=f"{megaGen}-general")
                             megaGen = discord.utils.get(guild.channels, name=f"{megaGen}-ta-chat")
                             for user in megaGen.members:
-                                if guild.get_role(858144978555109387) in user.roles:
+                                if guild.get_role(867751492417355830) in user.roles:
                                     megaLead = user
                                 else:
                                     continue
