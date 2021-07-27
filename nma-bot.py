@@ -606,7 +606,7 @@ class nmaClient(discord.Client):
                                                 await logChan.send(embed=embedGen("Administrative Message",f"Could not grant TA {entity} to pod {eachChannel}."))
                  
                 elif cmd.startswith('leadfix'): #Grants all lead TAs access to all the pod channels they supervise.
-                    for eachMega in allMegas:
+                    for eachMega in set(allMegas):
                         if eachMega != None and eachMega != 'None' and eachMega != '':
                             print(eachMega)
                             megaLead = "NOT FOUND"
@@ -618,16 +618,16 @@ class nmaClient(discord.Client):
                                     megaLead = user
                                 else:
                                     continue
-                            try:
-                                for eachPod in podDict[eachMega]:
-                                    try:
-                                        podChan = discord.utils.get(guild.channels, name=eachPod)
-                                        await podChan.set_permissions(megaLead, view_channel=True,send_messages=True)
-                                        await megaTA.set_permissions(megaLead, view_channel=True,send_messages=True) 
-                                    except:
+                            for eachPod in set(podDict[eachMega]):
+                                try:
+                                    podChan = discord.utils.get(guild.channels, name=eachPod)
+                                    await podChan.set_permissions(megaLead, view_channel=True,send_messages=True)
+                                    await megaTA.set_permissions(megaLead, view_channel=True,send_messages=True) 
+                                except:
+                                    if megaLeage == "NOT FOUND":
+                                        await logChan.send(embed=embedGen("Administrative Message.",f"No lead TA found for pod-{podChan}."))
+                                    else:
                                         await logChan.send(embed=embedGen("Administrative Message.",f"Could not grant Lead TA {megaLead} access to pod-{podChan}."))
-                            except:
-                                await logChan.send(embed=embedGen("Administrative Message.",f"Error while trying to grant Lead TA {megaLead} access to all pods in the megapod {eachMega}."))
                             await logChan.send(embed=embedGen("Administrative Message.",f"Lead TA {megaLead} now has access to all pods in the megapod {eachMega}."))
                         else:
                             continue    
