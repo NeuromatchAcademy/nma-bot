@@ -628,7 +628,6 @@ class nmaClient(discord.Client):
                                         await logChan.send(embed=embedGen("Administrative Message.",f"No lead TA found for pod-{podChan}."))
                                     else:
                                         await logChan.send(embed=embedGen("Administrative Message.",f"Could not grant Lead TA {megaLead} access to pod-{podChan}."))
-                            await logChan.send(embed=embedGen("Administrative Message.",f"Lead TA {megaLead} now has access to all pods in the megapod {eachMega}."))
                         else:
                             continue    
                         
