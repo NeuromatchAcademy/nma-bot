@@ -336,13 +336,13 @@ class nmaClient(discord.Client):
                         print("Verification processed.\n")
                         
                     except: #If something goes wrong during verification...
-                        if message.author not in probDict.keys:
-                            probDict[message.author] = 1
+                        if message.author.id not in probDict.keys:
+                            probDict[message.author.id)] = 1
                         else:
-                            probDict[message.author] += 1
-                            if probDict[message.author] == 2:
+                            probDict[message.author.id] += 1
+                            if probDict[message.author.id] == 2:
                                 await logChan.send(embed=embedGen("Warning!",f"{message.author} has failed to verify twice now. Please investigate.")) #Log the issue.'''
-                            elif probDict[message.author] > 2:
+                            elif probDict[message.author.id] > 2:
                                 suppRole = guild.get_role(867751492417355835)
                                 adminCat = discord.utils.get(guild.categories, name='administrative')
                                 newChan = await guild.create_text_channel(f"onboard-ticket-{str(message.author)[:5]}", category=adminCat) #Create a channel dedicated to the mucked-up verification.
@@ -351,7 +351,7 @@ class nmaClient(discord.Client):
                                 onbTick = await newChan.send(embed=embedGen(f"{errCode}",f"{errMsg}...\nIf no one assists you within the next two hours, please contact support@neuromatch.io.\nClick the 🔒 reaction to close this ticket.")) #Send an error message.
                                 await onbTick.add_reaction('🔒')
                                 await logChan.send(embed=embedGen("Warning!",f"{message.author} unsuccessfully tried to verify with the following message:\n{message.content}\nPlease reach out and investigate @ #{newChan}.")) #Log the issue.'''
-                                probDict[message.author] = -9
+                                probDict[message.author.id] = -9
                                 
                         print("Verification failed.\n")
                         #await message.add_reaction(discord.utils.get(guild.emojis, name='x'))
