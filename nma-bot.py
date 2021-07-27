@@ -96,11 +96,11 @@ def embedGen(title,description,student = None):
         pod = student['pod']
         embed=discord.Embed(title=student['name'], url="https://neuromatch.io/", description=f'Welcome to Neuromatch Academy, {name[0]}!\nYou have been assigned to {pod}.', color=0x109319)
         embed.set_thumbnail(url="https://i.imgur.com/hAyp5Vr.png")
-        embed.set_footer(text="Need help? You can email support@neuromatch.io or check out our discord tutorial @ https://youtu.be/7oFfPbitReQ.")
+        embed.set_footer(text="Need help? You can email support@neuromatch.io or open a ticket in #support.")
     else:
         embed=discord.Embed(title=title, url="https://neuromatch.io/", description=description, color=0x109319)
         #embed.set_thumbnail(url="https://i.imgur.com/hAyp5Vr.png")
-        embed.set_footer(text="Need help? You can email support@neuromatch.io or check out our discord tutorial @ https://youtu.be/7oFfPbitReQ.")
+        embed.set_footer(text="Need help? You can email support@neuromatch.io or open a ticket in #support.")
     return embed            
 
 def rollcallGen(roll):
