@@ -627,6 +627,24 @@ class nmaClient(discord.Client):
                         else:
                             continue    
                         
+                elif cmd.startswith('podcheck'):
+                    try:                
+                        rollCall = []
+                        for user in message.channel.members:
+                            if any(guild.get_role(x) in user.roles for x in [867751492417355836,867751492417355835,867751492408573988]) == True:
+                                continue
+                            else:
+                                if user.nick == None:
+                                    rollCall += [user]
+                                else:
+                                    rollCall += [user.nick]
+                        if len(rollCall) == 0:
+                            await message.channel.send(embed=embedGen("Administrative Message.",f"Uh-oh. The only people in this channel are administrators, support staff, and robots. If that's wrong, please open a tech ticket in #support."))
+                        else:
+                            await message.channel.send(embed=embedGen("Pod Rollcall.",f"TA {cmder} requested a rollcall.\nThe following members have verified for this pod:\n{rollcallGen(rollCall)}."))
+                    except:
+                        await message.channel.send(embed=embedGen("Administrative Message.",f"That didn't work. Please note that this command may only be used in pod channels."))
+                        
                 elif cmd.startswith('unlock'): #Gives interactive students access to all public channels.
                     for chanCat in [discord.utils.get(guild.categories, id=catID) for catID in [855972294898483226,855972295192477706,855972295192477710]]:
                         for eachChan in chanCat.channels:
