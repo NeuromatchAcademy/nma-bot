@@ -153,6 +153,12 @@ class nmaClient(discord.Client):
         for eachPod in masterSheet['pod']:
             podDict[df.at[df[df['pod']==eachPod].index.values[0],'megapod']] += [eachPod.replace(" ", "-")]
             
+        async for message in masterChan.history(limit=200):
+            await message.delete()
+            
+        async for message in veriChan.history(limit=200):
+            await message.delete()
+            
         print('\n==============')
         print('Logged in as')
         print(self.user.name)
@@ -183,8 +189,6 @@ class nmaClient(discord.Client):
             'assign' : [['the target user\'s discord ID','any pods you want to add them to (formatted a la \'sneaky-pandas sweet-spiders open-dogs\')'],["User:","Pods to add them to:"]],
             'unassign' : [['the target user\'s discord ID','any pods you want to remove them from (formatted a la \'sneaky-pandas sweet-spiders open-dogs\')'],["User:","Pods to remove them from:"]]
             }
-        
-        print(str(reaction.message.channel)[:7])
         
         if reaction.message == masterMsg and reaction.message.channel == masterChan:
             
