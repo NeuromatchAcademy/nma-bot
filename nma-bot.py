@@ -630,7 +630,7 @@ class nmaClient(discord.Client):
                             for eachPod in set(podDict[eachMega]):
                                 try:
                                     podChan = discord.utils.get(guild.channels, name=eachPod)
-                                    await podChan.set_permissions(megaLead, view_channel=True,send_messages=True)
+                                    await podChan.set_permissions(megaLead, view_channel=True,send_messages=True,manage_messages=True)
                                     await megaTA.set_permissions(megaLead, view_channel=True,send_messages=True) 
                                 except:
                                     if megaLead == "NOT FOUND":
