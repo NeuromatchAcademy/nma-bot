@@ -267,7 +267,8 @@ class nmaClient(discord.Client):
                             }
                         studentInfo['pod'] = studentInfo['pod'].replace(' ', '-')
                         targUser = guild.get_member(message.author.id)
-                        await targUser.edit(nick=studentInfo['name'])    
+                        await targUser.edit(nick=studentInfo['name'])
+                        await targUser.add_roles(guild.get_role(867751492408573983))
                         if studentInfo['role'] == 'observer':
                             await targUser.add_roles(guild.get_role(867751492417355827))
                         elif studentInfo['role'] == 'student':
