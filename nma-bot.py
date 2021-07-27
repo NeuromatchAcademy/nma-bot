@@ -336,7 +336,7 @@ class nmaClient(discord.Client):
                         print("Verification processed.\n")
                         
                     except: #If something goes wrong during verification...
-                        if message.author.id not in probDict.keys:
+                        if message.author.id not in probDict.keys():
                             probDict[message.author.id] = 1
                         else:
                             probDict[message.author.id] += 1
