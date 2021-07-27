@@ -624,7 +624,7 @@ class nmaClient(discord.Client):
                                     await podChan.set_permissions(megaLead, view_channel=True,send_messages=True)
                                     await megaTA.set_permissions(megaLead, view_channel=True,send_messages=True) 
                                 except:
-                                    if megaLeage == "NOT FOUND":
+                                    if megaLead == "NOT FOUND":
                                         await logChan.send(embed=embedGen("Administrative Message.",f"No lead TA found for pod-{podChan}."))
                                     else:
                                         await logChan.send(embed=embedGen("Administrative Message.",f"Could not grant Lead TA {megaLead} access to pod-{podChan}."))
