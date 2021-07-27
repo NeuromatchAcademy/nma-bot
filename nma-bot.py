@@ -277,6 +277,7 @@ class nmaClient(discord.Client):
                                 podChan = discord.utils.get(guild.channels, name=studentInfo['pod'])
                                 megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
                                 await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                                await podChan.send(embed=embedGen('Pod Announcement',f"{targUser} has joined the pod."))
                                 await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
                         elif studentInfo['role'] == 'TA':
                             await targUser.add_roles(guild.get_role(867751492417355828))
@@ -287,6 +288,7 @@ class nmaClient(discord.Client):
                                 megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
                                 megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
                                 await podChan.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                                await podChan.send(embed=embedGen('Pod Announcement',f"{targUser} has joined the pod."))
                                 await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
                                 await megaTA.set_permissions(targUser, view_channel=True,send_messages=True)
                         elif studentInfo['role'] == 'leadTA':
@@ -299,6 +301,7 @@ class nmaClient(discord.Client):
                                 megaGen = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-general")
                                 megaTA = discord.utils.get(guild.channels, name=f"{studentInfo['megapod'].replace(' ', '-')}-ta-chat")
                                 await podChan.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
+                                await podChan.send(embed=embedGen('Pod Announcement',f"{targUser} has joined the pod."))
                                 await megaGen.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
                                 await megaTA.set_permissions(targUser, view_channel=True,send_messages=True,manage_messages=True)
                         elif studentInfo['role'] == 'projectTA':
@@ -371,28 +374,31 @@ class nmaClient(discord.Client):
                 cmd = message.content[6:] #Trim the message.
                 
                 if cmd.startswith('init'): #This command creates channel categories and pod channels for all pods and megapods in the bot's database.
-                    print('Initializing server...\n')
-                    for eachMega in podDict.keys():
-                        podDict[eachMega] = set(podDict[eachMega])
-                        await guild.create_category(eachMega)
-                        megaCat = discord.utils.get(guild.categories, name=eachMega)
-                        
-                        newChan = await guild.create_text_channel(f"{eachMega.replace(' ','-')}-general", category=megaCat)
-                        await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False)
-                        newChan = await guild.create_text_channel(f"{eachMega.replace(' ','-')}-ta-chat", category=megaCat)
-                        await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False)
-                        
-                        for eachPod in podDict[eachMega]:
-                            try:
-                                newChan = await guild.create_text_channel(f"{eachPod}", category=megaCat)
-                                await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False)
-                                for eachRole in staffRoles:
-                                    await newChan.set_permissions(eachRole, view_channel=True, send_messages=True)
-                            except:
-                                await logChan.send(embed=embedGen("Administrative Message.",f"Channel creation failed for {eachPod}."))
-                                
-                        await logChan.send(embed=embedGen("Administrative Message.",f"SERVER INITIALIZATION COMPLETE."))     
-                        print ('Server initialization complete.')
+                    if message.author.id == 126473945787531264:
+                        print('Initializing server...\n')
+                        for eachMega in podDict.keys():
+                            podDict[eachMega] = set(podDict[eachMega])
+                            await guild.create_category(eachMega)
+                            megaCat = discord.utils.get(guild.categories, name=eachMega)
+                            
+                            newChan = await guild.create_text_channel(f"{eachMega.replace(' ','-')}-general", category=megaCat)
+                            await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False)
+                            newChan = await guild.create_text_channel(f"{eachMega.replace(' ','-')}-ta-chat", category=megaCat)
+                            await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False)
+                            
+                            for eachPod in podDict[eachMega]:
+                                try:
+                                    newChan = await guild.create_text_channel(f"{eachPod}", category=megaCat)
+                                    await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False)
+                                    for eachRole in staffRoles:
+                                        await newChan.set_permissions(eachRole, view_channel=True, send_messages=True)
+                                except:
+                                    await logChan.send(embed=embedGen("Administrative Message.",f"Channel creation failed for {eachPod}."))
+                                    
+                            await logChan.send(embed=embedGen("Administrative Message.",f"SERVER INITIALIZATION COMPLETE."))     
+                            print ('Server initialization complete.')
+                        else:
+                            await message.channel.send(embed=embedGen("Administrative Message.",f"Only Kevin can do this."))  
                         
                 elif cmd.startswith('assign'): #Grants given user access to all pod channels mentioned and their respective megapods.
                     cmdMsg = cmd.split(' ')
@@ -404,6 +410,7 @@ class nmaClient(discord.Client):
                                 megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
                                 await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
                                 await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                                await podChan.send(embed=embedGen('Pod Announcement',f"{targUser} has joined the pod."))
                                 await logChan.send(embed=embedGen("Administrative Message",f"{targUser} was successfully assigned to {eachPod}."))
                             except:
                                 await logChan.send(embed=embedGen("WARNING!",f"Could not add {targUser} to pod-{eachPod}."))
@@ -418,6 +425,7 @@ class nmaClient(discord.Client):
                                 megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
                                 await megaGen.set_permissions(targUser, view_channel=False,send_messages=False)
                                 await podChan.set_permissions(targUser, view_channel=False,send_messages=False)
+                                await podChan.send(embed=embedGen('Pod Announcement',f"{targUser} has left the pod."))
                                 await logChan.send(embed=embedGen("Administrative Message",f"{targUser} was successfully removed from {eachPod}."))
                             except:
                                 await logChan.send(embed=embedGen("WARNING!",f"Could not remove {targUser} from pod-{eachPod}."))
