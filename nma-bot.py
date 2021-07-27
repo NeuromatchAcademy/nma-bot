@@ -131,13 +131,20 @@ class nmaClient(discord.Client):
         logChan = discord.utils.get(guild.channels, name='bot-log')
         
         masterChan = discord.utils.get(guild.channels, name='command-center')
+        veriChan = discord.utils.get(guild.channels, name='verify')        
+            
+        async for message in masterChan.history(limit=200):
+            await message.delete()
+            
+        async for message in veriChan.history(limit=200):
+            await message.delete()
+            
         masterMsg = await masterChan.send(embed=masterEmb)
-        reactions = ["👥","🫂","🕵️","👀","⚡","🌪️"]
+        reactions = ["👥","🫂","⚡","🌪️"]
         
         for eachReaction in reactions:
             await masterMsg.add_reaction(eachReaction)
         
-        veriChan = discord.utils.get(guild.channels, name='verify')
         
         await veriChan.send(embed=embedGen("Welcome to the Neuromatch Academy DL Server!","To unlock access to all channels, please copy and paste the email address with which you log into the Neuromatch portal into this chat."))
         
@@ -152,12 +159,6 @@ class nmaClient(discord.Client):
             podDict[eachMega] = []
         for eachPod in masterSheet['pod']:
             podDict[df.at[df[df['pod']==eachPod].index.values[0],'megapod']] += [eachPod.replace(" ", "-")]
-            
-        async for message in masterChan.history(limit=200):
-            await message.delete()
-            
-        async for message in veriChan.history(limit=200):
-            await message.delete()
             
         print('\n==============')
         print('Logged in as')
