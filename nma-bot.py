@@ -321,6 +321,7 @@ class nmaClient(discord.Client):
                             raise ValueError
                         
                         await message.delete() #Delete the message.
+                        await logChan.send(embed=embedGen("Administrative Message",f"{message.author} successfully verified.")) #Log the issue.'''
                         
                         #This bit is for verification confirmation emails.
                         #veriMail = create_mail('discordsupport@neuromatch.io',studentInfo['email'],'Discord Verification Completed.','You have successfully verified your identity on the NMA discord.')
