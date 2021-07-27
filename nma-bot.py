@@ -337,7 +337,7 @@ class nmaClient(discord.Client):
                         
                     except: #If something goes wrong during verification...
                         if message.author.id not in probDict.keys:
-                            probDict[message.author.id)] = 1
+                            probDict[message.author.id] = 1
                         else:
                             probDict[message.author.id] += 1
                             if probDict[message.author.id] == 2:
@@ -631,6 +631,9 @@ class nmaClient(discord.Client):
                     for chanCat in [discord.utils.get(guild.categories, id=catID) for catID in [855972294898483226,855972295192477706,855972295192477710]]:
                         for eachChan in chanCat.channels:
                             await eachChan.set_permissions(guild.get_role(855972293486313525), view_channel=True,send_messages=True)
+            
+                elif cmd.startswith('quit'):
+                    quit()
             
                 else:
                     await message.channel.send(embed=embedGen("Warning!",f"Command {cmd.split(' ')[0]} does not exist."))
