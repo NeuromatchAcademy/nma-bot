@@ -68,6 +68,7 @@ timezoneRoles = {
     }
 probDict = {}
 chanDict = {}
+onbTicks = []
 masterEmb=discord.Embed(title="", url="https://www.neuromatch.io", description="Click on the appropriate reactions below to initiate a bot action. If that doesn't work, you can use the commands listed below as a back-up.", color=0xa400d1)
 masterEmb.set_author(name="Administrative Interface", url="https://www.neuromatch.io", icon_url="https://i.imgur.com/NwOh9XV.png")
 masterEmb.add_field(name="Reaction-Based Interface", value="To repod a user, click :busts_in_silhouette:.\nTo merge two pods, click :people_hugging:\nTo assign a user to multiple pods, click :zap:.\nTo unassign a user from multiple pods, click :cloud_tornado:.", inline=False)
@@ -230,9 +231,6 @@ class nmaClient(discord.Client):
                 await reply.delete()
                 await lastPrompt.delete()
         
-        elif reaction.emoji == '🔒' and str(reaction.message.channel)[:7] == 'onboard':
-            await reaction.message.channel.delete()
-        
     async def on_message(self, message):
         
         if message.author != self.user or message.content.startswith('--csrun '):
@@ -267,6 +265,8 @@ class nmaClient(discord.Client):
                             }
                         studentInfo['pod'] = studentInfo['pod'].replace(' ', '-')
                         targUser = guild.get_member(message.author.id)
+                        if len(studentInfo['name']) >= 32:
+                            studentInfo['name'] = studentInfo['name'][0:3]
                         await targUser.edit(nick=studentInfo['name'])
                         await targUser.add_roles(guild.get_role(867751492408573983))
                         if studentInfo['role'] == 'observer':
@@ -357,8 +357,13 @@ class nmaClient(discord.Client):
                                 newChan = await guild.create_text_channel(f"onboard-ticket-{str(message.author)[:5]}", category=adminCat) #Create a channel dedicated to the mucked-up verification.
                                 await newChan.set_permissions(guild.default_role, view_channel=False, send_messages=False) #Set up permissions so the channel is private.
                                 await newChan.set_permissions(message.author, view_channel=True, send_messages=True) #Grant the problem user access to the new channel.
-                                onbTick = await newChan.send(embed=embedGen(f"{errCode}",f"{errMsg}...\nIf no one assists you within the next two hours, please contact support@neuromatch.io.\nClick the 🔒 reaction to close this ticket.")) #Send an error message.
-                                await onbTick.add_reaction('🔒')
+                                
+                                def check(reaction, user):
+                                    return str(reaction.emoji) == '🔒' and str(reaction.message.channel)[:7] == 'onboard'
+                        
+                                errIni = await newChan.send(embed=embedGen(f"{errCode}",f"{errMsg}...\nIf no one assists you within the next two hours, please contact support@neuromatch.io.\nClick the 🔒 reaction to close this ticket.")) #Send an error message.
+                                await errIni.add_reaction('🔒')
+                                reaction, user = await client.wait_for('reaction_add', check=check)
                                 await logChan.send(embed=embedGen("Warning!",f"{message.author} unsuccessfully tried to verify with the following message:\n{message.content}\nPlease reach out and investigate @ #{newChan}.")) #Log the issue.'''
                                 probDict[message.author.id] = -9
                                 
