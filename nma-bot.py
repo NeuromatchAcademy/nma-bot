@@ -664,8 +664,11 @@ class nmaClient(discord.Client):
                     for eachVal in dZoom['pod_name']:
                         zoomLink = dZoom[dZoom['pod_name']==eachVal].index.values[0]
                         zoomLink = dZoom.at[zoomLink, 'zoom_link']
-                        podChannel = discord.utils.get(guild.channels, name=eachVal.replace(' ', '-'))
-                        zoomRem = await podChannel.send(embed=embedGen("Zoom Reminder",f"The zoom link for {eachVal} is\n{zoomLink}"))
+                        podChannel = discord.utils.get(guild.channels, name=eachVal.replace(' ', '-'))                        
+                        async for eaMessage in podChannel.history(limit=10):
+                            if eaMessage.author == self.user:
+                                await eaMessage.delete()
+                        zoomRem = await podChannel.send(embed=embedGen("Zoom Reminder",f"The zoom link for {eachVal} is\n{zoomLink}\n\nNew to discord? Read our guide: https://docs.google.com/document/d/1a5l6QVhuqYnwFR090yDnQGhHSA3u2IEwOs0JZwkfyLo/edit?usp=sharing"))
                         await zoomRem.pin()
                         
                 elif cmd.startswith('unlock'): #Gives interactive students access to all public channels.
