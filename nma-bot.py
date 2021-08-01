@@ -338,6 +338,7 @@ class nmaClient(discord.Client):
                         if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) == True:
                             print(f"{message.author} is a staffer, so not deleting the message.")
                         else:
+                            await logChan.send(embed=embedGen("Debug...",f"{message.author}\n{message.author.roles}\n{any(x in message.author.roles for x in [867751492417355836,867751492417355835])}.")) #Log the issue.'''
                             await message.delete() #Delete the message.
                         await logChan.send(embed=embedGen("Administrative Message",f"{message.author} successfully verified.")) #Log the issue.'''
                         
@@ -375,6 +376,7 @@ class nmaClient(discord.Client):
                         if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) == True:
                             print(f"{message.author} is a staffer, so not deleting the message.")
                         else:
+                            await logChan.send(embed=embedGen("Debug...",f"{message.author}\n{message.author.roles}\n{any(x in message.author.roles for x in [867751492417355836,867751492417355835])}.")) #Log the issue.'''
                             await message.delete() #Delete the message.
                         
                 else:
