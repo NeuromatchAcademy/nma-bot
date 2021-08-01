@@ -335,9 +335,9 @@ class nmaClient(discord.Client):
                             errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
                             raise ValueError
                         
-                        if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) == False:
-                            print(message.author.roles)
-                            print(any(x in message.author.roles for x in [867751492417355836,867751492417355835]))
+                        if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) == True:
+                            print(f"{message.author} is a staffer, so not deleting the message.")
+                        else:
                             await message.delete() #Delete the message.
                         await logChan.send(embed=embedGen("Administrative Message",f"{message.author} successfully verified.")) #Log the issue.'''
                         
@@ -372,9 +372,9 @@ class nmaClient(discord.Client):
                                 
                         print("Verification failed.\n")
                         #await message.add_reaction(discord.utils.get(guild.emojis, name='x'))
-                        if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) == False:
-                            print(message.author.roles)
-                            print(any(x in message.author.roles for x in [867751492417355836,867751492417355835]))
+                        if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) == True:
+                            print(f"{message.author} is a staffer, so not deleting the message.")
+                        else:
                             await message.delete() #Delete the message.
                         
                 else:
