@@ -249,8 +249,8 @@ class nmaClient(discord.Client):
                     #await message.delete() #Delete the message.
                     
                     print("Student attempting to verify...")
-                    errCode = 'Email not registered.'
-                    errMsg = f'The email in question could not be found.'
+                    errCode = 'Verification unsuccessful'
+                    errMsg = f'The target user submitted an email that could not be found in the database.'
                     
                     try:
                         cellInfo = df[df['email']==message.content].index.values[0]
@@ -335,7 +335,7 @@ class nmaClient(discord.Client):
                             errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
                             raise ValueError
                         
-                        if message.author.id != 126473945787531264:
+                        if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) == False:
                             await message.delete() #Delete the message.
                         await logChan.send(embed=embedGen("Administrative Message",f"{message.author} successfully verified.")) #Log the issue.'''
                         
@@ -370,7 +370,7 @@ class nmaClient(discord.Client):
                                 
                         print("Verification failed.\n")
                         #await message.add_reaction(discord.utils.get(guild.emojis, name='x'))
-                        if message.author.id != 126473945787531264:
+                        if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) == False:
                             await message.delete() #Delete the message.
                         
                 else:
@@ -561,7 +561,7 @@ class nmaClient(discord.Client):
                             errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
                             raise ValueError
                         
-                        await logChan.send(embed=embedGen("User Repodded!",f"{studentInfo['role']} {studentInfo['name']} has been successfully moved to pod-{studentInfo['pod']} and can now access the appropriate channels."))
+                        await logChan.send(embed=embedGen("User Repodded!",f"{studentInfo['role']} {studentInfo['name']} has been successfully moved to {targPod} and can now access the appropriate channels."))
                         
                     except:
                         await logChan.send(embed=embedGen("WARNING!","Repodding failed."))
