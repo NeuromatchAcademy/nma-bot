@@ -335,7 +335,12 @@ class nmaClient(discord.Client):
                             errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
                             raise ValueError
                         
-                        if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) != True:
+                        if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) == True:
+                            print(message.author)
+                            print(message.author.id)
+                            print(message.author.roles)
+                            print(any(x in message.author.roles for x in [867751492417355836,867751492417355835]))
+                        else:
                             await message.delete() #Delete the message.
                         await logChan.send(embed=embedGen("Administrative Message",f"{message.author} successfully verified.")) #Log the issue.'''
                         
@@ -369,12 +374,22 @@ class nmaClient(discord.Client):
                                 probDict[message.author.id] = -9
                                 
                         print("Verification failed.\n")
-                        #await message.add_reaction(discord.utils.get(guild.emojis, name='x'))
-                        if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) != True:
+                            #await message.add_reaction(discord.utils.get(guild.emojis, name='x'))
+                        if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) == True:
+                            print(message.author)
+                            print(message.author.id)
+                            print(message.author.roles)
+                            print(any(x in message.author.roles for x in [867751492417355836,867751492417355835]))
+                        else:
                             await message.delete() #Delete the message.await message.delete() #Delete the message.
                         
                 else:
-                    if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) != True:
+                    if any(x in message.author.roles for x in [867751492417355836,867751492417355835]) == True:
+                        print(message.author)
+                        print(message.author.id)
+                        print(message.author.roles)
+                        print(any(x in message.author.roles for x in [867751492417355836,867751492417355835]))
+                    else:
                         await message.delete() #Delete the message.await message.delete() #Delete the message.
             
             if message.content.startswith('--nma '): #If the message contains a command...
