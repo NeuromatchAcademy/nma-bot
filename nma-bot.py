@@ -335,7 +335,8 @@ class nmaClient(discord.Client):
                             errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
                             raise ValueError
                         
-                        await message.delete() #Delete the message.
+                        if message.author.id != 126473945787531264:
+                            await message.delete() #Delete the message.
                         await logChan.send(embed=embedGen("Administrative Message",f"{message.author} successfully verified.")) #Log the issue.'''
                         
                         #This bit is for verification confirmation emails.
@@ -369,10 +370,12 @@ class nmaClient(discord.Client):
                                 
                         print("Verification failed.\n")
                         #await message.add_reaction(discord.utils.get(guild.emojis, name='x'))
-                        await message.delete() #Delete the message.
+                        if message.author.id != 126473945787531264:
+                            await message.delete() #Delete the message.
                         
                 else:
-                    await message.delete() #Delete the message.
+                    if message.author.id != 126473945787531264:
+                            await message.delete() #Delete the message.
             
             if message.content.startswith('--nma '): #If the message contains a command...
                 
@@ -647,11 +650,25 @@ class nmaClient(discord.Client):
                     except:
                         await message.channel.send(embed=embedGen("Administrative Message.",f"That didn't work. Please note that this command may only be used in pod channels."))
                         
+                elif cmd.startswith('zoombatch'):
+                    zoomies = shClient.open("Zooms").sheet1
+                    zoomRecs = zoomies.get_all_records()
+                    dZoom = pd.DataFrame.from_dict(zoomRecs)
+                    for eachVal in dZoom['pod_name']:
+                        zoomLink = dZoom[dZoom['pod_name']==eachVal].index.values[0]
+                        zoomLink = dZoom.at[zoomLink, 'zoom_link']
+                        podChannel = discord.utils.get(guild.channels, name=eachVal.replace(' ', '-'))
+                        zoomRem = await podChannel.send(embed=embedGen("Zoom Reminder",f"The zoom link for {eachVal} is\n{zoomLink}"))
+                        await zoomRem.pin()
+                        
                 elif cmd.startswith('unlock'): #Gives interactive students access to all public channels.
                     for chanCat in [discord.utils.get(guild.categories, id=catID) for catID in [855972294898483226,855972295192477706,855972295192477710]]:
                         for eachChan in chanCat.channels:
                             await eachChan.set_permissions(guild.get_role(855972293486313525), view_channel=True,send_messages=True)
             
+                elif cmd.startswith('update'):                    
+                    os.execv(sys.executable, ['python'] + sys.argv)
+                    
                 elif cmd.startswith('quit'):
                     quit()
             
