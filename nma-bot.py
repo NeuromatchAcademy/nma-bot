@@ -264,9 +264,11 @@ class nmaClient(discord.Client):
                             'timezone' : df.at[cellInfo, 'timezone'],
                             }
                         studentInfo['pod'] = studentInfo['pod'].replace(' ', '-')
+                        df.at[cellInfo, 'discord id'] = message.author.id
+                        sheet.update([df.columns.values.tolist()] + df.values.tolist())
                         targUser = guild.get_member(message.author.id)
                         if len(studentInfo['name']) >= 32:
-                            studentInfo['name'] = studentInfo['name'][0:3]
+                            studentInfo['name'] = studentInfo['name'][0:30]
                         await targUser.edit(nick=studentInfo['name'])
                         await targUser.add_roles(guild.get_role(867751492408573983))
                         if studentInfo['role'] == 'observer':
@@ -335,12 +337,17 @@ class nmaClient(discord.Client):
                             errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
                             raise ValueError
                         
-                        
                         if any(guild.get_role(x) in message.author.roles for x in [867751492417355836,867751492417355835]) == True:
                             print(f"{message.author} not silenced.")
                         else:
                             await message.delete() #Delete the message.
                         await logChan.send(embed=embedGen("Administrative Message",f"{message.author} successfully verified.")) #Log the issue.'''
+                        
+                        try:
+                            df.at[cellInfo, 'discord id'] = message.author.id
+                            sheet.update([df.columns.values.tolist()] + df.values.tolist())
+                        except:
+                            print('Could not register discord ID in database.')
                         
                         #This bit is for verification confirmation emails.
                         #veriMail = create_mail('discordsupport@neuromatch.io',studentInfo['email'],'Discord Verification Completed.','You have successfully verified your identity on the NMA discord.')
@@ -670,6 +677,128 @@ class nmaClient(discord.Client):
                                 await eaMessage.delete()
                         zoomRem = await podChannel.send(embed=embedGen("Zoom Reminder",f"The zoom link for {eachVal} is\n{zoomLink}\n\nNew to discord? Read our guide: https://docs.google.com/document/d/1a5l6QVhuqYnwFR090yDnQGhHSA3u2IEwOs0JZwkfyLo/edit?usp=sharing"))
                         await zoomRem.pin()
+                        
+                elif cmd.startswith('idgrab'):
+                    print('idgrab triggered.')
+                    
+                    noNicks = []
+                    pronouns = []
+                    failUser = []
+                    
+                    for eachUser in guild.members:
+                        if eachUser.nick == None:
+                            noNicks += [eachUser]
+                            continue
+                        else:
+                            if any(x.lower() in str(eachUser.nick).lower() for x in ['him','her','they','[',']',')','(','(she/her)','(he)','(he/him)','[she/her]','[he/him]','/','\\']) == True:
+                                pronouns += [eachUser]
+                                continue
+                            else:
+                                if any(df['name'].str.contains(eachUser.nick)) == True or any(df['name'].str.contains(str(eachUser.nick).lower())) == True:
+                                    try:
+                                        cellInfo = df[df['name']==eachUser.nick].index.values[0]
+                                        df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                    except:
+                                        try:
+                                            cellInfo = df[df['name']==str(eachUser.nick).lower()].index.values[0]
+                                            df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                        except:
+                                            try:
+                                                cellInfo = df[df['name']==str(eachUser.nick).upper()].index.values[0]
+                                                df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                            except:
+                                                try:
+                                                    cellInfo = df[df['name'][0:30]==str(eachUser.nick).upper()].index.values[0]
+                                                    df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                                except:
+                                                    failUser += [eachUser]
+                                        
+                    for eachUser in pronouns:
+                        if guild.get_role(867751492408573988) in eachUser.roles:
+                            pronouns.remove(eachUser)
+                            continue
+                        searchTerm = eachUser.nick.split(' ')
+                        if len(searchTerm) <= 2:
+                            failUser += [eachUser]
+                            pronouns.remove(eachUser)
+                            continue
+                        searchTerm = eachUser.nick.removesuffix(searchTerm[-1])
+                        if any(df['name'].str.contains(searchTerm)) == True:
+                            try:
+                                cellInfo = df[df['name']==str(searchTerm)].index.values[0]
+                                df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                pronouns.remove(eachUser)
+                            except:
+                                try:
+                                    cellInfo = df[df['name']==str(searchTerm).lower()].index.values[0]
+                                    df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                    pronouns.remove(eachUser)
+                                except:
+                                    try:
+                                        cellInfo = df[df['name']==str(searchTerm).upper()].index.values[0]
+                                        df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                        pronouns.remove(eachUser)
+                                    except:
+                                        continue   
+                        
+                    for eachUser in noNicks:
+                        if guild.get_role(867751492408573988) in eachUser.roles:
+                            noNicks.remove(eachUser)
+                            continue
+                        if len(eachUser.name.split(' ')) <= 1:
+                            failUser += [eachUser]
+                            noNicks.remove(eachUser)
+                            continue
+                        if any(df['name'].str.contains(eachUser.name)) == True:
+                            try:
+                                cellInfo = df[df['name']==str(eachUser.name)].index.values[0]
+                                df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                noNicks.remove(eachUser)
+                            except:
+                                try:
+                                    cellInfo = df[df['name']==str(eachUser.name).lower()].index.values[0]
+                                    df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                    noNicks.remove(eachUser)
+                                except:
+                                    try:
+                                        cellInfo = df[df['name']==str(eachUser.name).upper()].index.values[0]
+                                        df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                        noNicks.remove(eachUser)
+                                    except:
+                                        try:
+                                            cellInfo = df[df['name'][0:30]==str(eachUser.name).upper()].index.values[0]
+                                            df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                            noNicks.remove(eachUser)
+                                        except:
+                                            print(eachUser.name,guild.get_role(867751492408573988) in eachUser.roles,len(eachUser.name.split(' ')),len(eachUser.name.split(' ')) < 1)
+                                            continue   
+                        elif guild.get_role(867751492417355828) in eachUser.roles:
+                            print(eachUser.name,guild.get_role(867751492408573988) in eachUser.roles,len(eachUser.name.split(' ')) <= 1)
+                            continue
+                        else:
+                            noNicks.remove(eachUser)
+                    
+                    for eachUser in failUser:
+                        if guild.get_role(867751492408573988) in eachUser.roles:
+                            failUser.remove(eachUser)
+                            continue
+                        if guild.get_role(867751492417355828) in eachUser.roles:
+                            continue
+                        else:
+                            failUser.remove(eachUser)
+                    
+                    sheet.update([df.columns.values.tolist()] + df.values.tolist())
+                    
+                    print(f"\npronouns ({len(pronouns)}):")
+                    print([x.nick for x in pronouns])
+                    print('\n')
+                    print(f"noNicks ({len(noNicks)}):")
+                    print([x.name for x in noNicks])
+                    print('\n')
+                    print(f"failUser ({len(failUser)}):")
+                    print([x.nick for x in failUser])
+                    print('\n')
+                    print("DONE.")
                         
                 elif cmd.startswith('unlock'): #Gives interactive students access to all public channels.
                     for chanCat in [discord.utils.get(guild.categories, id=catID) for catID in [855972294898483226,855972295192477706,855972295192477710]]:
