@@ -750,19 +750,19 @@ class nmaClient(discord.Client):
                                     if any(df['name'].str.contains(eachUser.nick)) == True or any(df['name'].str.contains(str(eachUser.nick).lower())) == True:
                                         try:
                                             cellInfo = df[df['name']==eachUser.nick].index.values[0]
-                                            df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                            df.at[cellInfo, 'discord id'] = int(eachUser.id)
                                         except:
                                             try:
                                                 cellInfo = df[df['name']==str(eachUser.nick).lower()].index.values[0]
-                                                df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                                df.at[cellInfo, 'discord id'] = int(eachUser.id)
                                             except:
                                                 try:
                                                     cellInfo = df[df['name']==str(eachUser.nick).upper()].index.values[0]
-                                                    df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                                    df.at[cellInfo, 'discord id'] = int(eachUser.id)
                                                 except:
                                                     try:
                                                         cellInfo = df[df['name'][0:30]==str(eachUser.nick).upper()].index.values[0]
-                                                        df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                                        df.at[cellInfo, 'discord id'] = int(eachUser.id)
                                                     except:
                                                         failUser += [eachUser]
                                             
@@ -779,17 +779,17 @@ class nmaClient(discord.Client):
                             if any(df['name'].str.contains(searchTerm)) == True:
                                 try:
                                     cellInfo = df[df['name']==str(searchTerm)].index.values[0]
-                                    df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                    df.at[cellInfo, 'discord id'] = int(eachUser.id)
                                     pronouns.remove(eachUser)
                                 except:
                                     try:
                                         cellInfo = df[df['name']==str(searchTerm).lower()].index.values[0]
-                                        df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                        df.at[cellInfo, 'discord id'] = int(eachUser.id)
                                         pronouns.remove(eachUser)
                                     except:
                                         try:
                                             cellInfo = df[df['name']==str(searchTerm).upper()].index.values[0]
-                                            df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                            df.at[cellInfo, 'discord id'] = int(eachUser.id)
                                             pronouns.remove(eachUser)
                                         except:
                                             continue   
@@ -805,22 +805,22 @@ class nmaClient(discord.Client):
                             if any(df['name'].str.contains(eachUser.name)) == True:
                                 try:
                                     cellInfo = df[df['name']==str(eachUser.name)].index.values[0]
-                                    df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                    df.at[cellInfo, 'discord id'] = int(eachUser.id)
                                     noNicks.remove(eachUser)
                                 except:
                                     try:
                                         cellInfo = df[df['name']==str(eachUser.name).lower()].index.values[0]
-                                        df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                        df.at[cellInfo, 'discord id'] = int(eachUser.id)
                                         noNicks.remove(eachUser)
                                     except:
                                         try:
                                             cellInfo = df[df['name']==str(eachUser.name).upper()].index.values[0]
-                                            df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                            df.at[cellInfo, 'discord id'] = int(eachUser.id)
                                             noNicks.remove(eachUser)
                                         except:
                                             try:
                                                 cellInfo = df[df['name'][0:30]==str(eachUser.name).upper()].index.values[0]
-                                                df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                                df.at[cellInfo, 'discord id'] = int(eachUser.id)
                                                 noNicks.remove(eachUser)
                                             except:
                                                 print(eachUser.name,guild.get_role(867751492408573988) in eachUser.roles,len(eachUser.name.split(' ')),len(eachUser.name.split(' ')) < 1)
