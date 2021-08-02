@@ -262,8 +262,7 @@ class nmaClient(discord.Client):
                             }
                         studentInfo['pod'] = studentInfo['pod'].replace(' ', '-')
                         targUser = guild.get_member(message.author.id)
-                        gSprFix = str(message.author.id)
-                        sheet.update_cell(cellInfo, 7, gSprFix)
+                        sheet.update_cell(cellInfo, 7, f"{message.author.id}_")
                         if len(studentInfo['name']) >= 32:
                             studentInfo['name'] = studentInfo['name'][0:30]
                         await targUser.edit(nick=studentInfo['name'])
@@ -340,11 +339,7 @@ class nmaClient(discord.Client):
                             await message.delete() #Delete the message.
                         await logChan.send(embed=embedGen("Administrative Message",f"{message.author} successfully verified.")) #Log the issue.'''
                         
-                        try:
-                            df.at[cellInfo, 'discord id'] = message.author.id
-                            sheet.update([df.columns.values.tolist()] + df.values.tolist())
-                        except:
-                            print('Could not register discord ID in database.')
+                        print('Could not register discord ID in database.')
                         
                         #This bit is for verification confirmation emails.
                         #veriMail = create_mail('discordsupport@neuromatch.io',studentInfo['email'],'Discord Verification Completed.','You have successfully verified your identity on the NMA discord.')
@@ -677,8 +672,9 @@ class nmaClient(discord.Client):
                         
                 elif cmd.startswith('studcheck'):
                     cmdMsg = cmd.split(' ')
-                    targID = int(cmdMsg[1])
+                    targID = cmdMsg[1]
                     targUser = discord.utils.get(guild.members,id=int(targID))
+                    targID = f"{targID}_"
                     pod = None
                     
                     if targID in df['discord id'].tolist():
@@ -730,7 +726,7 @@ class nmaClient(discord.Client):
                     else:
                         await logChan.send(embed=embedGen("Administrative Message", "User ID not found in database."))
                         
-                elif cmd.startswith('idegrab'):
+                elif cmd.startswith('idgrab'):
                     print('idgrab triggered.')
                     
                     noNicks = [] 
@@ -752,8 +748,7 @@ class nmaClient(discord.Client):
                                     try:
                                         foundCount +=1
                                         cellInfo = df[df['name']==eachVar].index.values[0]
-                                        gSprFix = str(eachUser.id)
-                                        df.at[cellInfo, 'discord id'] = gSprFix
+                                        df.at[cellInfo, 'discord id'] = f"{eachUser.id}_"
                                     except:
                                         pass
                                 
@@ -771,8 +766,7 @@ class nmaClient(discord.Client):
                                         try:
                                             foundCount +=1
                                             cellInfo = df[df['name']==eachVar].index.values[0]
-                                            gSprFix = str(eachUser.id)
-                                            df.at[cellInfo, 'discord id'] = gSprFix
+                                            df.at[cellInfo, 'discord id'] = f"{eachUser.id}_"
                                         except:
                                             pass
                                 
@@ -782,8 +776,7 @@ class nmaClient(discord.Client):
                                             try:
                                                 foundCount +=1
                                                 cellInfo = df[df['name']==eachVar].index.values[0]
-                                                gSprFix = str(eachUser.id)
-                                                df.at[cellInfo, 'discord id'] = gSprFix
+                                                df.at[cellInfo, 'discord id'] = f"{eachUser.id}_"
                                             except:
                                                 pass
                         
