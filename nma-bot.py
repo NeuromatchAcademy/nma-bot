@@ -678,11 +678,11 @@ class nmaClient(discord.Client):
                         
                 elif cmd.startswith('studcheck'):
                     cmdMsg = cmd.split(' ')
-                    targID = str(cmdMsg[1])
+                    targID = int(cmdMsg[1])
                     targUser = discord.utils.get(guild.members,id=int(targID))
                     pod = None
                     
-                    print(targID,type(targID),targUser)
+                    print(targID,type(targID))
                     bleep = df['discord id'].tolist()
                     print(bleep[1],type(bleep[1]))
                     
