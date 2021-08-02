@@ -682,7 +682,9 @@ class nmaClient(discord.Client):
                     targUser = discord.utils.get(guild.members,id=int(targID))
                     pod = None
                     
-                    #print(targID,type(targID),targUser)
+                    print(targID,type(targID),targUser)
+                    bleep = df['discord id'].tolist()
+                    print(bleep[1],type(bleep[1]))
                     
                     if targID in df['discord id'].tolist():
                         cellInfo = df[df['discord id']==targID].index.values[0]
