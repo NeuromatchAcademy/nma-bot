@@ -678,9 +678,11 @@ class nmaClient(discord.Client):
                         
                 elif cmd.startswith('studcheck'):
                     cmdMsg = cmd.split(' ')
-                    targID = int(cmdMsg[1])
+                    targID = str(cmdMsg[1])
                     targUser = discord.utils.get(guild.members,id=int(targID))
                     pod = None
+                    
+                    #print(targID,type(targID),targUser)
                     
                     if targID in df['discord id'].tolist():
                         cellInfo = df[df['discord id']==targID].index.values[0]
