@@ -682,52 +682,52 @@ class nmaClient(discord.Client):
                     targUser = discord.utils.get(guild.members,id=int(targID))
                     pod = None
                     
-                    print(targID,type(targID))
-                    bleep = df['discord id'].tolist()
-                    print(bleep[1],type(bleep[1]))
-                    
                     if targID in df['discord id'].tolist():
-                        cellInfo = df[df['discord id']==targID].index.values[0]
-                        
-                        studentInfo = {
-                            'name' : df.at[cellInfo, 'name'],
-                            'pod' : df.at[cellInfo, 'pod'],
-                            'role' : df.at[cellInfo, 'role'],
-                            'email' : df.at[cellInfo, 'role'],
-                            'megapod' : df.at[cellInfo, 'megapod'],
-                            'timezone' : df.at[cellInfo, 'timezone'],
-                            }
-                        
-                        if studentInfo['role'] == 'student':
-                            for eachPod in set(allPods):
-                                podChan = discord.utils.get(guild.channels, name=eachPod.replace(' ','-'))
-                                if targUser in podChan.members:
-                                    pod = eachPod
+                        try:
+                            cellInfo = df[df['discord id']==targID].index.values[0]
                             
-                            if pod == None:
-                                pod = studentInfo['pod']
+                            studentInfo = {
+                                'name' : df.at[cellInfo, 'name'],
+                                'pod' : df.at[cellInfo, 'pod'],
+                                'role' : df.at[cellInfo, 'role'],
+                                'email' : df.at[cellInfo, 'email'],
+                                'megapod' : df.at[cellInfo, 'megapod'],
+                                'timezone' : df.at[cellInfo, 'timezone'],
+                                }
                             
-                            if pod == studentInfo['pod']:
-                                repod = 0
-                                megapod = studentInfo['megapod']
+                            if studentInfo['role'] == 'student':
+                                for eachPod in set(allPods):
+                                    if eachPod == None or eachPod == 'None':
+                                        continue
+                                    podChan = discord.utils.get(guild.channels, name=eachPod.replace(' ','-'))
+                                    if targUser in podChan.members:
+                                        pod = eachPod
+                                
+                                if pod == None:
+                                    pod = studentInfo['pod']
+                                
+                                if pod == studentInfo['pod']:
+                                    repod = 0
+                                    megapod = studentInfo['megapod']
+                                else:
+                                    repod = 1
+                                    megapod = list(podDict.keys())[list(podDict.values()).index(pod.replace(' ','-'))]
                             else:
-                                repod = 1
-                                megapod = list(podDict.keys())[list(podDict.values()).index(pod.replace(' ','-'))]
-                        else:
-                            pod = studentInfo['pod']
-                            megapod = studentInfo['megapod']
-                            repod = 0
-                        
-                        infEmbed=discord.Embed(title="", url="https://i.imgur.com/hAyp5Vr.png")
-                        infEmbed.set_author(name="User Breakdown", icon_url="https://i.imgur.com/hAyp5Vr.png")
-                        infEmbed.set_thumbnail(url=targUser.avatar_url)
-                        infEmbed.add_field(name=f"Name: {studentInfo['name']}", value=f"Email: {studentInfo['email']} \nPod: {pod}\nMegapod: {megapod}\nTimezone: {studentInfo['timezone']}", inline=True)
-                        if repod == 1:
-                            infEmbed.add_field(name=f"Notes", value=f"User was repodded from {studentInfo['pod']} to {pod}.", inline=False)
-                        infEmbed.set_footer(text="Need help? Tag Kevin.")
-                        
-                        await logChan.send(embed=infEmbed)
-                        
+                                pod = studentInfo['pod']
+                                megapod = studentInfo['megapod']
+                                repod = 0
+                            
+                            infEmbed=discord.Embed(title="", url="https://i.imgur.com/hAyp5Vr.png")
+                            infEmbed.set_author(name="User Breakdown", icon_url="https://i.imgur.com/hAyp5Vr.png")
+                            infEmbed.set_thumbnail(url=targUser.avatar_url)
+                            infEmbed.add_field(name=f"Name: {studentInfo['name']}", value=f"Email: {studentInfo['email']} \nPod: {pod}\nMegapod: {megapod}\nTimezone: {studentInfo['timezone']}", inline=True)
+                            if repod == 1:
+                                infEmbed.add_field(name=f"Notes", value=f"User was repodded from {studentInfo['pod']} to {pod}.", inline=False)
+                            infEmbed.set_footer(text="Need help? Tag Kevin.")
+                            
+                            await logChan.send(embed=infEmbed)
+                        except:
+                            await logChan.send(embed=embedGen("Administrative Message", "User ID was found, but something went wrong during retrieval."))
                     else:
                         await logChan.send(embed=embedGen("Administrative Message", "User ID not found in database."))
                         
