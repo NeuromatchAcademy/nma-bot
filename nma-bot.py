@@ -71,7 +71,7 @@ chanDict = {}
 onbTicks = []
 masterEmb=discord.Embed(title="", url="https://www.neuromatch.io", description="Click on the appropriate reactions below to initiate a bot action. If that doesn't work, you can use the commands listed below as a back-up.", color=0xa400d1)
 masterEmb.set_author(name="Administrative Interface", url="https://www.neuromatch.io", icon_url="https://i.imgur.com/NwOh9XV.png")
-masterEmb.add_field(name="Reaction-Based Interface", value="To repod a user, click :busts_in_silhouette:.\nTo merge two pods, click :people_hugging:\nTo assign a user to multiple pods, click :zap:.\nTo unassign a user from multiple pods, click :cloud_tornado:.", inline=False)
+masterEmb.add_field(name="Reaction-Based Interface", value="To repod a user, click :busts_in_silhouette:.\nTo merge two pods, click :people_hugging:\nTo check a user, click 🕵️.\nTo assign a user to multiple pods, click :zap:.\nTo unassign a user from multiple pods, click :cloud_tornado:.", inline=False)
 masterEmb.add_field(name="Pod-Related Commands", value="To repod a user, use `--nma repod <discord-id> <user-email> <new-pod>`.   \nTo merge two pods, use `--nma podmerge <old-pod> <new-pod>`. \nTo assign a user to pods, use `--nma assign <user-id> <pod-n>`.                 \nTo unassign a user from pods, use `--nma unassign <user-id> <pod-n>`.     \nTo check who has verified for a pod, use `--nma podcheck` in the pod channel.", inline=False)
 masterEmb.add_field(name="Hotfix Commands", value="To give interactive students access to all public channels, use `--nma unlock`. \nTo grant lead TAs access to all their pods, use `--nma leadfix`. \nTo restore TA access to their pods, use `--nma tafix`.", inline=False)
 masterEmb.add_field(name="Debugging Commands", value="To check whether you can use administrative commands, use `--nma auth`.\nTo print all variables to console, use `--nma debug`.", inline=False)
@@ -141,11 +141,10 @@ class nmaClient(discord.Client):
             await message.delete()
             
         masterMsg = await masterChan.send(embed=masterEmb)
-        reactions = ["👥","🫂","⚡","🌪️"]
+        reactions = ["👥","🫂","🕵️","⚡","🌪️"]
         
         for eachReaction in reactions:
             await masterMsg.add_reaction(eachReaction)
-        
         
         await veriChan.send(embed=embedGen("Welcome to the Neuromatch Academy DL Server!","To unlock access to all channels, please copy and paste the email address with which you log into the Neuromatch portal into this chat."))
         
@@ -177,8 +176,7 @@ class nmaClient(discord.Client):
         reactionMap = {
             "👥" : 'repod', 
             "🫂" : 'podmerge',
-            "🕵️" : 'check',
-            "👀" : 'podcheck',
+            "🕵️" : 'studcheck',
             "⚡" : 'assign',
             "🌪️" : 'unassign',
             }
@@ -186,7 +184,7 @@ class nmaClient(discord.Client):
         reqVars = {
             'repod' : [['the target user\'s discord ID','user\'s email address','new pod name (formatted a la \'sneaky-pandas\')'],['User:','User\'s Email:','New pod:']],
             'podmerge' : [['the old pod (will be deleted)','the new pod (which everyone will join)'],['Pod to be deleted:','New pod:']],
-            'check' : [['the discord ID of the user you want to check'],['User\'s ID:']],
+            'studcheck' : [['the discord ID of the user you want to check'],['User\'s ID:']],
             'podcheck' : [['the name of the pod you want to check (formatted a la \'sneaky-pandas\')'],['Pod to be checked:']],
             'assign' : [['the target user\'s discord ID','any pods you want to add them to (formatted a la \'sneaky-pandas sweet-spiders open-dogs\')'],["User:","Pods to add them to:"]],
             'unassign' : [['the target user\'s discord ID','any pods you want to remove them from (formatted a la \'sneaky-pandas sweet-spiders open-dogs\')'],["User:","Pods to remove them from:"]]
@@ -676,7 +674,58 @@ class nmaClient(discord.Client):
                             if eaMessage.author == self.user:
                                 await eaMessage.delete()
                         zoomRem = await podChannel.send(embed=embedGen("Zoom Reminder",f"The zoom link for {eachVal} is\n{zoomLink}\n\nNew to discord? Read our guide: https://docs.google.com/document/d/1a5l6QVhuqYnwFR090yDnQGhHSA3u2IEwOs0JZwkfyLo/edit?usp=sharing"))
-                        await zoomRem.pin()
+                        await zoomRem.pin()   
+                        
+                elif cmd.startswith('studcheck'):
+                    cmdMsg = cmd.split(' ')
+                    targID = int(cmdMsg[1])
+                    targUser = discord.utils.get(guild.members,id=int(targID))
+                    pod = None
+                    
+                    if targID in df['discord id'].tolist():
+                        cellInfo = df[df['discord id']==targID].index.values[0]
+                        
+                        studentInfo = {
+                            'name' : df.at[cellInfo, 'name'],
+                            'pod' : df.at[cellInfo, 'pod'],
+                            'role' : df.at[cellInfo, 'role'],
+                            'email' : df.at[cellInfo, 'role'],
+                            'megapod' : df.at[cellInfo, 'megapod'],
+                            'timezone' : df.at[cellInfo, 'timezone'],
+                            }
+                        
+                        if studentInfo['role'] == 'student':
+                            for eachPod in set(allPods):
+                                podChan = discord.utils.get(guild.channels, name=eachPod.replace(' ','-'))
+                                if targUser in podChan.members:
+                                    pod = eachPod
+                            
+                            if pod == None:
+                                pod = studentInfo['pod']
+                            
+                            if pod == studentInfo['pod']:
+                                repod = 0
+                                megapod = studentInfo['megapod']
+                            else:
+                                repod = 1
+                                megapod = list(podDict.keys())[list(podDict.values()).index(pod.replace(' ','-'))]
+                        else:
+                            pod = studentInfo['pod']
+                            megapod = studentInfo['megapod']
+                            repod = 0
+                        
+                        infEmbed=discord.Embed(title="", url="https://i.imgur.com/hAyp5Vr.png")
+                        infEmbed.set_author(name="User Breakdown", icon_url="https://i.imgur.com/hAyp5Vr.png")
+                        infEmbed.set_thumbnail(url=targUser.avatar_url)
+                        infEmbed.add_field(name=f"Name: {studentInfo['name']}", value=f"Email: {studentInfo['email']} \nPod: {pod}\nMegapod: {megapod}\nTimezone: {studentInfo['timezone']}", inline=True)
+                        if repod == 1:
+                            infEmbed.add_field(name=f"Notes", value=f"User was repodded from {studentInfo['pod']} to {pod}.", inline=False)
+                        infEmbed.set_footer(text="Need help? Tag Kevin.")
+                        
+                        await logChan.send(embed=infEmbed)
+                        
+                    else:
+                        await logChan.send(embed=embedGen("Administrative Message", "User ID not found in database."))
                         
                 elif cmd.startswith('idgrab'):
                     print('idgrab triggered.')
