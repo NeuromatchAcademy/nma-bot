@@ -262,6 +262,8 @@ class nmaClient(discord.Client):
                             }
                         studentInfo['pod'] = studentInfo['pod'].replace(' ', '-')
                         targUser = guild.get_member(message.author.id)
+                        gSprFix = str(message.author.id)
+                        sheet.update_cell(cellInfo, 7, gSprFix)
                         if len(studentInfo['name']) >= 32:
                             studentInfo['name'] = studentInfo['name'][0:30]
                         await targUser.edit(nick=studentInfo['name'])
@@ -332,8 +334,6 @@ class nmaClient(discord.Client):
                             errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
                             raise ValueError
                         
-                        ncmdMsg = await logChan.send(f'--csrun --nma idgrab')
-                        await ncmdMsg.delete()
                         if any(guild.get_role(x) in message.author.roles for x in [867751492417355836,867751492417355835]) == True:
                             print(f"{message.author} not silenced.")
                         else:
@@ -504,7 +504,7 @@ class nmaClient(discord.Client):
                         podChan = discord.utils.get(guild.channels, name=targPod)
                         megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==targPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
                         megaTA = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==targPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-ta-chat")
-                        print(f'targUser = {targUser}\ntargMail = {targMail}\ntargPod = {targPod}\nprevChan = {prevChan}\nprevMegaGen = {prevMegaGen}\nprevMegaTA = {prevMegaTA}\nmegaGen = {megaGen}\nmegaTA = {megaTA}')
+                        #print(f'targUser = {targUser}\ntargMail = {targMail}\ntargPod = {targPod}\nprevChan = {prevChan}\nprevMegaGen = {prevMegaGen}\nprevMegaTA = {prevMegaTA}\nmegaGen = {megaGen}\nmegaTA = {megaTA}')
                         await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
                         await targUser.remove_roles(guild.get_role(timezoneRoles[prevTZ]))
                         await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
@@ -730,7 +730,7 @@ class nmaClient(discord.Client):
                     else:
                         await logChan.send(embed=embedGen("Administrative Message", "User ID not found in database."))
                         
-                elif cmd.startswith('idgrab'):
+                elif cmd.startswith('idegrab'):
                     print('idgrab triggered.')
                     
                     noNicks = [] 
@@ -752,7 +752,8 @@ class nmaClient(discord.Client):
                                     try:
                                         foundCount +=1
                                         cellInfo = df[df['name']==eachVar].index.values[0]
-                                        df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                        gSprFix = str(eachUser.id)
+                                        df.at[cellInfo, 'discord id'] = gSprFix
                                     except:
                                         pass
                                 
@@ -770,7 +771,8 @@ class nmaClient(discord.Client):
                                         try:
                                             foundCount +=1
                                             cellInfo = df[df['name']==eachVar].index.values[0]
-                                            df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                            gSprFix = str(eachUser.id)
+                                            df.at[cellInfo, 'discord id'] = gSprFix
                                         except:
                                             pass
                                 
@@ -780,7 +782,8 @@ class nmaClient(discord.Client):
                                             try:
                                                 foundCount +=1
                                                 cellInfo = df[df['name']==eachVar].index.values[0]
-                                                df.at[cellInfo, 'discord id'] = str(eachUser.id)
+                                                gSprFix = str(eachUser.id)
+                                                df.at[cellInfo, 'discord id'] = gSprFix
                                             except:
                                                 pass
                         
