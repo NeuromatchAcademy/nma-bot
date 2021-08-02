@@ -262,7 +262,7 @@ class nmaClient(discord.Client):
                             'timezone' : df.at[cellInfo, 'timezone'],
                             }
                         studentInfo['pod'] = studentInfo['pod'].replace(' ', '-')
-                        df.at[cellInfo, 'discord id'] = message.author.id
+                        df.at[cellInfo, 'discord id'] = str(message.author.id)
                         sheet.update([df.columns.values.tolist()] + df.values.tolist())
                         targUser = guild.get_member(message.author.id)
                         if len(studentInfo['name']) >= 32:
