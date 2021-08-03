@@ -308,6 +308,17 @@ class nmaClient(discord.Client):
                             await targUser.add_roles(guild.get_role(867751492417355829))
                             await targUser.add_roles(guild.get_role(867751492417355831))
                             await targUser.add_roles(guild.get_role(timezoneRoles[studentInfo['timezone']]))
+                            cellInfo = dProj[dProj['email']==message.content].index.values[0]
+                            projInfo = {'pods' : dProj.at[cellInfo, 'pods']}
+                            projPods = projInfo['pods'].split(',')
+                            for eachPod in projPods:
+                                if eachPod[0].isalpha() == False:
+                                    eachPod = eachPod[1:]
+                                podChan = discord.utils.get(guild.channels, name=eachPod.replace(" ", "-"))
+                                await podChan.set_permissions(targUser, view_channel=True,send_messages=True)
+                                megaGen = discord.utils.get(guild.channels, name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general")
+                                await megaGen.set_permissions(targUser, view_channel=True,send_messages=True)
+                            studentInfo['pod'] = projPods
                         elif studentInfo['role'] == 'consultant':
                             await targUser.add_roles(guild.get_role(867751492417355828))
                             await targUser.add_roles(guild.get_role(868124117067509770))
