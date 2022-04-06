@@ -15,10 +15,13 @@ from oauth2client.service_account import ServiceAccountCredentials
 import discord
 from discord.ext import commands
 import random
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Auth
 gAuthJson = "sound-country-274503-cd99a71b16ae.json"
-discordToken = "ODY4MTI2MDE0MTUxMjE3MTYy.YPrHWg.JorDpdcGFlZhMQeWKXwt5opS-F8"
+discordToken = os.getenv('DISCORD_TOKEN')
 
 # Google Set-up
 scope = [
