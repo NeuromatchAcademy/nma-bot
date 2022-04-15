@@ -8,7 +8,7 @@ class GSheetDb:
         pass
 
     def connect(self):
-        gAuthJson = "sound-country-274503-cd99a71b16ae.json"
+        gAuthJson = "steadfast-fold-346510-eebb246f0299.json"
         scope = [
             "https://spreadsheets.google.com/feeds",
             "https://www.googleapis.com/auth/drive",
