@@ -17,10 +17,10 @@ from discord.ext import commands
 import random
 from dotenv import load_dotenv
 
-import discord_config
+import test_discord_config as discord_config
 from database import GSheetDb
 
-load_dotenv()
+load_dotenv(".testenv")
 
 # Auth
 discordToken = os.getenv("DISCORD_TOKEN")
@@ -36,23 +36,6 @@ credsMail = None
 
 db = GSheetDb()
 db.connect()
-
-if os.path.exists("token.json"):
-    credsMail = Credentials.from_authorized_user_file("token.json", scopeMail)
-
-if not credsMail or not credsMail.valid:
-    if credsMail and credsMail.expired and credsMail.refresh_token:
-        credsMail.refresh(Request())
-    else:
-        flow = InstalledAppFlow.from_client_secrets_file("credentials.json", scopeMail)
-        credsMail = flow.run_local_server(port=0)
-    # Save the credentials for the next run
-    with open("token.json", "w") as token:
-        token.write(credsMail.to_json())
-
-service = build("gmail", "v1", credentials=credsMail)
-results = service.users().labels().list(userId="me").execute()
-labels = results.get("labels", [])
 
 # Logging Set-up
 logger = logging.getLogger("discord")
