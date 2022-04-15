@@ -21,7 +21,7 @@ load_dotenv()
 
 # Auth
 gAuthJson = "sound-country-274503-cd99a71b16ae.json"
-discordToken = os.getenv('DISCORD_TOKEN')
+discordToken = os.getenv("DISCORD_TOKEN")
 
 # Google Set-up
 scope = [
