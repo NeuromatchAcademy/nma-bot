@@ -731,13 +731,12 @@ class nmaClient(discord.Client):
                                 )
                             )
                             print("Server initialization complete.")
-                        else:
-                            await message.channel.send(
-                                embed=embedGen(
-                                    "Administrative Message.",
-                                    f"Only Kevin can do this.",
-                                )
+                    else:
+                        await message.channel.send(
+                            embed=embedGen(
+                                "Administrative Message.", f"Only Kevin can do this."
                             )
+                        )
 
                 elif cmd.startswith(
                     "assign"
