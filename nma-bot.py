@@ -74,11 +74,6 @@ handler.setFormatter(
 )
 logger.addHandler(handler)
 
-timezoneRoles = {
-    "A": 867751492408573986,
-    "B": 867751492408573985,
-    "C": 867751492408573984,
-}
 probDict = {}
 chanDict = {}
 onbTicks = []
@@ -398,7 +393,11 @@ class nmaClient(discord.Client):
 
                         if studentInfo["timezone"]:
                             await targUser.add_roles(
-                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
+                                guild.get_role(
+                                    discord_config.Roles.get_timezone_role(
+                                        studentInfo["timezone"]
+                                    )
+                                )
                             )
 
                         if studentInfo["role"] == "student":
@@ -891,10 +890,16 @@ class nmaClient(discord.Client):
                         )
                         # print(f'targUser = {targUser}\ntargMail = {targMail}\ntargPod = {targPod}\nprevChan = {prevChan}\nprevMegaGen = {prevMegaGen}\nprevMegaTA = {prevMegaTA}\nmegaGen = {megaGen}\nmegaTA = {megaTA}')
                         await targUser.add_roles(
-                            guild.get_role(timezoneRoles[studentInfo["timezone"]])
+                            guild.get_role(
+                                discord_config.Roles.get_timezone_role(
+                                    studentInfo["timezone"]
+                                )
+                            )
                         )
                         await targUser.remove_roles(
-                            guild.get_role(timezoneRoles[prevTZ])
+                            guild.get_role(
+                                discord_config.Roles.get_timezone_role(prevTZ)
+                            )
                         )
                         await megaGen.set_permissions(
                             targUser, view_channel=True, send_messages=True
@@ -924,7 +929,11 @@ class nmaClient(discord.Client):
 
                         if studentInfo["timezone"]:
                             await targUser.add_roles(
-                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
+                                guild.get_role(
+                                    discord_config.Roles.get_timezone_role(
+                                        studentInfo["timezone"]
+                                    )
+                                )
                             )
 
                         if studentInfo["role"] == "student":

@@ -29,6 +29,16 @@ class Roles:
         "support": [user, student, support],
     }
 
+    TIMEZONE_ROLES = {
+        "A": 867751492408573986,
+        "B": 867751492408573985,
+        "C": 867751492408573984,
+    }
+
     @staticmethod
     def get_roles(role):
         return Roles.ROLES_DICT.get(role)
+
+    @staticmethod
+    def get_timezone_role(timezone):
+        return Roles.TIMEZONE_ROLES.get(timezone)
