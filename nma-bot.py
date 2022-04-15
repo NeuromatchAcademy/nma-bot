@@ -17,6 +17,8 @@ from discord.ext import commands
 import random
 from dotenv import load_dotenv
 
+import discord_config
+
 load_dotenv()
 
 # Auth
@@ -72,7 +74,6 @@ handler.setFormatter(
 )
 logger.addHandler(handler)
 
-staffIndex = [867751492417355836, 867751492417355835]
 timezoneRoles = {
     "A": 867751492408573986,
     "B": 867751492408573985,
@@ -179,10 +180,10 @@ class nmaClient(discord.Client):
         global masterMsg
         global veriChan
 
-        guild = client.get_guild(867751492408573982)
+        guild = client.get_guild(discord_config.guild)
 
         staffRoles = []
-        staffRoles += [guild.get_role(x) for x in staffIndex]
+        staffRoles += [guild.get_role(x) for x in discord_config.staffIndex]
 
         logChan = discord.utils.get(guild.channels, name="bot-log")
 
