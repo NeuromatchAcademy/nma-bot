@@ -387,6 +387,7 @@ class nmaClient(discord.Client):
                             studentInfo["name"] = studentInfo["name"][0:30]
                         await targUser.edit(nick=studentInfo["name"])
                         await targUser.add_roles(guild.get_role(867751492408573983))
+
                         if studentInfo["role"] == "observer":
                             await targUser.add_roles(guild.get_role(867751492417355827))
                         elif studentInfo["role"] == "student":
@@ -394,6 +395,62 @@ class nmaClient(discord.Client):
                             await targUser.add_roles(
                                 guild.get_role(timezoneRoles[studentInfo["timezone"]])
                             )
+                        elif studentInfo["role"] == "TA":
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355829))
+                            await targUser.add_roles(
+                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
+                            )
+                        elif studentInfo["role"] == "leadTA":
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355829))
+                            await targUser.add_roles(guild.get_role(867751492417355830))
+                            await targUser.add_roles(
+                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
+                            )
+                        elif studentInfo["role"] == "projectTA":
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355829))
+                            await targUser.add_roles(guild.get_role(867751492417355831))
+                            await targUser.add_roles(
+                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
+                            )
+                        elif studentInfo["role"] == "consultant":
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(868124117067509770))
+                            await targUser.add_roles(
+                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
+                            )
+                        elif studentInfo["role"] == "mentor":
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355832))
+                            await targUser.add_roles(
+                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
+                            )
+                        elif studentInfo["role"] == "speaker":
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355833))
+                            await targUser.add_roles(
+                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
+                            )
+                        elif studentInfo["role"] == "sponsor":
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355834))
+                            await targUser.add_roles(
+                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
+                            )
+                        elif studentInfo["role"] == "support":
+                            await targUser.add_roles(guild.get_role(867751492417355828))
+                            await targUser.add_roles(guild.get_role(867751492417355835))
+                            await targUser.add_roles(
+                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
+                            )
+                        else:
+                            errCode = "Invalid Role"
+                            errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
+                            raise ValueError
+
+                        if studentInfo["role"] == "student":
                             if studentInfo["pod"] != "None":
                                 podChan = discord.utils.get(
                                     guild.channels, name=studentInfo["pod"]
@@ -415,11 +472,6 @@ class nmaClient(discord.Client):
                                     targUser, view_channel=True, send_messages=True
                                 )
                         elif studentInfo["role"] == "TA":
-                            await targUser.add_roles(guild.get_role(867751492417355828))
-                            await targUser.add_roles(guild.get_role(867751492417355829))
-                            await targUser.add_roles(
-                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
-                            )
                             if studentInfo["pod"] != "None":
                                 podChan = discord.utils.get(
                                     guild.channels, name=studentInfo["pod"]
@@ -451,12 +503,6 @@ class nmaClient(discord.Client):
                                     targUser, view_channel=True, send_messages=True
                                 )
                         elif studentInfo["role"] == "leadTA":
-                            await targUser.add_roles(guild.get_role(867751492417355828))
-                            await targUser.add_roles(guild.get_role(867751492417355829))
-                            await targUser.add_roles(guild.get_role(867751492417355830))
-                            await targUser.add_roles(
-                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
-                            )
                             if studentInfo["pod"] != "None":
                                 podChan = discord.utils.get(
                                     guild.channels, name=studentInfo["pod"]
@@ -494,12 +540,6 @@ class nmaClient(discord.Client):
                                     manage_messages=True,
                                 )
                         elif studentInfo["role"] == "projectTA":
-                            await targUser.add_roles(guild.get_role(867751492417355828))
-                            await targUser.add_roles(guild.get_role(867751492417355829))
-                            await targUser.add_roles(guild.get_role(867751492417355831))
-                            await targUser.add_roles(
-                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
-                            )
                             cellInfo = dProj[
                                 dProj["email"] == message.content
                             ].index.values[0]
@@ -522,40 +562,6 @@ class nmaClient(discord.Client):
                                     targUser, view_channel=True, send_messages=True
                                 )
                             studentInfo["pod"] = projPods
-                        elif studentInfo["role"] == "consultant":
-                            await targUser.add_roles(guild.get_role(867751492417355828))
-                            await targUser.add_roles(guild.get_role(868124117067509770))
-                            await targUser.add_roles(
-                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
-                            )
-                        elif studentInfo["role"] == "mentor":
-                            await targUser.add_roles(guild.get_role(867751492417355828))
-                            await targUser.add_roles(guild.get_role(867751492417355832))
-                            await targUser.add_roles(
-                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
-                            )
-                        elif studentInfo["role"] == "speaker":
-                            await targUser.add_roles(guild.get_role(867751492417355828))
-                            await targUser.add_roles(guild.get_role(867751492417355833))
-                            await targUser.add_roles(
-                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
-                            )
-                        elif studentInfo["role"] == "sponsor":
-                            await targUser.add_roles(guild.get_role(867751492417355828))
-                            await targUser.add_roles(guild.get_role(867751492417355834))
-                            await targUser.add_roles(
-                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
-                            )
-                        elif studentInfo["role"] == "support":
-                            await targUser.add_roles(guild.get_role(867751492417355828))
-                            await targUser.add_roles(guild.get_role(867751492417355835))
-                            await targUser.add_roles(
-                                guild.get_role(timezoneRoles[studentInfo["timezone"]])
-                            )
-                        else:
-                            errCode = "Invalid Role"
-                            errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
-                            raise ValueError
 
                         if (
                             any(
@@ -956,6 +962,7 @@ class nmaClient(discord.Client):
                         )
                         await targUser.edit(nick=studentInfo["name"])
                         await targUser.add_roles(guild.get_role(867751492408573983))
+
                         if studentInfo["role"] == "observer":
                             await targUser.add_roles(guild.get_role(867751492417355827))
                         elif studentInfo["role"] == "student":
@@ -963,44 +970,12 @@ class nmaClient(discord.Client):
                             await targUser.add_roles(
                                 guild.get_role(timezoneRoles[studentInfo["timezone"]])
                             )
-                            if studentInfo["pod"] != "None":
-                                await podChan.set_permissions(
-                                    targUser, view_channel=True, send_messages=True
-                                )
-                                await podChan.send(
-                                    embed=embedGen(
-                                        "Pod Announcement",
-                                        f"{studentInfo['name']} has joined the pod.",
-                                    )
-                                )
-                                await megaGen.set_permissions(
-                                    targUser, view_channel=True, send_messages=True
-                                )
                         elif studentInfo["role"] == "TA":
                             await targUser.add_roles(guild.get_role(867751492417355828))
                             await targUser.add_roles(guild.get_role(867751492417355829))
                             await targUser.add_roles(
                                 guild.get_role(timezoneRoles[studentInfo["timezone"]])
                             )
-                            if studentInfo["pod"] != "None":
-                                await podChan.set_permissions(
-                                    targUser,
-                                    view_channel=True,
-                                    send_messages=True,
-                                    manage_messages=True,
-                                )
-                                await podChan.send(
-                                    embed=embedGen(
-                                        "Pod Announcement",
-                                        f"{studentInfo['name']} has joined the pod.",
-                                    )
-                                )
-                                await megaGen.set_permissions(
-                                    targUser, view_channel=True, send_messages=True
-                                )
-                                await megaTA.set_permissions(
-                                    targUser, view_channel=True, send_messages=True
-                                )
                         elif studentInfo["role"] == "leadTA":
                             await targUser.add_roles(guild.get_role(867751492417355828))
                             await targUser.add_roles(guild.get_role(867751492417355829))
@@ -1008,31 +983,6 @@ class nmaClient(discord.Client):
                             await targUser.add_roles(
                                 guild.get_role(timezoneRoles[studentInfo["timezone"]])
                             )
-                            if studentInfo["pod"] != "None":
-                                await podChan.set_permissions(
-                                    targUser,
-                                    view_channel=True,
-                                    send_messages=True,
-                                    manage_messages=True,
-                                )
-                                await podChan.send(
-                                    embed=embedGen(
-                                        "Pod Announcement",
-                                        f"{studentInfo['name']} has joined the pod.",
-                                    )
-                                )
-                                await megaGen.set_permissions(
-                                    targUser,
-                                    view_channel=True,
-                                    send_messages=True,
-                                    manage_messages=True,
-                                )
-                                await megaTA.set_permissions(
-                                    targUser,
-                                    view_channel=True,
-                                    send_messages=True,
-                                    manage_messages=True,
-                                )
                         elif studentInfo["role"] == "projectTA":
                             await targUser.add_roles(guild.get_role(867751492417355828))
                             await targUser.add_roles(guild.get_role(867751492417355829))
@@ -1074,6 +1024,67 @@ class nmaClient(discord.Client):
                             errCode = "Invalid Role"
                             errMsg = f"Database suggests that {message.author}'s role is {studentInfo['role']}, but there is no matching discord role."
                             raise ValueError
+
+                        if studentInfo["role"] == "student":
+                            if studentInfo["pod"] != "None":
+                                await podChan.set_permissions(
+                                    targUser, view_channel=True, send_messages=True
+                                )
+                                await podChan.send(
+                                    embed=embedGen(
+                                        "Pod Announcement",
+                                        f"{studentInfo['name']} has joined the pod.",
+                                    )
+                                )
+                                await megaGen.set_permissions(
+                                    targUser, view_channel=True, send_messages=True
+                                )
+                        elif studentInfo["role"] == "TA":
+                            if studentInfo["pod"] != "None":
+                                await podChan.set_permissions(
+                                    targUser,
+                                    view_channel=True,
+                                    send_messages=True,
+                                    manage_messages=True,
+                                )
+                                await podChan.send(
+                                    embed=embedGen(
+                                        "Pod Announcement",
+                                        f"{studentInfo['name']} has joined the pod.",
+                                    )
+                                )
+                                await megaGen.set_permissions(
+                                    targUser, view_channel=True, send_messages=True
+                                )
+                                await megaTA.set_permissions(
+                                    targUser, view_channel=True, send_messages=True
+                                )
+                        elif studentInfo["role"] == "leadTA":
+                            if studentInfo["pod"] != "None":
+                                await podChan.set_permissions(
+                                    targUser,
+                                    view_channel=True,
+                                    send_messages=True,
+                                    manage_messages=True,
+                                )
+                                await podChan.send(
+                                    embed=embedGen(
+                                        "Pod Announcement",
+                                        f"{studentInfo['name']} has joined the pod.",
+                                    )
+                                )
+                                await megaGen.set_permissions(
+                                    targUser,
+                                    view_channel=True,
+                                    send_messages=True,
+                                    manage_messages=True,
+                                )
+                                await megaTA.set_permissions(
+                                    targUser,
+                                    view_channel=True,
+                                    send_messages=True,
+                                    manage_messages=True,
+                                )
 
                         await logChan.send(
                             embed=embedGen(
