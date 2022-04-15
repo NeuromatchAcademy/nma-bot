@@ -676,7 +676,7 @@ class nmaClient(discord.Client):
                 if cmd.startswith(
                     "init"
                 ):  # This command creates channel categories and pod channels for all pods and megapods in the bot's database.
-                    if message.author.id == 126473945787531264:
+                    if message.author.id == discord_config.admin:
                         print("Initializing server...\n")
                         for eachMega in podDict.keys():
                             podDict[eachMega] = set(podDict[eachMega])
