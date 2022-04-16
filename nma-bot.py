@@ -516,7 +516,7 @@ class nmaClient(discord.Client):
                         if (
                             any(
                                 guild.get_role(x) in message.author.roles
-                                for x in [867751492417355836, 867751492417355835]
+                                for x in discord_config.staffIndex
                             )
                             == True
                         ):
@@ -551,7 +551,7 @@ class nmaClient(discord.Client):
                                     )
                                 )  # Log the issue.'''
                             elif probDict[message.author.id] > 2:
-                                suppRole = guild.get_role(867751492417355835)
+                                suppRole = guild.get_role(discord_config.Roles.support)
                                 adminCat = discord.utils.get(
                                     guild.categories, name="administrative"
                                 )
@@ -600,7 +600,7 @@ class nmaClient(discord.Client):
                         if (
                             any(
                                 guild.get_role(x) in message.author.roles
-                                for x in [867751492417355836, 867751492417355835]
+                                for x in discord_config.staffIndex
                             )
                             == True
                         ):
@@ -612,7 +612,7 @@ class nmaClient(discord.Client):
                     if (
                         any(
                             guild.get_role(x) in message.author.roles
-                            for x in [867751492417355836, 867751492417355835]
+                            for x in discord_config.staffIndex
                         )
                         == True
                     ):
@@ -1022,11 +1022,8 @@ class nmaClient(discord.Client):
                         if (
                             any(
                                 guild.get_role(x) in user.roles
-                                for x in [
-                                    867751492417355836,
-                                    867751492417355835,
-                                    867751492408573988,
-                                ]
+                                for x in discord_config.staffIndex
+                                + [discord_config.staffId]
                             )
                             == True
                         ):
@@ -1079,11 +1076,7 @@ class nmaClient(discord.Client):
                                         if (
                                             all(
                                                 guild.get_role(x) in entity.roles
-                                                for x in [
-                                                    855972293486313530,
-                                                    855972293486313529,
-                                                    855972293472550914,
-                                                ]
+                                                for x in discord_config.taIds
                                             )
                                             == False
                                         ):
@@ -1123,7 +1116,10 @@ class nmaClient(discord.Client):
                                 guild.channels, name=f"{megaGen}-ta-chat"
                             )
                             for user in megaGen.members:
-                                if guild.get_role(867751492417355830) in user.roles:
+                                if (
+                                    guild.get_role(discord_config.Roles.leadTa)
+                                    in user.roles
+                                ):
                                     megaLead = user
                                 else:
                                     continue
@@ -1166,11 +1162,8 @@ class nmaClient(discord.Client):
                             if (
                                 any(
                                     guild.get_role(x) in user.roles
-                                    for x in [
-                                        867751492417355836,
-                                        867751492417355835,
-                                        867751492408573988,
-                                    ]
+                                    for x in discord_config.staffIndex
+                                    + [discord_config.staffId]
                                 )
                                 == True
                             ):
@@ -1319,7 +1312,7 @@ class nmaClient(discord.Client):
 
                     try:
                         for eachUser in guild.members:
-                            if guild.get_role(867751492408573988) in eachUser.roles:
+                            if guild.get_role(discord_config.staffId) in eachUser.roles:
                                 continue
                             if eachUser.nick == None:
 
@@ -1434,15 +1427,13 @@ class nmaClient(discord.Client):
                 ):  # Gives interactive students access to all public channels.
                     for chanCat in [
                         discord.utils.get(guild.categories, id=catID)
-                        for catID in [
-                            855972294898483226,
-                            855972295192477706,
-                            855972295192477710,
-                        ]
+                        for catID in discord_config.categories
                     ]:
                         for eachChan in chanCat.channels:
                             await eachChan.set_permissions(
-                                guild.get_role(855972293486313525),
+                                guild.get_role(
+                                    discord_config.Roles.interactive_student
+                                ),
                                 view_channel=True,
                                 send_messages=True,
                             )
