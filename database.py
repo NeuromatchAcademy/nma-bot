@@ -45,6 +45,21 @@ class GSheetDb:
             "timezone": df.at[cellInfo, "timezone"],
         }
 
+    def get_student_by_discord_id(self, discord_id):
+        df = pd.DataFrame.from_dict(self.sheet.get_all_records())
+        if discord_id not in df["discord id"].tolist():
+            return {}
+        else:
+            cellInfo = df[df["discord id"] == discord_id].index.values[0]
+            return {
+                "name": df.at[cellInfo, "name"],
+                "pod": df.at[cellInfo, "pod"],
+                "role": df.at[cellInfo, "role"],
+                "email": df.at[cellInfo, "email"],
+                "megapod": df.at[cellInfo, "megapod"],
+                "timezone": df.at[cellInfo, "timezone"],
+            }
+
     def get_megapod_for_pod(self, pod):
         df = pd.DataFrame(self.sheet.get_all_records())
         return df.at[df[df["pod"] == pod].index.values[0], "megapod"]
