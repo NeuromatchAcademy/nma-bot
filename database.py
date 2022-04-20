@@ -36,3 +36,8 @@ class GSheetDb:
     def get_megapod_for_pod(self, pod):
         df = pd.DataFrame(self.sheet.get_all_records())
         return df.at[df[df["pod"] == pod].index.values[0], "megapod"]
+
+    def set_student_discord_id(self, email, discord_id):
+        df = pd.DataFrame.from_dict(self.sheet.get_all_records())
+        cellInfo = df[df["email"] == email].index.values[0]
+        self.sheet.update_cell(int(cellInfo + 2), 7, f"{discord_id}_")
