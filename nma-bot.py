@@ -1196,19 +1196,9 @@ class nmaClient(discord.Client):
                     targID = f"{targID}_"
                     pod = None
 
-                    if targID in df["discord id"].tolist():
+                    studentInfo = db.get_student_by_discord_id(targID)
+                    if studentInfo:
                         try:
-                            cellInfo = df[df["discord id"] == targID].index.values[0]
-
-                            studentInfo = {
-                                "name": df.at[cellInfo, "name"],
-                                "pod": df.at[cellInfo, "pod"],
-                                "role": df.at[cellInfo, "role"],
-                                "email": df.at[cellInfo, "email"],
-                                "megapod": df.at[cellInfo, "megapod"],
-                                "timezone": df.at[cellInfo, "timezone"],
-                            }
-
                             if studentInfo["role"] == "student":
                                 for eachPod in set(allPods):
                                     if eachPod == None or eachPod == "None":
