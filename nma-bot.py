@@ -354,16 +354,8 @@ class nmaClient(discord.Client):
                     errMsg = f"The target user submitted an email that could not be found in the database."
 
                     try:
-                        cellInfo = df[df["email"] == message.content].index.values[0]
+                        studentInfo = db.get_student_by_email(message.content)
                         print("Student identified...")
-                        studentInfo = {
-                            "name": df.at[cellInfo, "name"],
-                            "pod": df.at[cellInfo, "pod"],
-                            "role": df.at[cellInfo, "role"],
-                            "email": message.content,
-                            "megapod": df.at[cellInfo, "megapod"],
-                            "timezone": df.at[cellInfo, "timezone"],
-                        }
                         studentInfo["pod"] = studentInfo["pod"].replace(" ", "-")
                         targUser = guild.get_member(message.author.id)
                         db.set_student_discord_id(message.content, message.author.id)
@@ -840,16 +832,8 @@ class nmaClient(discord.Client):
                     targPod = cmdMsg[3]
 
                     try:
-                        cellInfo = df[df["email"] == targMail].index.values[0]
+                        studentInfo = db.get_student_by_email(targMail)
                         print("Student identified...")
-                        studentInfo = {
-                            "name": df.at[cellInfo, "name"],
-                            "pod": df.at[cellInfo, "pod"],
-                            "role": df.at[cellInfo, "role"],
-                            "email": targMail,
-                            "megapod": df.at[cellInfo, "megapod"],
-                            "timezone": df.at[cellInfo, "timezone"],
-                        }
                         print(studentInfo)
                         prevTZ = studentInfo["timezone"]
                         studentInfo["timezone"] = df.at[
