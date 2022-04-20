@@ -198,19 +198,14 @@ class nmaClient(discord.Client):
             )
         )
 
-        masterSheet = pd.DataFrame(sheet.get_all_records())
-        print(masterSheet.head())
-
         podDict = {}
-        allPods = list(set(masterSheet["pod"]))
-        allMegas = list(set(masterSheet["megapod"]))
+        allPods = db.get_all_pods()
+        allMegas = db.get_all_megapods()
 
         for eachMega in allMegas:
             podDict[eachMega] = []
-        for eachPod in masterSheet["pod"]:
-            podDict[df.at[df[df["pod"] == eachPod].index.values[0], "megapod"]] += [
-                eachPod.replace(" ", "-")
-            ]
+        for eachPod in allPods:
+            podDict[db.get_megapod_for_pod(eachPod)] += [eachPod.replace(" ", "-")]
 
         print("\n==============")
         print("Logged in as")
