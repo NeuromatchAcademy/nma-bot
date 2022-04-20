@@ -18,35 +18,29 @@ import random
 from dotenv import load_dotenv
 
 import discord_config
+from database import GSheetDb
 
 load_dotenv()
 
 # Auth
-gAuthJson = "sound-country-274503-cd99a71b16ae.json"
 discordToken = os.getenv("DISCORD_TOKEN")
 
 # Google Set-up
-scope = [
-    "https://spreadsheets.google.com/feeds",
-    "https://www.googleapis.com/auth/drive",
-]
 scopeMail = [
     "https://www.googleapis.com/auth/gmail.readonly",
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/gmail.compose",
     "https://mail.google.com/",
 ]
-creds = ServiceAccountCredentials.from_json_keyfile_name(gAuthJson, scope)
 credsMail = None
 
-shClient = gspread.authorize(creds)
-sheet = shClient.open("dlmastersheet").sheet1
-records_data = sheet.get_all_records()
-df = pd.DataFrame.from_dict(records_data)
+db = GSheetDb()
+db.connect()
 
-projSheet = shClient.open("dlmastersheet").get_worksheet(1)
-proj_data = projSheet.get_all_records()
-dProj = pd.DataFrame.from_dict(proj_data)
+shClient = db.shClient
+sheet = db.sheet
+df = db.df
+dProj = db.dProj
 
 if os.path.exists("token.json"):
     credsMail = Credentials.from_authorized_user_file("token.json", scopeMail)
