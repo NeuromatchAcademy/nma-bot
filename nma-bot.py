@@ -1276,29 +1276,12 @@ class nmaClient(discord.Client):
                         for eachUser in guild.members:
                             if guild.get_role(discord_config.staffId) in eachUser.roles:
                                 continue
-                            if eachUser.nick == None:
 
+                            possibleName = ""
+                            if eachUser.nick == None:
                                 if len(eachUser.name.split(" ")) <= 1:
                                     continue
-
-                                for eachVar in [
-                                    eachUser.name,
-                                    eachUser.name.lower(),
-                                    eachUser.name.upper(),
-                                    eachUser.name[:-1],
-                                    f"{eachUser.name} ",
-                                ]:
-                                    try:
-                                        foundCount += 1
-                                        cellInfo = df[
-                                            df["name"] == eachVar
-                                        ].index.values[0]
-                                        df.at[
-                                            cellInfo, "discord id"
-                                        ] = f"{eachUser.id}_"
-                                    except:
-                                        pass
-
+                                possibleName = eachUser.name
                             else:
                                 if (
                                     any(
@@ -1328,27 +1311,9 @@ class nmaClient(discord.Client):
                                     if len(searchTerm) <= 2:
                                         continue
 
-                                    searchTerm = eachUser.nick.removesuffix(
+                                    possibleName = eachUser.nick.removesuffix(
                                         searchTerm[-1]
                                     )
-
-                                    for eachVar in [
-                                        searchTerm,
-                                        searchTerm.lower(),
-                                        searchTerm.upper(),
-                                        searchTerm[:-1],
-                                        f"{searchTerm} ",
-                                    ]:
-                                        try:
-                                            foundCount += 1
-                                            cellInfo = df[
-                                                df["name"] == eachVar
-                                            ].index.values[0]
-                                            df.at[
-                                                cellInfo, "discord id"
-                                            ] = f"{eachUser.id}_"
-                                        except:
-                                            pass
 
                                 else:
                                     if (
@@ -1361,23 +1326,21 @@ class nmaClient(discord.Client):
                                         )
                                         == True
                                     ):
-                                        for eachVar in [
-                                            eachUser.nick,
-                                            eachUser.nick.lower(),
-                                            eachUser.nick.upper(),
-                                            eachUser.nick[:-1],
-                                            f"{eachUser.nick} ",
-                                        ]:
-                                            try:
-                                                foundCount += 1
-                                                cellInfo = df[
-                                                    df["name"] == eachVar
-                                                ].index.values[0]
-                                                df.at[
-                                                    cellInfo, "discord id"
-                                                ] = f"{eachUser.id}_"
-                                            except:
-                                                pass
+                                        possibleName = eachUser.nick
+
+                            for eachVar in [
+                                possibleName,
+                                possibleName.lower(),
+                                possibleName.upper(),
+                                possibleName[:-1],
+                                f"{possibleName} ",
+                            ]:
+                                try:
+                                    foundCount += 1
+                                    cellInfo = df[df["name"] == eachVar].index.values[0]
+                                    df.at[cellInfo, "discord id"] = f"{eachUser.id}_"
+                                except:
+                                    pass
 
                         sheet.update([df.columns.values.tolist()] + df.values.tolist())
                         print(f"Finished {foundCount} IDs.")
