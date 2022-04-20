@@ -33,6 +33,18 @@ class GSheetDb:
         df = pd.DataFrame(self.sheet.get_all_records())
         return list(set(df["megapod"]))
 
+    def get_student_by_email(self, email):
+        df = pd.DataFrame.from_dict(self.sheet.get_all_records())
+        cellInfo = df[df["email"] == email].index.values[0]
+        return {
+            "name": df.at[cellInfo, "name"],
+            "pod": df.at[cellInfo, "pod"],
+            "role": df.at[cellInfo, "role"],
+            "email": email,
+            "megapod": df.at[cellInfo, "megapod"],
+            "timezone": df.at[cellInfo, "timezone"],
+        }
+
     def get_megapod_for_pod(self, pod):
         df = pd.DataFrame(self.sheet.get_all_records())
         return df.at[df[df["pod"] == pod].index.values[0], "megapod"]
