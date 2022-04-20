@@ -836,10 +836,9 @@ class nmaClient(discord.Client):
                         print("Student identified...")
                         print(studentInfo)
                         prevTZ = studentInfo["timezone"]
-                        studentInfo["timezone"] = df.at[
-                            df[df["pod"] == targPod.replace("-", " ")].index.values[0],
-                            "timezone",
-                        ]
+                        studentInfo["timezone"] = db.get_timezone_for_pod(
+                            targPod.replace("-", " ")
+                        )
                         prevChan = discord.utils.get(
                             guild.channels, name=studentInfo["pod"].replace(" ", "-")
                         )

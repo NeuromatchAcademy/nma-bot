@@ -64,6 +64,10 @@ class GSheetDb:
         df = pd.DataFrame(self.sheet.get_all_records())
         return df.at[df[df["pod"] == pod].index.values[0], "megapod"]
 
+    def get_timezone_for_pod(self, pod):
+        df = pd.DataFrame.from_dict(self.sheet.get_all_records())
+        return df.at[df[df["pod"] == pod].index.values[0], "timezone"]
+
     def set_student_discord_id(self, email, discord_id):
         df = pd.DataFrame.from_dict(self.sheet.get_all_records())
         cellInfo = df[df["email"] == email].index.values[0]
