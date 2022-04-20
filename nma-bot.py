@@ -366,7 +366,7 @@ class nmaClient(discord.Client):
                         }
                         studentInfo["pod"] = studentInfo["pod"].replace(" ", "-")
                         targUser = guild.get_member(message.author.id)
-                        sheet.update_cell(int(cellInfo + 2), 7, f"{message.author.id}_")
+                        db.set_student_discord_id(message.content, message.author.id)
                         if len(studentInfo["name"]) >= 32:
                             studentInfo["name"] = studentInfo["name"][0:30]
                         await targUser.edit(nick=studentInfo["name"])
