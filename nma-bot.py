@@ -495,7 +495,7 @@ class nmaClient(discord.Client):
                                 )
                                 megaGen = discord.utils.get(
                                     guild.channels,
-                                    name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general",
+                                    name=f"{db.get_megapod_for_pod(eachPod.replace('-',' ')).replace(' ', '-')}-general",
                                 )
                                 await megaGen.set_permissions(
                                     targUser, view_channel=True, send_messages=True
@@ -701,7 +701,7 @@ class nmaClient(discord.Client):
                                 )
                                 megaGen = discord.utils.get(
                                     guild.channels,
-                                    name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general",
+                                    name=f"{db.get_megapod_for_pod(eachPod.replace('-',' ')).replace(' ', '-')}-general",
                                 )
                                 await megaGen.set_permissions(
                                     targUser, view_channel=True, send_messages=True
@@ -746,7 +746,7 @@ class nmaClient(discord.Client):
                                 )
                                 megaGen = discord.utils.get(
                                     guild.channels,
-                                    name=f"{df.at[df[df['pod']==eachPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general",
+                                    name=f"{db.get_megapod_for_pod(eachPod.replace('-',' ')).replace(' ', '-')}-general",
                                 )
                                 await megaGen.set_permissions(
                                     targUser, view_channel=False, send_messages=False
@@ -871,11 +871,11 @@ class nmaClient(discord.Client):
                         podChan = discord.utils.get(guild.channels, name=targPod)
                         megaGen = discord.utils.get(
                             guild.channels,
-                            name=f"{df.at[df[df['pod']==targPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-general",
+                            name=f"{db.get_megapod_for_pod(targPod.replace('-',' ')).replace(' ', '-')}-general",
                         )
                         megaTA = discord.utils.get(
                             guild.channels,
-                            name=f"{df.at[df[df['pod']==targPod.replace('-',' ')].index.values[0],'megapod'].replace(' ', '-')}-ta-chat",
+                            name=f"{db.get_megapod_for_pod(targPod.replace('-',' ')).replace(' ', '-')}-ta-chat",
                         )
                         # print(f'targUser = {targUser}\ntargMail = {targMail}\ntargPod = {targPod}\nprevChan = {prevChan}\nprevMegaGen = {prevMegaGen}\nprevMegaTA = {prevMegaTA}\nmegaGen = {megaGen}\nmegaTA = {megaTA}')
                         await targUser.add_roles(
