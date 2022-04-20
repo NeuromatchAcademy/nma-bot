@@ -1316,17 +1316,7 @@ class nmaClient(discord.Client):
                                     )
 
                                 else:
-                                    if (
-                                        any(df["name"].str.contains(eachUser.nick))
-                                        == True
-                                        or any(
-                                            df["name"].str.contains(
-                                                str(eachUser.nick).lower()
-                                            )
-                                        )
-                                        == True
-                                    ):
-                                        possibleName = eachUser.nick
+                                    possibleName = eachUser.nick
 
                             for eachVar in [
                                 possibleName,
