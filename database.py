@@ -21,9 +21,7 @@ class GSheetDb:
         df = pd.DataFrame.from_dict(records_data)
         print(df.head())
 
-        projSheet = self.shClient.open("dlmastersheet").get_worksheet(1)
-        proj_data = projSheet.get_all_records()
-        self.dProj = pd.DataFrame.from_dict(proj_data)
+        self.projSheet = self.shClient.open("dlmastersheet").get_worksheet(1)
 
     def get_all_pods(self):
         df = pd.DataFrame(self.sheet.get_all_records())
@@ -67,6 +65,13 @@ class GSheetDb:
     def get_timezone_for_pod(self, pod):
         df = pd.DataFrame.from_dict(self.sheet.get_all_records())
         return df.at[df[df["pod"] == pod].index.values[0], "timezone"]
+
+    def get_project_pods(self, email):
+        dProj = pd.DataFrame.from_dict(self.projSheet.get_all_records())
+        cellInfo = dProj[dProj["email"] == email].index.values[0]
+        projInfo = {"pods": dProj.at[cellInfo, "pods"]}
+        projPods = projInfo["pods"].split(",")
+        return projPods
 
     def set_students_discord_ids(self, names_to_ids):
         df = pd.DataFrame.from_dict(self.sheet.get_all_records())
