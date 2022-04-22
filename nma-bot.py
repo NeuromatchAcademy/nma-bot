@@ -37,8 +37,6 @@ credsMail = None
 db = GSheetDb()
 db.connect()
 
-shClient = db.shClient
-
 if os.path.exists("token.json"):
     credsMail = Credentials.from_authorized_user_file("token.json", scopeMail)
 
@@ -1161,14 +1159,10 @@ class nmaClient(discord.Client):
                         )
 
                 elif cmd.startswith("zoombatch"):
-                    zoomies = shClient.open("Zooms").sheet1
-                    zoomRecs = zoomies.get_all_records()
-                    dZoom = pd.DataFrame.from_dict(zoomRecs)
-                    for eachVal in dZoom["pod_name"]:
-                        zoomLink = dZoom[dZoom["pod_name"] == eachVal].index.values[0]
-                        zoomLink = dZoom.at[zoomLink, "zoom_link"]
+                    pods_to_zoom_links = db.get_all_zoom_links()
+                    for pod, zoomLink in pods_to_zoom_links.values:
                         podChannel = discord.utils.get(
-                            guild.channels, name=eachVal.replace(" ", "-")
+                            guild.channels, name=pod.replace(" ", "-")
                         )
                         async for eaMessage in podChannel.history(limit=10):
                             if eaMessage.author == self.user:
@@ -1176,7 +1170,7 @@ class nmaClient(discord.Client):
                         zoomRem = await podChannel.send(
                             embed=embedGen(
                                 "Zoom Reminder",
-                                f"The zoom link for {eachVal} is\n{zoomLink}\n\nNew to discord? Read our guide: https://docs.google.com/document/d/1a5l6QVhuqYnwFR090yDnQGhHSA3u2IEwOs0JZwkfyLo/edit?usp=sharing",
+                                f"The zoom link for {pod} is\n{zoomLink}\n\nNew to discord? Read our guide: https://docs.google.com/document/d/1a5l6QVhuqYnwFR090yDnQGhHSA3u2IEwOs0JZwkfyLo/edit?usp=sharing",
                             )
                         )
                         await zoomRem.pin()
