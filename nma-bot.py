@@ -38,7 +38,6 @@ db = GSheetDb()
 db.connect()
 
 shClient = db.shClient
-dProj = db.dProj
 
 if os.path.exists("token.json"):
     credsMail = Credentials.from_authorized_user_file("token.json", scopeMail)
@@ -469,11 +468,7 @@ class nmaClient(discord.Client):
                                     manage_messages=True,
                                 )
                         elif studentInfo["role"] == "projectTA":
-                            cellInfo = dProj[
-                                dProj["email"] == message.content
-                            ].index.values[0]
-                            projInfo = {"pods": dProj.at[cellInfo, "pods"]}
-                            projPods = projInfo["pods"].split(",")
+                            projPods = db.get_project_pods(message.content)
                             for eachPod in projPods:
                                 if eachPod[0].isalpha() == False:
                                     eachPod = eachPod[1:]
