@@ -68,6 +68,15 @@ class GSheetDb:
         df = pd.DataFrame.from_dict(self.sheet.get_all_records())
         return df.at[df[df["pod"] == pod].index.values[0], "timezone"]
 
+    def set_students_discord_ids(self, names_to_ids):
+        df = pd.DataFrame.from_dict(self.sheet.get_all_records())
+        for name, discord_id in names_to_ids.items():
+            if name in df["name"].to_list():
+                cellInfo = df[df["name"] == name].index.values[0]
+                df.at[cellInfo, "discord id"] = f"{discord_id}_"
+
+        self.sheet.update([df.columns.values.tolist()] + df.values.tolist())
+
     def set_student_discord_id(self, email, discord_id):
         df = pd.DataFrame.from_dict(self.sheet.get_all_records())
         cellInfo = df[df["email"] == email].index.values[0]
