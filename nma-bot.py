@@ -1271,7 +1271,7 @@ class nmaClient(discord.Client):
                     failUser = []
 
                     foundCount = 0
-
+                    names_to_ids = {}
                     try:
                         for eachUser in guild.members:
                             if guild.get_role(discord_config.staffId) in eachUser.roles:
@@ -1327,14 +1327,14 @@ class nmaClient(discord.Client):
                             ]:
                                 try:
                                     foundCount += 1
-                                    cellInfo = df[df["name"] == eachVar].index.values[0]
-                                    df.at[cellInfo, "discord id"] = f"{eachUser.id}_"
+                                    names_to_ids[eachVar] = eachUser.id
                                 except:
                                     pass
 
-                        sheet.update([df.columns.values.tolist()] + df.values.tolist())
+                        db.set_students_discord_ids(names_to_ids)
                         print(f"Finished {foundCount} IDs.")
-                    except:
+                    except Exception as e:
+                        print(e)
                         print("Failed idgrab.")
 
                 elif cmd.startswith(
