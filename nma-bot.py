@@ -38,8 +38,6 @@ db = GSheetDb()
 db.connect()
 
 shClient = db.shClient
-sheet = db.sheet
-df = db.df
 dProj = db.dProj
 
 if os.path.exists("token.json"):

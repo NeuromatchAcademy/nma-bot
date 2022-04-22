@@ -18,8 +18,8 @@ class GSheetDb:
         self.shClient = gspread.authorize(creds)
         self.sheet = self.shClient.open("dlmastersheet").sheet1
         records_data = self.sheet.get_all_records()
-        self.df = pd.DataFrame.from_dict(records_data)
-        print(self.df.head())
+        df = pd.DataFrame.from_dict(records_data)
+        print(df.head())
 
         projSheet = self.shClient.open("dlmastersheet").get_worksheet(1)
         proj_data = projSheet.get_all_records()
