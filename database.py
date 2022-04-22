@@ -22,6 +22,7 @@ class GSheetDb:
         print(df.head())
 
         self.projSheet = self.shClient.open("dlmastersheet").get_worksheet(1)
+        self.zoomies = self.shClient.open("Zooms").sheet1
 
     def get_all_pods(self):
         df = pd.DataFrame(self.sheet.get_all_records())
@@ -30,6 +31,16 @@ class GSheetDb:
     def get_all_megapods(self):
         df = pd.DataFrame(self.sheet.get_all_records())
         return list(set(df["megapod"]))
+
+    def get_all_zoom_links(self):
+        zoomRecs = self.zoomies.get_all_records()
+        dZoom = pd.DataFrame.from_dict(zoomRecs)
+        pods_to_zoom_links = {}
+        for pod in dZoom["pod_name"]:
+            zoomLink = dZoom[dZoom["pod_name"] == pod].index.values[0]
+            zoomLink = dZoom.at[zoomLink, "zoom_link"]
+            pods_to_zoom_links[pod] = zoomLink
+        return pods_to_zoom_links
 
     def get_student_by_email(self, email):
         df = pd.DataFrame.from_dict(self.sheet.get_all_records())
