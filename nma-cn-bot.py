@@ -119,60 +119,6 @@ def rollcallGen(roll):
 # Actual Discord bot.
 class nmaClient(discord.Client):
     async def on_ready(self):
-        global guild
-        global staffRoles
-        global allPods
-        global logChan
-        global allMegas
-        global podDict
-        global masterSheet
-        global masterChan
-        global masterMsg
-        global veriChan
-
-        guild = client.get_guild(855972293472550913)
-
-        staffRoles = []
-        staffRoles += [guild.get_role(x) for x in staffIndex]
-
-        logChan = discord.utils.get(guild.channels, name="bot-log")
-
-        masterChan = discord.utils.get(guild.channels, name="command-center")
-        veriChan = discord.utils.get(guild.channels, name="verify")
-
-        async for message in masterChan.history(limit=200):
-            await message.delete()
-
-        async for message in veriChan.history(limit=200):
-            await message.delete()
-
-        masterMsg = await masterChan.send(embed=masterEmb)
-        reactions = ["👥", "🫂", "🕵️", "⚡", "🌪️"]
-
-        for eachReaction in reactions:
-            await masterMsg.add_reaction(eachReaction)
-
-        await veriChan.send(
-            embed=embedGen(
-                "Welcome to the Neuromatch Academy CN Server!",
-                "To unlock access to all channels, please copy and paste the email address with which you log into the Neuromatch portal into this chat.",
-            )
-        )
-
-        masterSheet = pd.DataFrame(sheet.get_all_records())
-        print(masterSheet.head())
-
-        podDict = {}
-        allPods = list(set(masterSheet["pod"]))
-        allMegas = list(set(masterSheet["megapod"]))
-
-        for eachMega in allMegas:
-            podDict[eachMega] = []
-        for eachPod in masterSheet["pod"]:
-            podDict[df.at[df[df["pod"] == eachPod].index.values[0], "megapod"]] += [
-                eachPod.replace(" ", "-")
-            ]
-
         print("\n==============")
         print("Logged in as")
         print(self.user.name)
@@ -1503,7 +1449,68 @@ intents = discord.Intents(
     reactions=True,
 )
 
+async def init_hook():
+    print("Caching guild...")
+    await client.wait_until_ready()
+
+    global guild
+    global staffRoles
+    global allPods
+    global logChan
+    global allMegas
+    global podDict
+    global masterSheet
+    global masterChan
+    global masterMsg
+    global veriChan
+
+    guild = client.get_guild(855972293472550913)
+
+    staffRoles = []
+    staffRoles += [guild.get_role(x) for x in staffIndex]
+
+    logChan = discord.utils.get(guild.channels, name="bot-log")
+
+    masterChan = discord.utils.get(guild.channels, name="command-center")
+    veriChan = discord.utils.get(guild.channels, name="verify")
+
+    async for message in masterChan.history(limit=200):
+        await message.delete()
+
+    async for message in veriChan.history(limit=200):
+        await message.delete()
+
+    masterMsg = await masterChan.send(embed=masterEmb)
+    reactions = ["👥", "🫂", "🕵️", "⚡", "🌪️"]
+
+    for eachReaction in reactions:
+        await masterMsg.add_reaction(eachReaction)
+
+    await veriChan.send(
+        embed=embedGen(
+            "Welcome to the Neuromatch Academy CN Server!",
+            "To unlock access to all channels, please copy and paste the email address with which you log into the Neuromatch portal into this chat.",
+        )
+    )
+
+    masterSheet = pd.DataFrame(sheet.get_all_records())
+    print(masterSheet.head())
+
+    podDict = {}
+    allPods = list(set(masterSheet["pod"]))
+    allMegas = list(set(masterSheet["megapod"]))
+
+    for eachMega in allMegas:
+        podDict[eachMega] = []
+    for eachPod in masterSheet["pod"]:
+        podDict[df.at[df[df["pod"] == eachPod].index.values[0], "megapod"]] += [
+            eachPod.replace(" ", "-")
+        ]
+
+    print("Guild cached.")
+
 client = nmaClient(intents=intents)
+client.loop.create_task(init_hook())
 client.run(discordToken)
 activity = discord.Activity(
     name="Studying brains...", type=discord.ActivityType.watching
