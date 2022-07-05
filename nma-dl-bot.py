@@ -1452,11 +1452,8 @@ intents = discord.Intents(
 client = nmaClient(intents=intents)
 
 async def init_hook():
-    print("Test 0")
+    print("Caching guild...")
     await client.wait_until_ready()
-    print("Test 1")
-
-    # Initialization routine
 
     global guild
     global staffRoles
@@ -1511,6 +1508,8 @@ async def init_hook():
         podDict[df.at[df[df["pod"] == eachPod].index.values[0], "megapod"]] += [
             eachPod.replace(" ", "-")
         ]
+
+    print("Guild cached.")
 
 client.loop.create_task(init_hook())
 client.run(discordToken)
