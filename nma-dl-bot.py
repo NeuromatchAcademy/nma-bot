@@ -95,7 +95,7 @@ def embedGen(title, description, student=None):
         )
         embed.set_thumbnail(url="https://i.imgur.com/hAyp5Vr.png")
         embed.set_footer(
-            text="Need help? You can email support@neuromatch.io or open a ticket in #support."
+            text="Need help? You can email nma@neuromatch.io or open a ticket in #support."
         )
     else:
         embed = discord.Embed(
@@ -106,7 +106,7 @@ def embedGen(title, description, student=None):
         )
         # embed.set_thumbnail(url="https://i.imgur.com/hAyp5Vr.png")
         embed.set_footer(
-            text="Need help? You can email support@neuromatch.io or open a ticket in #support."
+            text="Need help? You can email nma@neuromatch.io or open a ticket in #support."
         )
     return embed
 
@@ -473,7 +473,7 @@ class nmaClient(discord.Client):
                         print("Could not register discord ID in database.")
 
                         # This bit is for verification confirmation emails.
-                        # veriMail = create_mail('discordsupport@neuromatch.io',studentInfo['email'],'Discord Verification Completed.','You have successfully verified your identity on the NMA discord.')
+                        # veriMail = create_mail('discordnma@neuromatch.io',studentInfo['email'],'Discord Verification Completed.','You have successfully verified your identity on the NMA discord.')
                         # send_mail(service,'me',veriMail)
 
                         print("Verification processed.\n")
@@ -520,7 +520,7 @@ class nmaClient(discord.Client):
                                 errIni = await newChan.send(
                                     embed=embedGen(
                                         f"{errCode}",
-                                        f"{errMsg}...\nIf no one assists you within the next two hours, please contact support@neuromatch.io.\nClick the 🔒 reaction to close this ticket.",
+                                        f"{errMsg}...\nIf no one assists you within the next two hours, please contact nma@neuromatch.io.\nClick the 🔒 reaction to close this ticket.",
                                     )
                                 )  # Send an error message.
                                 await errIni.add_reaction("🔒")
