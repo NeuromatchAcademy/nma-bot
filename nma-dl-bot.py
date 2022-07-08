@@ -1178,7 +1178,7 @@ class nmaClient(discord.Client):
                         )
 
                 elif cmd.startswith("zoombatch"):
-                    zoomies = shClient.open("Zooms").sheet1
+                    zoomies = shClient.open("dl_zoom2022").sheet1
                     zoomRecs = zoomies.get_all_records()
                     dZoom = pd.DataFrame.from_dict(zoomRecs)
                     for eachVal in dZoom["pod_name"]:
