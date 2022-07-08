@@ -1186,7 +1186,7 @@ class nmaClient(discord.Client):
                         zoomLink = dZoom.at[zoomInfo, "zoom_link"]
                         zoomHost = dZoom.at[zoomInfo, "zoom_host_key"]
                         podChannel = discord.utils.get(
-                            guild.channels, name=eachVal.replace(" ", "-")
+                            guild.channels, name=eachVal.replace(" ", "-").lower()
                         )
                         async for eaMessage in podChannel.history(limit=10):
                             if eaMessage.author == self.user:
