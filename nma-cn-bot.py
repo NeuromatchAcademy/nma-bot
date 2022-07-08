@@ -1182,8 +1182,9 @@ class nmaClient(discord.Client):
                     zoomRecs = zoomies.get_all_records()
                     dZoom = pd.DataFrame.from_dict(zoomRecs)
                     for eachVal in dZoom["pod_name"]:
-                        zoomLink = dZoom[dZoom["pod_name"] == eachVal].index.values[0]
-                        zoomLink = dZoom.at[zoomLink, "zoom_link"]
+                        zoomInfo = dZoom[dZoom["pod_name"] == eachVal].index.values[0]
+                        zoomLink = dZoom.at[zoomInfo, "zoom_link"]
+                        zoomHost = dZoom.at[zoomInfo, "zoom_host_key"]
                         podChannel = discord.utils.get(
                             guild.channels, name=eachVal.replace(" ", "-")
                         )
@@ -1193,7 +1194,7 @@ class nmaClient(discord.Client):
                         zoomRem = await podChannel.send(
                             embed=embedGen(
                                 "Zoom Reminder",
-                                f"The zoom link for {eachVal} is\n{zoomLink}\n\nNew to discord? Read our guide: https://docs.google.com/document/d/1a5l6QVhuqYnwFR090yDnQGhHSA3u2IEwOs0JZwkfyLo/edit?usp=sharing",
+                                f"The zoom link for {eachVal} is\n{zoomLink}\nZoom host key is {zoomHost}\n\nNew to discord? Read our guide: https://docs.google.com/document/d/1a5l6QVhuqYnwFR090yDnQGhHSA3u2IEwOs0JZwkfyLo/edit?usp=sharing",
                             )
                         )
                         await zoomRem.pin()
