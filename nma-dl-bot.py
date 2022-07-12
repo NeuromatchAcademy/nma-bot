@@ -260,7 +260,7 @@ class nmaClient(discord.Client):
                 ):  # If the message contains an email address...
                     # await message.add_reaction(discord.utils.get(guild.emojis, name=':load:'))
                     # await message.delete() #Delete the message.
-                    email = message.content
+                    email = message.content.strip().lower()
 
                     print("Student attempting to verify...")
                     errCode = "Verification unsuccessful"
@@ -789,7 +789,7 @@ class nmaClient(discord.Client):
                 ):  # Reassings the given user to the given pod.
                     cmdMsg = cmd.split(" ")
                     targUser = cmdMsg[1]
-                    targMail = cmdMsg[2]
+                    targMail = cmdMsg[2].lower()
                     targPod = cmdMsg[3]
 
                     try:
