@@ -430,6 +430,22 @@ class nmaClient(discord.Client):
                             await targUser.add_roles(
                                 guild.get_role(timezoneRoles[studentInfo["timezone"]])
                             )
+                            # Add mentor to their pods and megapod-generals
+                            if studentInfo["pod"] and studentInfo["pod"] != "None":
+                                podsList = [pod.strip().lower() for pod in studentInfo["pod"].split(",")]
+                                for pod in podsList:
+                                    podChan = discord.utils.get(guild.channels, name=pod)
+                                    await podChan.set_permissions(targUser, view_channel=True, send_messages=True)
+                                    await podChan.send(
+                                        embed=embedGen(
+                                            "Pod Announcement",
+                                            f"{studentInfo['name']} has joined the pod.",
+                                            )
+                                        )
+                                    # Fetch megapod name for a pod
+                                    megapod = df.at[df[df['pod']==pod].index.values[0], 'megapod']
+                                    megaGen = discord.utils.get(guild.channels, name=f"{megapod}-general")
+                                    await megaGen.set_permissions(targUser, view_channel=True, send_messages=True)
                         elif studentInfo["role"] == "speaker":
                             await targUser.add_roles(guild.get_role(867751492417355828))
                             await targUser.add_roles(guild.get_role(867751492417355833))
