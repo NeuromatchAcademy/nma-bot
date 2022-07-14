@@ -1007,7 +1007,6 @@ class nmaClient(discord.Client):
                     oldPod = discord.utils.get(guild.channels, name=cmdMsg[1])
                     newPod = discord.utils.get(guild.channels, name=cmdMsg[2])
                     rollCall = []
-                    staffCount = 0
                     totalCount = 0
                     for user in oldPod.members:
                         if (
@@ -1021,35 +1020,33 @@ class nmaClient(discord.Client):
                             )
                             == True
                         ):
-                            staffCount += 1
                             continue
                         else:
                             try:
-                                await oldPod.set_permissions(
-                                    user, view_channel=False, send_messages=False
-                                )
                                 await newPod.set_permissions(
                                     user, view_channel=True, send_messages=True
                                 )
+                                await newPod.send(
+                                    embed=embedGen(
+                                        "Pod Announcement",
+                                        f"{user.name} has joined the pod.",
+                                    )
+                                )
                                 totalCount += 1
                             except:
+                                await logChan.send(
+                                    embed=embedGen(
+                                        "WARNING!",
+                                        f"Could not add {user.name} to pod-{cmdMsg[2]}.",
+                                    )
+                                )
                                 continue
-                    await message.channel(
+                    await message.channel.send(
                         embed=embedGen(
                             "Administrative Message",
-                            f"Successfully moved {totalCount} out of {len(oldPod.members)} users to {cmdMsg[2]}.",
+                            f"Successfully added {totalCount} out of {len(oldPod.members)} users from {cmdMsg[1]} to {cmdMsg[2]}.",
                         )
                     )
-                    if len(oldPod.members) <= staffCount:
-                        try:
-                            await oldPod.delete()
-                        except:
-                            await message.channel(
-                                embed=embedGen(
-                                    "Administrative Message.",
-                                    f"Could not delete channel {cmdMsg[1]}.",
-                                )
-                            )
 
                 elif cmd.startswith(
                     "tafix"
