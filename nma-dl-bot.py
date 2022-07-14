@@ -1034,7 +1034,7 @@ class nmaClient(discord.Client):
                                 totalCount += 1
                             except:
                                 continue
-                    await message.channel(
+                    await message.channel.send(
                         embed=embedGen(
                             "Administrative Message",
                             f"Successfully moved {totalCount} out of {len(oldPod.members)} users to {cmdMsg[2]}.",
@@ -1044,7 +1044,7 @@ class nmaClient(discord.Client):
                         try:
                             await oldPod.delete()
                         except:
-                            await message.channel(
+                            await message.channel.send(
                                 embed=embedGen(
                                     "Administrative Message.",
                                     f"Could not delete channel {cmdMsg[1]}.",
