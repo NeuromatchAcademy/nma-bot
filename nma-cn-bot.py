@@ -1026,6 +1026,12 @@ class nmaClient(discord.Client):
                                 await newPod.set_permissions(
                                     user, view_channel=True, send_messages=True
                                 )
+                                await newPod.send(
+                                    embed=embedGen(
+                                        "Pod Announcement",
+                                        f"{user.name} has joined the pod.",
+                                    )
+                                )
                                 totalCount += 1
                             except:
                                 continue
