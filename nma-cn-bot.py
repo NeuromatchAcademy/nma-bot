@@ -1034,6 +1034,12 @@ class nmaClient(discord.Client):
                                 )
                                 totalCount += 1
                             except:
+                                await logChan.send(
+                                    embed=embedGen(
+                                        "WARNING!",
+                                        f"Could not add {user.name} to pod-{cmdMsg[2]}.",
+                                    )
+                                )
                                 continue
                     await message.channel.send(
                         embed=embedGen(
