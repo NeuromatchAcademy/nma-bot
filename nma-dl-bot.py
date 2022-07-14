@@ -1007,7 +1007,6 @@ class nmaClient(discord.Client):
                     oldPod = discord.utils.get(guild.channels, name=cmdMsg[1])
                     newPod = discord.utils.get(guild.channels, name=cmdMsg[2])
                     rollCall = []
-                    staffCount = 0
                     totalCount = 0
                     for user in oldPod.members:
                         if (
@@ -1021,7 +1020,6 @@ class nmaClient(discord.Client):
                             )
                             == True
                         ):
-                            staffCount += 1
                             continue
                         else:
                             try:
@@ -1037,16 +1035,6 @@ class nmaClient(discord.Client):
                             f"Successfully added {totalCount} out of {len(oldPod.members)} users from {cmdMsg[1]} to {cmdMsg[2]}.",
                         )
                     )
-                    if len(oldPod.members) <= staffCount:
-                        try:
-                            await oldPod.delete()
-                        except:
-                            await message.channel.send(
-                                embed=embedGen(
-                                    "Administrative Message.",
-                                    f"Could not delete channel {cmdMsg[1]}.",
-                                )
-                            )
 
                 elif cmd.startswith(
                     "tafix"
