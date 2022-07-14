@@ -1025,9 +1025,6 @@ class nmaClient(discord.Client):
                             continue
                         else:
                             try:
-                                await oldPod.set_permissions(
-                                    user, view_channel=False, send_messages=False
-                                )
                                 await newPod.set_permissions(
                                     user, view_channel=True, send_messages=True
                                 )
@@ -1037,7 +1034,7 @@ class nmaClient(discord.Client):
                     await message.channel.send(
                         embed=embedGen(
                             "Administrative Message",
-                            f"Successfully moved {totalCount} out of {len(oldPod.members)} users to {cmdMsg[2]}.",
+                            f"Successfully added {totalCount} out of {len(oldPod.members)} users from {cmdMsg[1]} to {cmdMsg[2]}.",
                         )
                     )
                     if len(oldPod.members) <= staffCount:
