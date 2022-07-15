@@ -260,19 +260,20 @@ class nmaClient(discord.Client):
                 ):  # If the message contains an email address...
                     # await message.add_reaction(discord.utils.get(guild.emojis, name=':load:'))
                     # await message.delete() #Delete the message.
+                    email = message.content.strip().lower()
 
                     print("Student attempting to verify...")
                     errCode = "Verification unsuccessful"
                     errMsg = f"The target user submitted an email that could not be found in the database."
 
                     try:
-                        cellInfo = df[df["email"] == message.content].index.values[0]
+                        cellInfo = df[df["email"] == email].index.values[0]
                         print("Student identified...")
                         studentInfo = {
                             "name": df.at[cellInfo, "name"],
                             "pod": df.at[cellInfo, "pod"],
                             "role": df.at[cellInfo, "role"],
-                            "email": message.content,
+                            "email": email,
                             "megapod": df.at[cellInfo, "megapod"],
                             "timezone": df.at[cellInfo, "timezone"],
                         }
@@ -397,7 +398,7 @@ class nmaClient(discord.Client):
                                 guild.get_role(timezoneRoles[studentInfo["timezone"]])
                             )
                             cellInfo = dProj[
-                                dProj["email"] == message.content
+                                dProj["email"] == email
                             ].index.values[0]
                             projInfo = {"pods": dProj.at[cellInfo, "pods"]}
                             projPods = projInfo["pods"].split(",")
@@ -804,7 +805,7 @@ class nmaClient(discord.Client):
                 ):  # Reassings the given user to the given pod.
                     cmdMsg = cmd.split(" ")
                     targUser = cmdMsg[1]
-                    targMail = cmdMsg[2]
+                    targMail = cmdMsg[2].lower()
                     targPod = cmdMsg[3]
 
                     try:
