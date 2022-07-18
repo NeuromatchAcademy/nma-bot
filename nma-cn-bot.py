@@ -765,6 +765,14 @@ class nmaClient(discord.Client):
                             targUser, view_channel=True, send_messages=True
                         )
                         await message.delete()
+                    elif "neurodivergent" in cmd:
+                        neurodivergentChan = discord.utils.get(
+                                guild.channels, name="neurodivergent-in-neuro"
+                                )
+                        await neurodivergentChan.set_permissions(
+                                targUser, view_channel=True, send_messages=True
+                                )
+                        await message.delete()
 
                 elif cmd.startswith(
                     "auth"
