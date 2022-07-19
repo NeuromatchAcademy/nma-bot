@@ -774,6 +774,39 @@ class nmaClient(discord.Client):
                                 )
                         await message.delete()
 
+                elif cmd.startswith("unidentify"):
+                    # --nma unidentify [lgbtq | gender | race | neurodivergent]
+                    # revoke access to a diversity channel
+                    targUser = cmder
+                    if "lgbtq" in cmd:
+                        queerChan = discord.utils.get(guild.channels, name="lgbtq-in-neuro")
+                        await queerChan.set_permissions(
+                            targUser, view_channel=False, send_messages=False
+                        )
+                        await message.delete()
+                    elif "gender" in cmd:
+                        genderChan = discord.utils.get(
+                                guild.channels, name="gender-in-neuro"
+                                )
+                        await genderChan.set_permissions(
+                            targUser, view_channel=False, send_messages=False
+                        )
+                        await message.delete()
+                    elif "race" in cmd:
+                        raceChan = discord.utils.get(guild.channels, name="race-in-neuro")
+                        await raceChan.set_permissions(
+                            targUser, view_channel=False, send_messages=False
+                        )
+                        await message.delete()
+                    elif "neurodivergent" in cmd:
+                        neurodivergentChan = discord.utils.get(
+                                guild.channels, name="neurodivergent-in-neuro"
+                                )
+                        await neurodivergentChan.set_permissions(
+                                targUser, view_channel=False, send_messages=False
+                                )
+                        await message.delete()
+
                 elif cmd.startswith(
                     "auth"
                 ):  # Debugging command that tells the user whether they are authorized to use administrative commands.
