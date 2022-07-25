@@ -267,7 +267,7 @@ class nmaClient(discord.Client):
                     errMsg = f"The target user submitted an email that could not be found in the database."
 
                     try:
-                        cellInfo = df[df["email"] == email].index.values[0]
+                        cellInfo = df[df["email"].str.lower() == email].index.values[0]
                         print("Student identified...")
                         studentInfo = {
                             "name": df.at[cellInfo, "name"],
@@ -850,7 +850,7 @@ class nmaClient(discord.Client):
                     targPod = cmdMsg[3]
 
                     try:
-                        cellInfo = df[df["email"] == targMail].index.values[0]
+                        cellInfo = df[df["email"].str.lower() == targMail].index.values[0]
                         print("Student identified...")
                         studentInfo = {
                             "name": df.at[cellInfo, "name"],
