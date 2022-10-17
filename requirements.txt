@@ -4,8 +4,6 @@
 #
 #    pip-compile
 #
---trusted-host devpi.gambit
-
 aiohttp==3.7.4.post0
     # via discord-py
 async-timeout==3.0.1
