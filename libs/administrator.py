@@ -3,7 +3,7 @@ from . import interact, buttons
 
 class CommandDropdownView(discord.ui.View):
     def __init__(self):
-        super().__init__()
+        super().__init__(timeout=60)
         self.add_item(Dropdown())
 
 # Mapping from Dropdown option to Button sets

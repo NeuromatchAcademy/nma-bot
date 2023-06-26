@@ -14,11 +14,7 @@ embed_dict = {
     'master': {
         'title': 'Administrative Interface',
         'description': "Click on the appropriate buttons below to initiate a bot action. If that doesn't work, you can use the commands listed below as a back-up.",
-        'color': 0x00ff2a,
-        'field': {
-            'name': 'Additional Commands',
-            'value': 'Use `--nma auth` to test whether you have access to administrative powers.'
-        }
+        'color': 0x00ff2a
     },
     'dm': {
         'title': '',
