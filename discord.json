@@ -1,0 +1,112 @@
+{
+    "Computational Tools for Climate Science": {
+        "megatest": {
+            "lead_ta": {
+                "first_name": "Konstantine",
+                "last_name": "Tsafatinos",
+                "email": "konstantine.tsafatinos@neuromatch.io"
+            },
+            "pods": {
+                "testgetti": {
+                    "time_slot": "2",
+                    "ta": {
+                        "first_name": "Konstantine",
+                        "last_name": "Tsafatinos",
+                        "email": "konstantine.tsafatinos@neuromatch.io"
+                    },
+                    "project_ta": {
+                        "first_name": "Terst667",
+                        "last_name": "Tersterson",
+                        "email": "test@1234.com"
+                    },
+                    "students": [
+                        {
+                            "first_name": "Tersty",
+                            "last_name": "Tersterson",
+                            "email": "terst@1234.com"
+                        },
+                        {
+                            "first_name": "Terty",
+                            "last_name": "Tere",
+                            "email": "test1@1234.com"
+                        }
+                    ]
+                },
+                "pastest": {
+                    "time_slot": "3",
+                    "ta": {
+                        "first_name": "Terst",
+                        "last_name": "rwerwerwe",
+                        "email": "yudah@protonmail.com"
+                    },
+                    "project_ta": {
+                        "first_name": "Terst667",
+                        "last_name": "Tersterson",
+                        "email": "test@1234.com"
+                    },
+                    "students": [
+                        {
+                            "first_name": "Konstantine",
+                            "last_name": "Tsafatinos",
+                            "email": "kosta.tsaf@gmail.com"
+                        }
+                    ]
+                }
+            }
+        },
+        "megapod": {
+            "lead_ta": {
+                "first_name": "Konstantine",
+                "last_name": "Tsafatinos",
+                "email": "konstantine.tsafatinos@neuromatch.io"
+            },
+            "pods": {
+                "testgutti": {
+                    "time_slot": "2",
+                    "ta": {
+                        "first_name": "Konstantine",
+                        "last_name": "Tsafatinos",
+                        "email": "konstantine.tsafatinos@neuromatch.io"
+                    },
+                    "project_ta": {
+                        "first_name": "Terst667",
+                        "last_name": "Tersterson",
+                        "email": "test@1234.com"
+                    },
+                    "students": [
+                        {
+                            "first_name": "Tersty",
+                            "last_name": "Tersterson",
+                            "email": "terst@1234.com"
+                        },
+                        {
+                            "first_name": "Terty",
+                            "last_name": "Tere",
+                            "email": "test1@1234.com"
+                        }
+                    ]
+                },
+                "postest": {
+                    "time_slot": "3",
+                    "ta": {
+                        "first_name": "Terst",
+                        "last_name": "rwerwerwe",
+                        "email": "yudah@protonmail.com"
+                    },
+                    "project_ta": {
+                        "first_name": "Terst667",
+                        "last_name": "Tersterson",
+                        "email": "test@1234.com"
+                    },
+                    "students": [
+                        {
+                            "first_name": "Konstantine",
+                            "last_name": "Tsafatinos",
+                            "email": "kosta.tsaf@gmail.com"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

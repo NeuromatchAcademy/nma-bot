@@ -3,8 +3,8 @@ from . import interact, buttons
 
 class CommandDropdownView(discord.ui.View):
     def __init__(self):
-        super().__init__(timeout=60)
-        self.add_item(Dropdown())
+        super().__init__(timeout=None)
+        self.add_item(Dropdown(self))
 
 # Mapping from Dropdown option to Button sets
 BUTTON_MAPPING = {
@@ -14,7 +14,7 @@ BUTTON_MAPPING = {
 }
 
 class Dropdown(discord.ui.Select):
-    def __init__(self):
+    def __init__(self, view):
 
         # Set the options that will be presented inside the dropdown
         options = [
@@ -28,33 +28,24 @@ class Dropdown(discord.ui.Select):
         # The options parameter defines the dropdown options. We defined this above
         super().__init__(placeholder='Choose which commands to display.', min_values=1, max_values=1, options=options)
 
+        # Save the parent view
+        self.parent_view = view
+
     async def callback(self, interaction: discord.Interaction):
-        # Use the interaction object to send a response message containing
-        # the user's favourite colour or choice. The self object refers to the
-        # Select object, and the values attribute gets a list of the user's
-        # selected options. We only want the first one.
+
+        # Clear the items from the parent view
+        self.parent_view.clear_items()
+
+        # Add the dropdown back to the parent view
+        self.parent_view.add_item(Dropdown(self.parent_view))
 
         # Create a new View and add buttons to it based on dropdown selection
-        view = discord.ui.View()
         for ButtonClass in BUTTON_MAPPING.get(self.values[0], []):
-            view.add_item(ButtonClass())
+            self.parent_view.add_item(ButtonClass())
 
-        # Send a message with the created View
-        await interaction.response.send_message('', view=view, ephemeral=True)
+        # Update the original message with the new view
+        await interaction.response.edit_message(view=self.parent_view)
 
-async def pod_change(message,mode):
-    if mode == 'assign':
-        print(mode)
-    elif mode == 'unassign':
-        print(mode)
-    elif mode == 'merge':
-        print(mode)
-    elif mode == 'swap':
-        print(mode)
-    elif mode == 'identify':
-        print(mode)
-    else:
-        await message.channel.send("Unknown command.")
 
 async def grab(prompt,interaction):
     def vet(m):

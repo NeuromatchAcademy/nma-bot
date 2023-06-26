@@ -32,7 +32,11 @@ def send_embed(mode, title='None', message='None'):
             embed.add_field(name=embed_dict[mode]['field']['name'], value=embed_dict[mode]['field']['value'], inline=False)
 
     else:
-        embed = discord.Embed(title=title, description=message, color=0x00ff2a)
+        if 'Administrative' in title:
+            color = 0xff8800
+        else:
+            color = 0x00ff2a
+        embed = discord.Embed(title=title, description=message, color=color)
 
     embed.set_author(name="Neuromatch Bot", url="https://neuromatch.io/", icon_url="https://i.imgur.com/CRoluuv.png")
     return embed
