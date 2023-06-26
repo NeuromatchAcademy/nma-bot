@@ -1,4 +1,10 @@
+import json
 import discord
+
+# Load portal data.
+with open('pods.json') as f:
+    master_db = json.load(f)
+
 
 def find_by_category(nested_dict, target, category, parent_category=None, grandparent_category=None, grand_grandparent_category=None):
     for key, value in nested_dict.items():
@@ -21,6 +27,7 @@ def find_by_category(nested_dict, target, category, parent_category=None, grandp
                 'pod': grandparent_category,
                 'megapod': grand_grandparent_category
             }
+
 
 async def verify_user(message):
     logChan = discord.utils.get(message.guild.channels, name="bot-log")

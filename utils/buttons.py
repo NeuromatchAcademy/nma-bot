@@ -1,9 +1,11 @@
 import discord
 import json
-from . import administrator, interact, verify
+from . import interact, verify
+from .administrator import grab
+
 
 # Load portal data.
-with open('servers.json') as f:
+with open('pods.json') as f:
     master_db = json.load(f)
 
 

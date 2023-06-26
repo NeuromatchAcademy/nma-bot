@@ -1,12 +1,17 @@
 import os
+import json
+import asyncio
 import psycopg2
+from pathlib import Path
 from dotenv import load_dotenv
 from contextlib import contextmanager
 
 
 @contextmanager
 def connect_to_db():
-    env_file_path = ".dbenv"
+    current_dir = Path(__file__).resolve().parent
+    parent_dir = current_dir.parent
+    env_file_path = parent_dir / ".dbenv"
     load_dotenv(dotenv_path=env_file_path)
 
     postgres_host = os.getenv("PG_HOST")
@@ -103,12 +108,34 @@ def get_pod_data_from_db(connection):
     return pod_data
 
 
-def main():
+def save_data_to_json(data, filename):
+    current_dir = Path(__file__).resolve().parent
+    parent_dir = current_dir.parent
+    file_path = parent_dir / filename
+    with open(file_path, 'w') as f:
+        json.dump(data, f)
+
+
+async def poll_db():
     with connect_to_db() as connection:
         data = get_pod_data_from_db(connection)
-        import json
-        print(json.dumps(data, indent=4))
+        save_data_to_json(data, 'pods.json')
+        while True:
+            await asyncio.sleep(60)
+            try:
+                new_data = get_pod_data_from_db(connection)
+            except Exception as e:
+                print(f"Error occurred while getting data: {e}")
+
+            if data != new_data:
+                print("Data has been changed")
+                save_data_to_json(new_data, 'pods.json')
+            data = new_data
+
+
+async def main():
+    await poll_db()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

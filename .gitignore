@@ -1,0 +1,5 @@
+.env
+.dbenv
+botenv/
+**/__pycache__/
+pods.json
