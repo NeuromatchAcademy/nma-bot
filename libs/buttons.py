@@ -166,6 +166,9 @@ class InitializeServer(discord.ui.Button):
         super().__init__(label='Initialize Server', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_message(
+            embed=interact.send_embed('custom', 'Administrative Notice', 'Initializing server. This may take a while!'),
+            ephemeral=True)
         if 'Climate' in interaction.guild.name:  # Hardcoded, needs to be made future-proof for NMA in a box.
             print("..verifying for Climatematch.")
             nested_dict = master_db["Computational Tools for Climate Science"]
