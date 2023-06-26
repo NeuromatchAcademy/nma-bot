@@ -3,3 +3,5 @@
 botenv/
 **/__pycache__/
 pods.json
+.idea/
+discord.log
