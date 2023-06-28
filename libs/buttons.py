@@ -266,3 +266,18 @@ class GraduateServer(discord.ui.Button):
             await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
                                                                               f'For security reasons, only Kevin can trigger a pod purge.'),
                                                     ephemeral=True)
+
+
+class StartCheckers(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label='Checkers', style=discord.ButtonStyle.green)
+
+    async def callback(self, interaction: discord.Interaction):
+        play_cat = discord.utils.get(interaction.guild.channels, name='social')
+        play_channel = discord.utils.get(interaction.guild.channels, name='checkers')
+        if play_channel is None:
+            play_channel = await interaction.guild.create_voice_channel(name='checkers', category=play_cat)
+
+        play_event = await interaction.guild.create_scheduled_event(name='Checkers Party', start_time=discord.utils.utcnow(), entity_type=play_channel, reason=f"{interaction.user} started Checkers.")
+
+        await interaction.response.send_message('', ephemeral=True)

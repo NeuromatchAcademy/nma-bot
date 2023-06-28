@@ -23,7 +23,6 @@ embed_dict = {
     }
 }
 
-
 def send_embed(mode, title='None', message='None'):
     if mode != 'custom':
         embed = discord.Embed(title=embed_dict[mode]['title'], description=embed_dict[mode]['description'], color=embed_dict[mode]['color'])

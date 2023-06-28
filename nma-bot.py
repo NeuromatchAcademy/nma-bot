@@ -35,6 +35,10 @@ class nmaClient(discord.Client):
                     async for message in channel.history(limit=200):
                         await message.delete()
                     await channel.send(embed=interact.send_embed('verify'))
+                elif channel.name == 'activities':
+                    async for message in channel.history(limit=200):
+                        await message.delete()
+                    await channel.send(embed=interact.send_embed('social'), view=administrator.SocialDropdownView())
                 elif channel.name == 'bot-log':
                     await channel.send(embed=interact.send_embed('restart'))
 
@@ -95,7 +99,8 @@ intents = discord.Intents(
     members=True,
     presences=True,
     reactions=True,
-    message_content=True
+    message_content=True,
+    manage_events=True
 )
 
 client = nmaClient(intents=intents)

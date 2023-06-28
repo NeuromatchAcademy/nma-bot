@@ -4,24 +4,40 @@ from . import interact, buttons
 class CommandDropdownView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
-        self.add_item(Dropdown(self))
+        self.add_item(Dropdown(self, 'admin'))
+
+
+class SocialDropdownView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        self.add_item(Dropdown(self, 'social'))
 
 # Mapping from Dropdown option to Button sets
 BUTTON_MAPPING = {
     "Meta Commands": [buttons.CheckAuthority, buttons.CheckUserDetails, buttons.CheckPodDetails, buttons.CleanChannel],
     "Pod Commands": [buttons.AssignUser, buttons.RemoveUser, buttons.RepodUser, buttons.MergePods],
     "Server Commands": [buttons.InitializeServer, buttons.GraduateServer],
+    "Games": [],
+    "Activities": [],
+    "Discussions": []
 }
 
 class Dropdown(discord.ui.Select):
-    def __init__(self, view):
+    def __init__(self, view, mode):
 
         # Set the options that will be presented inside the dropdown
-        options = [
-            discord.SelectOption(label='Meta Commands', description='Commands that primarily display information.', emoji='ℹ️'),
-            discord.SelectOption(label='Pod Commands', description='Commands that manipulate pod access.', emoji='👥'),
-            discord.SelectOption(label='Server Commands', description='Commands that change the server structure.', emoji='⚠️'),
-        ]
+        if mode == 'admin':
+            options = [
+                discord.SelectOption(label='Meta Commands', description='Commands that primarily display information.', emoji='ℹ️'),
+                discord.SelectOption(label='Pod Commands', description='Commands that manipulate pod access.', emoji='👥'),
+                discord.SelectOption(label='Server Commands', description='Commands that change the server structure.', emoji='⚠️'),
+            ]
+        elif mode == 'social':
+            options = [
+                discord.SelectOption(label='Games', description='Buttons that start or join games.', emoji='🕹️'),
+                discord.SelectOption(label='Activities', description='Activities that don\' quite qualify as games.', emoji='💃'),
+                discord.SelectOption(label='Discussions', description='Start a discussion about a topic.', emoji='💬'),
+            ]
 
         # The placeholder is what will be shown when no option is chosen
         # The min and max values indicate we can only pick one of the three options
