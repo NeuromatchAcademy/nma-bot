@@ -1,25 +1,31 @@
-import os.path
+import os
 import json
-
-from discord.ext import commands
 import discord
-from discord import Intents, Activity, ActivityType
+from dotenv import load_dotenv
+from pathlib import Path
 
-from libs import administrator, verify, interact
+from utils import administrator, verify, interact, db
 
 
 # Auth
-discordToken = "MTEyMjY2NDMyNTQ4MDQ2NDM4Ng.GYbB-F.6hwrQJj6VfmTNs-QIsFZwLfowFX1Hz6ct0LUEE"
+current_dir = Path(__file__).resolve().parent
+parent_dir = current_dir.parent
+env_file_path = parent_dir / ".env"
+load_dotenv(dotenv_path=env_file_path)
+
+discordToken = os.getenv("DISCORD_TOKEN")
 
 
 # Load config data.
+# TODO: this is currently not being used here
 with open('config.json', 'r') as f:
     roleKey = json.load(f)
 
 
-# Load portal data.
-with open('servers.json') as f:
-    master_db = json.load(f)
+## TODO: likely remove this
+## Load portal data.
+#with open('servers.json') as f:
+#    master_db = json.load(f)
 
 
 # Actual Discord bot.
