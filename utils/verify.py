@@ -21,8 +21,7 @@ def find_by_category(nested_dict, target, category, parent_category=None, grandp
                         return result
         elif key == category and value == target:
             return {
-                'first_name': nested_dict.get('first_name'),
-                'last_name': nested_dict.get('last_name'),
+                'name': f"{nested_dict.get('first_name')} {nested_dict.get('last_name')}",
                 'email': nested_dict.get('email'),
                 'role': parent_category,
                 'pod': grandparent_category,
@@ -52,7 +51,10 @@ async def verify_user(message):
 
         userInfo = find_by_category(nested_dict, target_email, 'email')
 
-        await user.edit(nick=userInfo["name"][0:30]) # Change user's nickname to full real name.
+        if len(userInfo["name"]) > 30:
+            await user.edit(nick=userInfo["name"][0:30]) # Change user's nickname to full real name.
+        else:
+            await user.edit(nick=userInfo["name"]) # Change user's nickname to full real name.
 
         for eachRole in roleKey[userInfo['role']]['roles']: # Assign user appropriate discord roles.
             await user.add_roles(discord.utils.get(message.guild.get_role, name=eachRole))
@@ -70,4 +72,4 @@ async def verify_user(message):
         await logChan.send(f"**Verified:** {message.author} verified for pod {userInfo['pod']}.")
     except Exception as error:
         print(f"Verification failed for {message.author} with email {message.content}")
-        await logChan.send(f"**Failed Verification:** {message.author} tried to verify with email {message.content}. Ran into this issue: {Exception}")
+        await logChan.send(f"**Failed Verification:** {message.author} tried to verify with email {message.content}. Ran into this issue: {error}")
