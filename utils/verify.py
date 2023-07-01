@@ -65,7 +65,7 @@ async def verify_user(message):
             time_role = discord.utils.get(message.guild.roles, name='asia-pacific')
         await user.add_roles(time_role)
 
-        print(f"Verifying user {user} with email {target_email}.")
+        print(f"Verified user {user} with email {target_email}.")
         await logChan.send(embed=interact.send_embed('custom',"Verified User",f"{message.author} verified for megapod(s) {userInfo['megapods']} and pod(s) {userInfo['pods']}."))
     except Exception as error:
         print(f"Verification failed for {message.author} with email {message.content}")

@@ -223,19 +223,20 @@ class GraduateServer(discord.ui.Button):
                         if eachObj.category.name.lower() not in ['observer track', 'alumni', 'administrative', 'teaching assistants', 'content help',
                                  'projects', 'information', 'lobby', 'professional development', 'social', 'contest',
                                  'diversity']:
-                            for eachMember in eachObj.members:
-                                if alumnus_role not in eachMember.roles:
-                                    await eachMember.add_roles(alumnus_role)
-                                    await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                              f'Assigned alumnus role to {eachMember}.'))
-                                if any(role in eachMember.roles for role in ta_roles):
-                                    await eachMember.add_roles(ta_alumnus_role)
-                                    await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                              f'Assigned TA alumnus role to {eachMember}.'))
-                                for eachRole in grad_roles:
-                                    if eachRole in eachMember.roles:
-                                        await eachMember.remove_roles(eachRole)
-                                        await log_channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Removed {eachRole} role from {eachMember}.'))
+                            if eachObj.type != discord.ChannelType.forum:
+                                for eachMember in eachObj.members:
+                                    if alumnus_role not in eachMember.roles:
+                                        await eachMember.add_roles(alumnus_role)
+                                        await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                  f'Assigned alumnus role to {eachMember}.'))
+                                    if any(role in eachMember.roles for role in ta_roles):
+                                        await eachMember.add_roles(ta_alumnus_role)
+                                        await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                  f'Assigned TA alumnus role to {eachMember}.'))
+                                    for eachRole in grad_roles:
+                                        if eachRole in eachMember.roles:
+                                            await eachMember.remove_roles(eachRole)
+                                            await log_channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Removed {eachRole} role from {eachMember}.'))
 
                             await log_channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Deleted pod {eachObj.name} from megapod {eachObj.category.name}.'))
                             await eachObj.delete()
