@@ -14,13 +14,6 @@ load_dotenv(dotenv_path=env_file_path)
 
 discordToken = os.getenv("DISCORD_TOKEN")
 
-
-# Load config data.
-# TODO: this is currently not being used here
-with open('config.json', 'r') as f:
-    roleKey = json.load(f)
-
-
 ## TODO: likely remove this
 ## Load portal data.
 #with open('servers.json') as f:

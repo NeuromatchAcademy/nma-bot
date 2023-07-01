@@ -6,6 +6,8 @@ import discord
 with open('pods.json') as f:
     master_db = json.load(f)
 
+with open('config.json', 'r') as f:
+    roleKey = json.load(f)
 
 def find_by_category(nested_dict, target, category, parent_category=None, grandparent_category=None, grand_grandparent_category=None):
     for key, value in nested_dict.items():
