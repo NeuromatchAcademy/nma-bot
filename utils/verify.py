@@ -54,7 +54,8 @@ async def verify_user(message):
             await user.edit(nick=userInfo["name"]) # Change user's nickname to full real name.
 
         for eachRole in roleKey[userInfo['role']]['roles']: # Assign user appropriate discord roles.
-            await user.add_roles(discord.utils.get(message.guild.get_role, name=eachRole))
+            disc_role = discord.utils.get(message.guild.get_role, name=eachRole)
+            await user.add_roles(disc_role)
 
         pod_channel = discord.utils.get(message.guild.channels, name=userInfo["pod"].replace(' ','-'))
         megapod_cat = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod'].replace(' ', '-')}-general")
