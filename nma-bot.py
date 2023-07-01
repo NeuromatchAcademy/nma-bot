@@ -23,6 +23,9 @@ discordToken = os.getenv("DISCORD_TOKEN")
 
 # Actual Discord bot.
 class nmaClient(discord.Client):
+    async def setup_hook(self):
+        db.poll_db.start()
+
     async def on_ready(self):
         for guild in client.guilds:
             for channel in guild.channels:

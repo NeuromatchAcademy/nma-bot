@@ -5,6 +5,7 @@ import psycopg2
 from pathlib import Path
 from dotenv import load_dotenv
 from contextlib import contextmanager
+from discord.ext import tasks
 
 
 @contextmanager
@@ -54,7 +55,7 @@ def get_pod_data_from_db(connection):
             upta ON upta.id=ta3.user_id WHERE c.is_active IS true;"
         cursor.execute(query)
         results = cursor.fetchall()
-        column_names = [desc[0] for desc in cursor.description[13:]]
+        # column_names = [desc[0] for desc in cursor.description[13:]]
 
         pod_data = {}
         for row in results:
@@ -71,40 +72,56 @@ def get_pod_data_from_db(connection):
             project_ta_fn = row[10]
             project_ta_ln = row[11]
             project_ta_email = row[12]
-            item = {column_names[i]: value for i, value in enumerate(row[13:])}
+            student_fn = row[13]
+            student_ln = row[14]
+            student_email = row[15]
+            # item = {column_names[i]: value for i, value in enumerate(row[13:])}
             if course_key not in pod_data:
-                pod_data[course_key] = {}
-            if megapod_key not in pod_data[course_key]:
-                pod_data[course_key][megapod_key] = {}
-                pod_data[course_key][megapod_key]['lead_ta'] = {
-                    'first_name': lead_ta_fn,
-                    'last_name': lead_ta_ln,
-                    'email': lead_ta_email
+                pod_data[course_key] = {
+                    "structure": {},
+                    "users": {},
                 }
-                pod_data[course_key][megapod_key]['pods'] = {}
-            if pod_key not in pod_data[course_key][megapod_key]['pods']:
-                pod_data[course_key][megapod_key]['pods'][pod_key] = {}
-                pod_data[course_key][megapod_key]['pods'][pod_key][
-                    'time_slot'
-                ] = pod_time_slot
-                pod_data[course_key][megapod_key]['pods'][pod_key]['ta'] = {
-                    'first_name': ta_fn,
-                    'last_name': ta_ln,
-                    'email': ta_email
+            if megapod_key not in pod_data[course_key]["structure"]:
+                pod_data[course_key]["structure"][megapod_key] = []
+            if pod_key not in pod_data[course_key]["structure"][megapod_key]:
+                pod_data[course_key]["structure"][megapod_key].append(pod_key)
+            if student_email not in pod_data[course_key]["users"]:
+                pod_data[course_key]["users"][student_email] = {
+                    "name": student_fn + " " + student_ln,
+                    "role": "student",
+                    "timeslot": pod_time_slot,
+                    "megapods": [],
+                    "pods": []
                 }
-                pod_data[course_key][megapod_key]['pods'][pod_key][
-                    'project_ta'
-                ] = {
-                    'first_name': project_ta_fn,
-                    'last_name': project_ta_ln,
-                    'email': project_ta_email
+            if lead_ta_email not in pod_data[course_key]["users"]:
+                pod_data[course_key]["users"][lead_ta_email] = {
+                    "name": lead_ta_fn + " " + lead_ta_ln,
+                    "role": "lead_ta",
+                    "timeslot": pod_time_slot,
+                    "megapods": [],
+                    "pods": []
                 }
-                pod_data[course_key][megapod_key]['pods'][pod_key][
-                    'students'
-                ] = []
-            pod_data[course_key][megapod_key]['pods'][pod_key][
-                'students'
-            ].append(item)
+            if ta_email not in pod_data[course_key]["users"]:
+                pod_data[course_key]["users"][ta_email] = {
+                    "name": ta_fn + " " + ta_ln,
+                    "role": "ta",
+                    "timeslot": pod_time_slot,
+                    "megapods": [],
+                    "pods": []
+                }
+            if project_ta_email not in pod_data[course_key]["users"]:
+                pod_data[course_key]["users"][project_ta_email] = {
+                    "name": project_ta_fn + " " + project_ta_ln,
+                    "role": "project_ta",
+                    "timeslot": pod_time_slot,
+                    "megapods": [],
+                    "pods": []
+                }
+            for email in [student_email, lead_ta_email, project_ta_email, ta_email]:
+                if megapod_key not in pod_data[course_key]["users"][email]["megapods"]:
+                    pod_data[course_key]["users"][email]["megapods"].append(megapod_key)
+                if pod_key not in pod_data[course_key]["users"][email]["pods"]:
+                    pod_data[course_key]["users"][email]["pods"].append(pod_key)
     return pod_data
 
 
@@ -116,21 +133,18 @@ def save_data_to_json(data, filename):
         json.dump(data, f)
 
 
+@tasks.loop(seconds=60)
 async def poll_db():
     with connect_to_db() as connection:
-        data = get_pod_data_from_db(connection)
-        save_data_to_json(data, 'pods.json')
-        while True:
-            await asyncio.sleep(60)
-            try:
-                new_data = get_pod_data_from_db(connection)
-            except Exception as e:
-                print(f"Error occurred while getting data: {e}")
-
-            if data != new_data:
-                print("Data has been changed")
+        try:
+            new_data = get_pod_data_from_db(connection)
+            with open('./pods.json', 'r') as f:
+                old_data = json.load(f)
+            if old_data != new_data:
+                print("Pod data has been changed")
                 save_data_to_json(new_data, 'pods.json')
-            data = new_data
+        except Exception as e:
+            print(f"Error occurred while getting data: {e}")
 
 
 async def main():
