@@ -65,7 +65,7 @@ async def verify_user(message):
         await user.add_roles(time_role)
 
         print(f"Verifying user {user} with email {target_email}.")
-        await logChan.send(embed=send_embed('custom',"Verified User",f"{message.author} verified for megapod {userInfo['megapod']}."))
+        await logChan.send(embed=interact.send_embed('custom',"Verified User",f"{message.author} verified for megapod {userInfo['megapod']}."))
     except Exception as error:
         print(f"Verification failed for {message.author} with email {message.content}")
-        await logChan.send(embed=send_embed('custom',"Failed Verification",f"{message.author} tried to verify with email {message.content}. Ran into this issue: {error}"))
+        await logChan.send(embed=interact.send_embed('custom',"Failed Verification",f"{message.author} tried to verify with email {message.content}. Ran into this issue: {error}"))
