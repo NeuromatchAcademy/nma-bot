@@ -171,13 +171,10 @@ class InitializeServer(discord.ui.Button):
             embed=interact.send_embed('custom', 'Administrative Notice', 'Initializing server. This may take a while!'),
             ephemeral=True)
         if 'Climate' in interaction.guild.name:  # Hardcoded, needs to be made future-proof for NMA in a box.
-            print("..verifying for Climatematch.")
             nested_dict = master_db["Computational Tools for Climate Science"]
         elif 'CN' in interaction.guild.name:
-            print("..verifying for Neuromatch CN.")
             nested_dict = master_db["Computational Neuroscience"]
         elif 'DL' in interaction.guild.name:
-            print("..verifying for Neuromatch DL.")
             nested_dict = master_db["Deep Learning"]
         else:
             nested_dict = master_db["Computational Tools for Climate Science"]

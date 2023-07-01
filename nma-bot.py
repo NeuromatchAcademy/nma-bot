@@ -8,8 +8,7 @@ from utils import administrator, verify, interact, db
 
 
 # Auth
-current_dir = Path(__file__).resolve().parent
-parent_dir = current_dir.parent
+current_dir = Path(__file__).resolve().parentparent_dir = current_dir.parent
 env_file_path = parent_dir / ".env"
 load_dotenv(dotenv_path=env_file_path)
 

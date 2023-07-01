@@ -1,6 +1,7 @@
 import json
 import discord
 
+
 # Load portal data.
 with open('pods.json') as f:
     master_db = json.load(f)
