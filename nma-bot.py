@@ -41,7 +41,7 @@ class nmaClient(discord.Client):
                     async for message in channel.history(limit=200):
                         await message.delete()
                     await channel.send(embed=interact.send_embed('verify'))
-                elif channel.name == 'activities':
+                elif channel.name == 'activity-center':
                     async for message in channel.history(limit=200):
                         await message.delete()
                     await channel.send(embed=interact.send_embed('social'), view=administrator.SocialDropdownView())
@@ -105,8 +105,7 @@ intents = discord.Intents(
     members=True,
     presences=True,
     reactions=True,
-    message_content=True,
-    manage_events=True
+    message_content=True
 )
 
 client = nmaClient(intents=intents)

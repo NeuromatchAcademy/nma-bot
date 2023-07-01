@@ -1,7 +1,6 @@
 import discord
 import json
 from . import interact, verify
-from .administrator import grab
 
 
 # Load portal data.
@@ -27,7 +26,7 @@ class CheckUserDetails(discord.ui.Button):
         super().__init__(label='Check User Details', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
-        msg = await administrator.grab('Paste the user ID of the person you would like to check.', interaction)
+        msg = await grab('Paste the user ID of the person you would like to check.', interaction)
         await interaction.channel.send(
             f'Hey {msg.author}! Let\'s just pretend that there\'s a bunch of information about {msg.content} here, okay?')
         await msg.delete()
@@ -38,7 +37,7 @@ class CheckPodDetails(discord.ui.Button):
         super().__init__(label='Check Pod Details', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
-        msg = await administrator.grab('Paste the name of the pod you want to check.', interaction)
+        msg = await grab('Paste the name of the pod you want to check.', interaction)
         if ' ' in msg.content:
             target_pod = msg.content.replace(' ', '-')
         else:
@@ -74,10 +73,10 @@ class AssignUser(discord.ui.Button):
         super().__init__(label='Assign User to Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        usr = await administrator.grab('Paste the ID of the user you want to assign.', interaction)
+        usr = await grab('Paste the ID of the user you want to assign.', interaction)
         target_user = discord.utils.get(interaction.guild.members, name=usr.content)
 
-        msg = await administrator.grab('Paste the name of the pod you want to add them to.', interaction)
+        msg = await grab('Paste the name of the pod you want to add them to.', interaction)
         if ' ' in msg.content:
             target_pod = msg.content.replace(' ', '-')
         else:
@@ -93,10 +92,10 @@ class RemoveUser(discord.ui.Button):
         super().__init__(label='Remove User from Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        usr = await administrator.grab('Paste the ID of the user you want to unassign.', interaction)
+        usr = await grab('Paste the ID of the user you want to unassign.', interaction)
         target_user = discord.utils.get(interaction.guild.members, name=usr.content)
 
-        msg = await administrator.grab('Paste the name of the pod you want to remove them from.', interaction)
+        msg = await grab('Paste the name of the pod you want to remove them from.', interaction)
         if ' ' in msg.content:
             target_pod = msg.content.replace(' ', '-')
         else:
@@ -112,17 +111,17 @@ class RepodUser(discord.ui.Button):
         super().__init__(label='Repod User', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        usr = await administrator.grab('Paste the ID of the user you want to unassign.', interaction)
+        usr = await grab('Paste the ID of the user you want to unassign.', interaction)
         target_user = discord.utils.get(interaction.guild.members, name=usr.content)
 
-        msg = await administrator.grab('Paste the name of the pod you want to move them from.', interaction)
+        msg = await grab('Paste the name of the pod you want to move them from.', interaction)
         if ' ' in msg.content:
             origin_pod = msg.content.replace(' ', '-')
         else:
             origin_pod = msg.content
         old_channel = discord.utils.get(interaction.guild.channels, name=origin_pod)
 
-        msg = await administrator.grab('Paste the name of the pod you want to move them to.', interaction)
+        msg = await grab('Paste the name of the pod you want to move them to.', interaction)
         if ' ' in msg.content:
             target_pod = msg.content.replace(' ', '-')
         else:
@@ -270,16 +269,68 @@ class GraduateServer(discord.ui.Button):
                                                     ephemeral=True)
 
 
+class StudyTogether(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label='Start Study Group', style=discord.ButtonStyle.green)
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f'One second, {interaction.user}', ephemeral=True)
+        play_invite = await interact.game_checker(interaction, 'Jamspace', 'study')
+        await interaction.channel.send(f'Click here to join the activity: {play_invite}')
+
+
+class CodeTogether(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label='Start Coding Session', style=discord.ButtonStyle.green)
+
+    async def callback(self, interaction: discord.Interaction):
+        play_channel = await interact.game_checker(interaction, 'Jamspace', 'code')
+
+        await interaction.response.send_message('', ephemeral=True)
+
+
+class HangTogether(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label='Start a Watch Party', style=discord.ButtonStyle.green)
+
+    async def callback(self, interaction: discord.Interaction):
+        play_channel = await interact.game_checker(interaction, 'Watch Together', 'watch-party')
+
+        await interaction.response.send_message('', ephemeral=True)
+
+
+class HangTogether(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label='Start Hanging Out', style=discord.ButtonStyle.green)
+
+    async def callback(self, interaction: discord.Interaction):
+        play_channel = await interact.game_checker(interaction, 'Jamspace', 'hang')
+
+        await interaction.response.send_message('', ephemeral=True)
+
+
+class SampleTopic(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label='SampleTopic', style=discord.ButtonStyle.green)
+
+    async def callback(self, interaction: discord.Interaction):
+        play_channel = await interact.game_checker(interaction, 'VC', 'topic')
+
+        await interaction.response.send_message('', ephemeral=True)
+
 class StartCheckers(discord.ui.Button):
     def __init__(self):
         super().__init__(label='Checkers', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        play_cat = discord.utils.get(interaction.guild.channels, name='social')
-        play_channel = discord.utils.get(interaction.guild.channels, name='checkers')
-        if play_channel is None:
-            play_channel = await interaction.guild.create_voice_channel(name='checkers', category=play_cat)
-
-        play_event = await interaction.guild.create_scheduled_event(name='Checkers Party', start_time=discord.utils.utcnow(), entity_type=play_channel, reason=f"{interaction.user} started Checkers.")
+        play_channel = await interact.game_checker(interaction, 'Checkers In The Park', 'checkers')
 
         await interaction.response.send_message('', ephemeral=True)
+
+async def grab(prompt,interaction):
+    def vet(m):
+        return m.author == interaction.user and m.channel == interaction.channel
+
+    await interaction.response.send_message(prompt, ephemeral=True)
+    message = await interaction.client.wait_for('message', check=vet)
+    return message
