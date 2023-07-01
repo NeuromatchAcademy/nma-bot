@@ -65,7 +65,7 @@ async def verify_user(message):
             disc_role = discord.utils.get(message.guild.roles, name=eachRole)
             await user.add_roles(disc_role)
 
-        megapod_cat = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod'].replace(' ', '-')}-general")
+        megapod_cat = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod']}")
         megapod_ta = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod'].replace(' ', '-')}-general")
 
         if userInfo['role'] != 'lead_ta':
