@@ -40,7 +40,8 @@ async def verify_user(message):
         for eachPod in userInfo['pods']:
             pod_channel = discord.utils.get(message.guild.channels, name=eachPod.replace(' ','-'))
             await pod_channel.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0], send_messages=roleKey[userInfo['role']]['perms'][1], manage_messages=roleKey[userInfo['role']]['perms'][2])
-            await pod_channel.send(embed=interact.send_embed('custom', "Pod Announcement",f"{userInfo['name']} has joined the pod."))
+            announce_thread = discord.utils.get(pod_channel.threads, name='General')
+            await announce.thread.send(embed=interact.send_embed('custom', "Pod Announcement",f"{userInfo['name']} has joined the pod."))
 
         for eachMega in userInfo['megapods']:
             megapod_gen = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod'].replace(' ', '-')}-general")
