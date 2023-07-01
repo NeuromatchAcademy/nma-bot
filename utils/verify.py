@@ -66,6 +66,7 @@ async def verify_user(message):
             await user.add_roles(disc_role)
 
         megapod_cat = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod']}")
+        megapod_gen = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod'].replace(' ', '-')}-general")
         megapod_ta = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod'].replace(' ', '-')}-general")
 
         if userInfo['role'] != 'lead_ta':
@@ -77,8 +78,9 @@ async def verify_user(message):
                 await eachChannel.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0], send_messages=roleKey[userInfo['role']]['perms'][1], manage_messages=roleKey[userInfo['role']]['perms'][2])
 
         await megapod_cat.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0], send_messages=roleKey[userInfo['role']]['perms'][1], manage_messages=roleKey[userInfo['role']]['perms'][2])
+        await megapod_gen.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0], send_messages=roleKey[userInfo['role']]['perms'][1], manage_messages=roleKey[userInfo['role']]['perms'][2])
         await megapod_ta.set_permissions(user, view_channel=roleKey[userInfo['role']]['ta-perms'][0], send_messages=roleKey[userInfo['role']]['ta-perms'][1], manage_messages=roleKey[userInfo['role']]['ta-perms'][2])
-        await megapod_cat.send(embed=interact.send_embed('custom', "Megapod Announcement",f"{userInfo['name']} has joined the megapod."))
+        await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",f"{userInfo['name']} has joined the megapod."))
         await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",f"TA {userInfo['name']} has joined the megapod."))
         print(f"Verifying user {user} with email {target_email}.")
         if userInfo['role'] != 'lead_ta':
