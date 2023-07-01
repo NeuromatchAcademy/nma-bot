@@ -38,16 +38,11 @@ async def verify_user(message):
         print(f"{user} attempting to verify with {message.content}.")
 
         if 'Climate' in message.guild.name:
-            print("..verifying for Climatematch.")
             nested_dict = master_db["Computational Tools for Climate Science"]
         elif 'CN' in message.guild.name:
-            print("..verifying for Neuromatch CN.")
-            nested_dict = master_db["Computational Tools for Climate Science"]
+            nested_dict = master_db["Computational Neuroscience"]
         elif 'DL' in message.guild.name:
-            print("..verifying for Neuromatch DL.")
-            nested_dict = master_db["Computational Tools for Climate Science"]
-        else:
-            nested_dict = master_db["Computational Tools for Climate Science"]
+            nested_dict = master_db["Deep Learning"]
 
         userInfo = find_by_category(nested_dict, target_email, 'email')
 

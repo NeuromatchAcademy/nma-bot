@@ -128,17 +128,12 @@ class RepodUser(discord.ui.Button):
             target_pod = msg.content
         new_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
-        if 'Climate' in interaction.guild.name:
-            print("..verifying for Climatematch.")
+        if 'Climate' in message.guild.name:
             nested_dict = master_db["Computational Tools for Climate Science"]
-        elif 'CN' in interaction.guild.name:
-            print("..verifying for Neuromatch CN.")
-            nested_dict = master_db["Computational Tools for Climate Science"]
-        elif 'DL' in interaction.guild.name:
-            print("..verifying for Neuromatch DL.")
-            nested_dict = master_db["Computational Tools for Climate Science"]
-        else:
-            nested_dict = master_db["Computational Tools for Climate Science"]
+        elif 'CN' in message.guild.name:
+            nested_dict = master_db["Computational Neuroscience"]
+        elif 'DL' in message.guild.name:
+            nested_dict = master_db["Deep Learning"]
 
         oldInfo = verify.find_by_category(nested_dict, origin_pod, 'parent_category')
         newInfo = verify.find_by_category(nested_dict, target_pod, 'parent_category')
