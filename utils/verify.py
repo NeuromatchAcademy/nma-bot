@@ -1,5 +1,6 @@
 import json
 import discord
+from . import interact
 
 
 # Load portal data.
@@ -22,6 +23,13 @@ def find_by_category(nested_dict, target, category, parent_category=None, grandp
                     if result is not None:
                         return result
         elif key == category and value == target:
+            if parent_category == 'lead_ta':
+                return {
+                    'name': f"{nested_dict.get('first_name')} {nested_dict.get('last_name')}",
+                    'email': nested_dict.get('email'),
+                    'role': parent_category,
+                    'megapod': grandparent_category
+                }
             return {
                 'name': f"{nested_dict.get('first_name')} {nested_dict.get('last_name')}",
                 'email': nested_dict.get('email'),
@@ -57,17 +65,20 @@ async def verify_user(message):
             disc_role = discord.utils.get(message.guild.roles, name=eachRole)
             await user.add_roles(disc_role)
 
-        pod_channel = discord.utils.get(message.guild.channels, name=userInfo["pod"].replace(' ','-'))
+        if userInfo['role'] != 'lead_ta':
+            pod_channel = discord.utils.get(message.guild.channels, name=userInfo["pod"].replace(' ','-'))
+            await pod_channel.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0], send_messages=roleKey[userInfo['role']]['perms'][1], manage_messages=roleKey[userInfo['role']]['perms'][2])
+            await pod_channel.send(embed=interact.send_embed('custom', "Pod Announcement",f"{userInfo['name']} has joined the pod."))
         megapod_cat = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod'].replace(' ', '-')}-general")
         megapod_ta = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod'].replace(' ', '-')}-general")
-        await pod_channel.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0], send_messages=roleKey[userInfo['role']]['perms'][1], manage_messages=roleKey[userInfo['role']]['perms'][2])
         await megapod_cat.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0], send_messages=roleKey[userInfo['role']]['perms'][1], manage_messages=roleKey[userInfo['role']]['perms'][2])
         await megapod_ta.set_permissions(user, view_channel=roleKey[userInfo['role']]['ta-perms'][0], send_messages=roleKey[userInfo['role']]['ta-perms'][1], manage_messages=roleKey[userInfo['role']]['ta-perms'][2])
-        await pod_channel.send(embed=embedGen("Pod Announcement",f"{userInfo['name']} has joined the pod."))
-        await megapod_cat.send(embed=embedGen("Megapod Announcement",f"{userInfo['name']} has joined the megapod."))
-        await megapod_ta.send(embed=embedGen("Megapod Announcement",f"TA {userInfo['name']} has joined the megapod."))
+        await megapod_cat.send(embed=interact.send_embed('custom', "Megapod Announcement",f"{userInfo['name']} has joined the megapod."))
+        await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",f"TA {userInfo['name']} has joined the megapod."))
         print(f"Verifying user {user} with email {target_email}.")
-        await logChan.send(f"**Verified:** {message.author} verified for pod {userInfo['pod']}.")
+        if userInfo['role'] != 'lead_ta':
+            await logChan.send(f"**Verified:** {message.author} verified for pod {userInfo['pod']}.")
+        await logChan.send(f"**Verified:** {message.author} verified for megapod {userInfo['megapod']}.")
     except Exception as error:
         print(f"Verification failed for {message.author} with email {message.content}")
         await logChan.send(f"**Failed Verification:** {message.author} tried to verify with email {message.content}. Ran into this issue: {error}")
