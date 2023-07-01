@@ -44,8 +44,8 @@ async def verify_user(message):
             await announce.send(embed=interact.send_embed('custom', "Pod Announcement",f"{userInfo['name']} has joined the pod."))
 
         for eachMega in userInfo['megapods']:
-            megapod_gen = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod'].replace(' ', '-')}-general")
-            megapod_ta = discord.utils.get(message.guild.channels,name=f"{userInfo['megapod'].replace(' ', '-')}-ta-chat")
+            megapod_gen = discord.utils.get(message.guild.channels,name=f"{eachMega.replace(' ', '-')}-general")
+            megapod_ta = discord.utils.get(message.guild.channels,name=f"{eachMega.replace(' ', '-')}-ta-chat")
 
             await megapod_gen.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0],
                                               send_messages=roleKey[userInfo['role']]['perms'][1],
