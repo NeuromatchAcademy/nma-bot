@@ -14,7 +14,7 @@
         "perms":[true, true, true],
         "ta-perms":[true, true, false]
     },
-    "students":{
+    "student":{
         "roles":["Interactive Student"],
         "perms":[true, true, false],
         "ta-perms":[false, false, false]
