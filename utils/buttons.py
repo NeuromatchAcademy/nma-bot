@@ -174,21 +174,10 @@ class InitializeServer(discord.ui.Button):
         else:
             nested_dict = master_db["Computational Tools for Climate Science"]
 
-        def get_grandparent_categories(nested_dict):
-            grandparent_dict = {}
-            for grand_grandparent_category, grand_grandparent_value in nested_dict.items():
-                if isinstance(grand_grandparent_value, dict):
-                    for grandparent_category, grandparent_value in grand_grandparent_value.items():
-                        if isinstance(grandparent_value, dict) and grandparent_category == "pods":
-                            grandparent_dict[grand_grandparent_category] = list(grandparent_value.keys())
-            return grandparent_dict
-
-        pod_dict = get_grandparent_categories(nested_dict)
-
-        for eachMega in pod_dict.keys():
+        for eachMega in nested_dict['structure']:
             this_cat = await interaction.guild.create_category(eachMega)
 
-            for eachPod in pod_dict[eachMega]:
+            for eachPod in nested_dict['structure'][eachMega]:
                 this_pod = await interaction.guild.create_forum(f"{eachPod.replace(' ', '-')}", category=this_cat)
                 await this_pod.set_permissions(interaction.guild.default_role, view_channel=False, send_messages=False)
                 await this_pod.create_thread(name='Off-Topic',
