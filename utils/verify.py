@@ -58,15 +58,15 @@ async def verify_user(message):
             await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",f"TA {userInfo['name']} has joined the megapod."))
 
         if userInfo['timeslot'] in [1, 2]:
-            disc_role = discord.utils.get(message.guild.roles, name='americas')
+            time_role = discord.utils.get(message.guild.roles, name='americas')
         elif userInfo['timeslot'] in [3, 4]:
-            disc_role = discord.utils.get(message.guild.roles, name='europe-africa')
+            time_role = discord.utils.get(message.guild.roles, name='europe-africa')
         else:
-            disc_role = discord.utils.get(message.guild.roles, name='asia-pacific')
+            time_role = discord.utils.get(message.guild.roles, name='asia-pacific')
         await user.add_roles(time_role)
 
         print(f"Verifying user {user} with email {target_email}.")
-        await logChan.send(embed=interact.send_embed('custom',"Verified User",f"{message.author} verified for megapod {userInfo['megapod']}."))
+        await logChan.send(embed=interact.send_embed('custom',"Verified User",f"{message.author} verified for megapod(s) {userInfo['megapods']} and pod(s) {userInfo['pods']}."))
     except Exception as error:
         print(f"Verification failed for {message.author} with email {message.content}")
         await logChan.send(embed=interact.send_embed('custom',"Failed Verification",f"{message.author} tried to verify with email {message.content}. Ran into this issue: {error}"))
