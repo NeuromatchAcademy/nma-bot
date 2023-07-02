@@ -2,14 +2,66 @@ import discord
 import json
 from . import interact, users, db
 import re
+import subprocess
+from datetime import timedelta
+
+game_dict = {
+            'Checkers':{
+                'max': 0,
+                'id': 832013003968348200
+            },
+            'Minigolf':{
+                'max': 0,
+                'id': 945737671223947305
+            },
+            'Know What I Meme':{
+                'max': 9,
+                'id': 950505761862189096
+            },
+            'Chess':{
+                'max': 0,
+                'id': 832012774040141894
+            },
+            'Gartic Phone':{
+                'max': 16,
+                'id': 1007373802981822582
+            },
+            'Bobble League':{
+                'max': 8,
+                'id': 947957217959759964
+            },
+            'Land.io':{
+                'max': 0,
+                'id': 903769130790969345
+            },
+            'Sketch Heads':{
+                'max': 16,
+                'id': 902271654783242291
+            },
+            'Blazing 8s':{
+                'max': 8,
+                'id': 832025144389533716
+            },
+            'SpellCast':{
+                'max': 100,
+                'id': 852509694341283871
+            },
+            'Scrabble':{
+                'max': 8,
+                'id': 879863686565621790
+            },
+            'Poker':{
+                'max': 25,
+                'id': 755827207812677713
+            }
+        }
 
 # Load portal data.
 with open('pods.json') as f:
     master_db = json.load(f)
 
-
 class CheckAuthority(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Check Authority', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
@@ -22,7 +74,7 @@ class CheckAuthority(discord.ui.Button):
 
 
 class CheckUserDetails(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Check User Details', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
@@ -39,7 +91,7 @@ class CheckUserDetails(discord.ui.Button):
 
 
 class CheckPodDetails(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Check Pod Details', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
@@ -65,7 +117,7 @@ class CheckPodDetails(discord.ui.Button):
 
 
 class CleanChannel(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Clean Channel', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
@@ -75,7 +127,7 @@ class CleanChannel(discord.ui.Button):
 
 
 class AssignUser(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Assign User to Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
@@ -94,7 +146,7 @@ class AssignUser(discord.ui.Button):
 
 
 class RemoveUser(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Remove User from Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
@@ -113,7 +165,7 @@ class RemoveUser(discord.ui.Button):
 
 
 class RepodUser(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Repod User', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
@@ -156,7 +208,7 @@ class RepodUser(discord.ui.Button):
 
 
 class MergePods(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Merge Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
@@ -164,7 +216,7 @@ class MergePods(discord.ui.Button):
 
 
 class InitializeServer(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Initialize Server', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
@@ -202,7 +254,7 @@ class InitializeServer(discord.ui.Button):
 
 
 class GraduateServer(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Graduate Server', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
@@ -257,24 +309,24 @@ class GraduateServer(discord.ui.Button):
                                                     ephemeral=True)
 
 class ForceDB(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Force Database Update', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
         db.poll_db()
 
 class StudyTogether(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Start Study Group', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'One second, {interaction.user}', ephemeral=True)
+        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
         play_invite = await interact.game_checker(interaction, 'Jamspace', 'study')
-        await interaction.channel.send(f'Click here to join the activity: {play_invite}')
+        await interaction.channel.send(f'Click here to join the activity: https://discord.gg/{play_invite}')
 
 
 class CodeTogether(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Start Coding Session', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
@@ -284,7 +336,7 @@ class CodeTogether(discord.ui.Button):
 
 
 class HangTogether(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Start a Watch Party', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
@@ -294,7 +346,7 @@ class HangTogether(discord.ui.Button):
 
 
 class HangTogether(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='Start Hanging Out', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
@@ -304,7 +356,7 @@ class HangTogether(discord.ui.Button):
 
 
 class SampleTopic(discord.ui.Button):
-    def __init__(self):
+    def __init__(self,par):
         super().__init__(label='SampleTopic', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
@@ -312,14 +364,70 @@ class SampleTopic(discord.ui.Button):
 
         await interaction.response.send_message('', ephemeral=True)
 
-class StartCheckers(discord.ui.Button):
-    def __init__(self):
-        super().__init__(label='Checkers', style=discord.ButtonStyle.green)
+class GameDropdown(discord.ui.Select):
+    def __init__(self, view):
+
+        # Set the options that will be presented inside the dropdown
+        options = [
+            discord.SelectOption(label='Checkers', description='Play Checkers!', emoji='🏁'),
+            discord.SelectOption(label='Minigolf', description='Play minigold with up to 8 players!', emoji='⛳'),
+            discord.SelectOption(label='Know What I Meme', description='Test your meme knowledge with up to 9 players!', emoji='🤣'),
+            discord.SelectOption(label='Chess', description='Play Chess!', emoji='♟️'),
+            discord.SelectOption(label='Gartic Phone', description='Guess each others drawings with up to 16 players!', emoji='☎️'),
+            discord.SelectOption(label='Bobble League', description='Play virtual soccer with up to 8 players!', emoji='⚽'),
+            discord.SelectOption(label='Land.io', description='Up to 16 players!', emoji='⚒️'),
+            discord.SelectOption(label='Sketch Heads', description='Pictionary, with up to 8 players!', emoji='✏️'),
+            discord.SelectOption(label='Blazing 8s', description='Want to do a deep dive with like-minded students?', emoji='🃏'),
+            discord.SelectOption(label='SpellCast', description='Do a word search with up to 6 players!', emoji='🤔'),
+            discord.SelectOption(label='Scrabble', description='Play Scrabble with up to 8 players!', emoji='🅱️'),
+            discord.SelectOption(label='Poker', description='Play Poker with up to 7 other players!', emoji='♣️'),
+        ]
+        place_h = 'Select a game!'
+
+        # The placeholder is what will be shown when no option is chosen
+        # The min and max values indicate we can only pick one of the three options
+        # The options parameter defines the dropdown options. We defined this above
+        super().__init__(placeholder=place_h, min_values=1, max_values=1, options=options)
+
+        # Save the parent view
+        self.parent_view = view
 
     async def callback(self, interaction: discord.Interaction):
-        play_channel = await interact.game_checker(interaction, 'Checkers In The Park', 'checkers')
 
-        await interaction.response.send_message('', ephemeral=True)
+        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
+        play_invite = await interact.game_checker(interaction, 'Jamspace', 'study')
+        guild_events = await interaction.guild.fetch_scheduled_events()
+
+        play_cat = discord.utils.get(interaction.guild.channels, name='social')
+        play_channel = discord.utils.get(interaction.guild.channels, name=self.values[0])
+
+        if play_channel is None:
+            print("Making play channel.")
+            play_channel = await interaction.guild.create_voice_channel(name=self.values[0], category=play_cat)
+            print(f"Made {play_channel}")
+        elif len(play_channel.members) < game_dict[self.values[0]]['max'] or game_dict[self.values[0]]['max'] == 0:
+            print("Play channel already exists!")
+            pass
+        elif len(play_channel.members) > game_dict[self.values[0]]['max']:
+            print("Expanding play channels!")
+            play_channel = await interaction.guild.create_voice_channel(name=f'{self.values[0]}-2', category=play_cat)
+
+        if len(guild_events) == 0 or all(eachEvent.name != self.values[0] for eachEvent in guild_events):
+            play_event = await interaction.guild.create_scheduled_event(name='Checkers Party',
+                                                                        start_time=discord.utils.utcnow() + timedelta(
+                                                                            seconds=60),
+                                                                        entity_type=discord.EntityType.voice,
+                                                                        channel=play_channel,
+                                                                        privacy_level=discord.PrivacyLevel.guild_only,
+                                                                        reason=f"{interaction.user} started {self.values[0]}.")
+
+        subprocess.run(['node', 'bot.js', str(play_channel.id), str(game_dict[self.values[0]]['id'])], check=True)
+
+        with open('invite.txt', 'r') as f:
+            play_inv = f.read()
+
+        gaming_channel = discord.utils.get(interaction.guild.channels, name='gaming')
+        await gaming_channel.send(f'<@{interaction.user.id}> has started an activity! Click here to join: https://discord.gg/{play_inv}')
 
 async def grab(prompt,interaction):
     def vet(m):

@@ -3,7 +3,7 @@ import json
 import discord
 from dotenv import load_dotenv
 from pathlib import Path
-
+import asyncio
 from utils import administrator, users, interact, db
 
 
@@ -23,6 +23,7 @@ discordToken = os.getenv("DISCORD_TOKEN")
 
 # Actual Discord bot.
 class nmaClient(discord.Client):
+
     async def setup_hook(self):
         db.poll_db.start()
 
@@ -32,15 +33,18 @@ class nmaClient(discord.Client):
                 if channel.name == "command-center":
                     async for message in channel.history(limit=200):
                         await message.delete()
-                    await channel.send(embed=interact.send_embed('master'), view=administrator.CommandDropdownView())
+                    msg = await channel.send(embed=interact.send_embed('master'), view=administrator.CommandDropdownView())
+                    await msg.pin()
                 elif channel.name == 'verify':
                     async for message in channel.history(limit=200):
                         await message.delete()
-                    await channel.send(embed=interact.send_embed('verify'))
+                    msg = await channel.send(embed=interact.send_embed('verify'))
+                    await msg.pin()
                 elif channel.name == 'activity-center':
                     async for message in channel.history(limit=200):
                         await message.delete()
-                    await channel.send(embed=interact.send_embed('social'), view=administrator.SocialDropdownView())
+                    msg = await channel.send(embed=interact.send_embed('social'), view=administrator.SocialDropdownView())
+                    await msg.pin()
                 elif channel.name == 'bot-log':
                     await channel.send(embed=interact.send_embed('restart'))
 
@@ -55,7 +59,7 @@ class nmaClient(discord.Client):
         if message.author != self.user or message.content.startswith("--csrun "):
 
             if message.channel.name == 'verify' and '@' in message.content:  # If the user sent an email in #verify...
-                await verify.verify_user(message)  # ...Attempt verification.
+                await users.verify_user(message)  # ...Attempt verification.
                 await message.delete()  # ...Then delete the message.
             elif isinstance(message.channel, discord.DMChannel):  # If the user is DMing the bot...
                 await interact.send_embed(message, 'dm')  # ...Send a special message.
@@ -89,6 +93,9 @@ class nmaClient(discord.Client):
                         await message.delete()
                     elif msg_cmd[1] == 'auth':
                         await message.channel.send(f"{message.author} auth status: {admin}.")
+        #elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
+        #    await asyncio.sleep(60)
+        #    await message.delete()
         else:
             return
 

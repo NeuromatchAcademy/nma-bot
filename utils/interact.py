@@ -1,4 +1,6 @@
 import discord
+from datetime import timedelta
+import subprocess
 
 game_index = {
     'Watch Together': {
@@ -87,7 +89,7 @@ game_index = {
     },
     'Jamspace': {
         'max': 0,
-        'id': 1070087967294631976
+        'id': "1070087967294631976"
     },
     'Guestbook': {
         'max': 0,
@@ -162,22 +164,30 @@ async def game_checker(interaction, game, title):
     play_channel = discord.utils.get(interaction.guild.channels, name=title)
 
     if play_channel is None:
+        print("Making play channel.")
         play_channel = await interaction.guild.create_voice_channel(name=title, category=play_cat)
+        print(f"Made {play_channel}")
     elif len(play_channel.members) < game_index[game]['max'] or game_index[game]['max'] == 0:
+        print("Play channel already exists!")
         pass
     elif len(play_channel.members) > game_index[game]['max']:
+        print("Expanding play channels!")
         play_channel = await interaction.guild.create_voice_channel(name=f'{title}-2', category=play_cat)
 
     print(play_channel.members)
 
     if len(guild_events) == 0 or all(eachEvent.name != game for eachEvent in guild_events):
         play_event = await interaction.guild.create_scheduled_event(name='Checkers Party',
-                                                                    start_time=discord.utils.utcnow(),
+                                                                    start_time=discord.utils.utcnow() + timedelta(seconds=60),
                                                                     entity_type=discord.EntityType.voice,
                                                                     channel=play_channel,
                                                                     privacy_level=discord.PrivacyLevel.guild_only,
                                                                     reason=f"{interaction.user} started {game}.")
 
-    play_inv = await play_channel.create_invite(target_application_id=game_index[game]['id'])
+    subprocess.run(['node', 'bot.js', str(play_channel.id), str(game_index[game]['id'])], check=True)
 
+    #play_inv = await play_channel.create_invite(target_application_id=game_index[game]['id'])
+
+    with open('invite.txt', 'r') as f:
+        play_inv = f.read()
     return play_inv
