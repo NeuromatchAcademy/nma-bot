@@ -4,7 +4,7 @@ import discord
 from dotenv import load_dotenv
 from pathlib import Path
 
-from utils import administrator, verify, interact, db
+from utils import administrator, users, interact, db
 
 
 # Auth

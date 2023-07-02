@@ -7,9 +7,15 @@ from . import interact
 with open('pods.json') as f:
     master_db = json.load(f)
 
+with open('discord-ids.json') as f:
+    id_db = json.load(f)
+
 with open('config.json', 'r') as f:
     roleKey = json.load(f)
 
+async def lookup_user(obj, id):
+    course_db = interact.guild_pick(master_db,obj)
+    return course_db['users'][id_db[id]]
 
 async def verify_user(message):
     logChan = discord.utils.get(message.guild.channels, name="bot-log")
@@ -19,12 +25,7 @@ async def verify_user(message):
 
         print(f"{user} attempting to verify with {message.content}.")
 
-        if 'Climate' in message.guild.name:
-            nested_dict = master_db["Computational Tools for Climate Science"]
-        elif 'CN' in message.guild.name:
-            nested_dict = master_db["Computational Neuroscience"]
-        elif 'DL' in message.guild.name:
-            nested_dict = master_db["Deep Learning"]
+        nested_dict = interact.guild_pick(master_db,message)
 
         userInfo = nested_dict['users'][target_email]
 
@@ -64,6 +65,12 @@ async def verify_user(message):
         else:
             time_role = discord.utils.get(message.guild.roles, name='asia-pacific')
         await user.add_roles(time_role)
+
+        id_db[user.id] = target_email
+
+        with open('discord-ids.json', 'w') as f:
+            json.dump(id_db, f, ensure_ascii=False, indent=4)
+
 
         print(f"Verified user {user} with email {target_email}.")
         await logChan.send(embed=interact.send_embed('custom',"Verified User",f"{message.author} verified for megapod(s) {userInfo['megapods']} and pod(s) {userInfo['pods']}."))

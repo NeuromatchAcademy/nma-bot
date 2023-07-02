@@ -16,7 +16,7 @@ class SocialDropdownView(discord.ui.View):
 BUTTON_MAPPING = {
     "Meta Commands": [buttons.CheckAuthority, buttons.CheckUserDetails, buttons.CheckPodDetails, buttons.CleanChannel],
     "Pod Commands": [buttons.AssignUser, buttons.RemoveUser, buttons.RepodUser, buttons.MergePods],
-    "Server Commands": [buttons.InitializeServer, buttons.GraduateServer],
+    "Server Commands": [buttons.InitializeServer, buttons.ForceDB, buttons.GraduateServer],
     "Games": [buttons.StartCheckers],
     "Activities": [buttons.StudyTogether, buttons.CodeTogether, buttons.HangTogether],
     "Discussions": [buttons.SampleTopic]

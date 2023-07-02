@@ -99,7 +99,6 @@ game_index = {
     }
 }
 
-
 embed_dict = {
     'verify': {
         'title': 'Welcome to the course!',
@@ -127,6 +126,16 @@ embed_dict = {
         'color': 0x00ff2a
     }
 }
+
+def guild_pick(db,obj):
+    if 'Climate' in obj.guild.name:
+        return db["Computational Tools for Climate Science"]
+    elif 'CN' in obj.guild.name:
+        return db["Computational Neuroscience"]
+    elif 'DL' in obj.guild.name:
+        return db["Deep Learning"]
+    else:
+        return 'Invalid Course'
 
 def send_embed(mode, title='None', message='None'):
     if mode != 'custom':

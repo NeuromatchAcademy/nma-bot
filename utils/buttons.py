@@ -1,7 +1,7 @@
 import discord
 import json
-from . import interact, verify
-
+from . import interact, users, db
+import re
 
 # Load portal data.
 with open('pods.json') as f:
@@ -26,9 +26,15 @@ class CheckUserDetails(discord.ui.Button):
         super().__init__(label='Check User Details', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
-        msg = await grab('Paste the user ID of the person you would like to check.', interaction)
-        await interaction.channel.send(
-            f'Hey {msg.author}! Let\'s just pretend that there\'s a bunch of information about {msg.content} here, okay?')
+        msg = await grab('Tag the user you would like to check.', interaction)
+
+        with open('discord-ids.json') as f:
+            id_db = json.load(f)
+
+        target_id = re.sub("[^0-9]", "", msg.content)
+        userEmail = id_db[target_id]
+        userInfo = await users.lookup_user(msg,target_id)
+        await interaction.channel.send(embed=interact.send_embed('custom','User Lookup',f'**Name:** {userInfo["name"]}\n**Email:**: {userEmail}\n**Role:** {userInfo["role"]}\n**Pods:** {userInfo["pods"]}\n**Timezone:** {userInfo["timeslot"]}\n\nInfo requested by {msg.author}.'))
         await msg.delete()
 
 
@@ -135,8 +141,8 @@ class RepodUser(discord.ui.Button):
         elif 'DL' in message.guild.name:
             nested_dict = master_db["Deep Learning"]
 
-        oldInfo = verify.find_by_category(nested_dict, origin_pod, 'parent_category')
-        newInfo = verify.find_by_category(nested_dict, target_pod, 'parent_category')
+        oldInfo = users.find_by_category(nested_dict, origin_pod, 'parent_category')
+        newInfo = users.find_by_category(nested_dict, target_pod, 'parent_category')
         old_mega = discord.utils.get(interaction.guild.channels, name=f"{oldInfo['megapod'].replace(' ', '-')}-general")
         new_mega = discord.utils.get(interaction.guild.channels, name=f"{newInfo['megapod'].replace(' ', '-')}-general")
 
@@ -250,6 +256,12 @@ class GraduateServer(discord.ui.Button):
                                                                               f'For security reasons, only Kevin can trigger a pod purge.'),
                                                     ephemeral=True)
 
+class ForceDB(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label='Force Database Update', style=discord.ButtonStyle.red)
+
+    async def callback(self, interaction: discord.Interaction):
+        db.poll_db()
 
 class StudyTogether(discord.ui.Button):
     def __init__(self):
