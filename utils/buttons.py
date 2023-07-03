@@ -117,7 +117,7 @@ class RemoveUser(discord.ui.Button):
             target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
             await target_channel.set_permissions(target_user, view_channel=False, send_messages=False)
-        await interaction.channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Assigned {target_user} to {msg[1:]}.'))
+        await interaction.channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Removed {target_user} to {msg[1:]}.'))
 
 
 class RepodUser(discord.ui.Button):
