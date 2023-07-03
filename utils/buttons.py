@@ -2,7 +2,7 @@ import discord
 import json
 from . import interact, users, db
 import re
-from .activities import create_activity_invite, get_activity_channel
+from .activities import create_activity_invite, get_activity_channel, get_activity_event
 
 
 # Load portal data.
@@ -401,9 +401,10 @@ class GameDropdown(discord.ui.Select):
         game = self.values[0]
         game_channel = await get_activity_channel(interaction, game)
         game_inv = await create_activity_invite(game, game_channel.id)
-
+        game_event = await get_activity_event(interaction, game, game_channel)
         gaming_channel = discord.utils.get(interaction.guild.channels, name='gaming')
         await gaming_channel.send(f'<@{interaction.user.id}> has started an activity! Click here to join: https://discord.gg/{game_inv}')
+        await game_event.start()
 
 
 async def grab(prompt, interaction):

@@ -2,6 +2,7 @@ import os
 import aiohttp
 import discord
 from .constants import activity_index
+from datetime import timedelta
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -46,7 +47,6 @@ async def get_activity_channel(
     count: int = 0
 ):
 
-    # guild_events = await interaction.guild.fetch_scheduled_events()
     if count == 0 and title == '':
         tmp_title = activity
     elif title == '':
@@ -75,10 +75,16 @@ async def get_activity_channel(
     # print(act_channel.members)
     # return act_channel
 
-    # if len(guild_events) == 0 or all(eachEvent.name != game for eachEvent in guild_events):
-    #     play_event = await interaction.guild.create_scheduled_event(name='Checkers Party',
-    #                                                                 start_time=discord.utils.utcnow() + timedelta(seconds=60),
-    #                                                                 entity_type=discord.EntityType.voice,
-    #                                                                 channel=play_channel,
-    #                                                                 privacy_level=discord.PrivacyLevel.guild_only,
-    #                                                                 reason=f"{interaction.user} started {game}.")
+async def get_activity_event(interaction, game, game_channel):
+    guild_events = await interaction.guild.fetch_scheduled_events()
+    if len(guild_events) == 0 or all(eachEvent.name != f'{game} Party' for eachEvent in guild_events):
+        play_event = await interaction.guild.create_scheduled_event(name=f'{game} Party',
+                                                                    start_time=discord.utils.utcnow() + timedelta(
+                                                                        seconds=60),
+                                                                    entity_type=discord.EntityType.voice,
+                                                                    channel=game_channel,
+                                                                    privacy_level=discord.PrivacyLevel.guild_only,
+                                                                    reason=f"{interaction.user} started {game}.")
+    else:
+        play_event = discord.utils.get(interaction.guild.scheduled_events, name=f'{game} Party')
+    return play_event
