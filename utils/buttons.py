@@ -117,7 +117,7 @@ class RemoveUser(discord.ui.Button):
             target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
             await target_channel.set_permissions(target_user, view_channel=False, send_messages=False)
-        await interaction.channel.send(embed=interact.send_embed('custon','Administrative Notice',f'Assigned {target_user} to {msg[1:]}.'))
+        await interaction.channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Assigned {target_user} to {msg[1:]}.'))
 
 
 class RepodUser(discord.ui.Button):
@@ -228,9 +228,8 @@ class MergePods(discord.ui.Button):
 
         await new_channel.send(embed=interact.send_embed('custom', 'Pod Merge Notice',
                                                          f'Pod {origin_pod} has been merged into {target_pod}.'))
-        await interaction.response.send_message(embed=interact.send_embed('custom', 'Pods Merged',
-                                                                          f'Successfully merged pods {origin_pod} and {target_pod}. You may delete the old pod\'s channel now.'),
-                                                ephemeral=True)
+        await interaction.channel.send(embed=interact.send_embed('custom', 'Pods Merged',
+                                                                          f'Successfully merged pods {origin_pod} and {target_pod}. You may delete the old pod\'s channel now.'))
 
 
 class InitializeServer(discord.ui.Button):
