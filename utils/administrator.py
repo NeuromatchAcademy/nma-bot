@@ -91,3 +91,4 @@ def rollcallGen(roll):
     for user in roll:
         finList += f"\n{user}"
     return finList
+
