@@ -174,14 +174,8 @@ class InitializeServer(discord.ui.Button):
         await interaction.response.send_message(
             embed=interact.send_embed('custom', 'Administrative Notice', 'Initializing server. This may take a while!'),
             ephemeral=True)
-        if 'Climate' in interaction.guild.name:  # Hardcoded, needs to be made future-proof for NMA in a box.
-            nested_dict = master_db["Computational Tools for Climate Science"]
-        elif 'CN' in interaction.guild.name:
-            nested_dict = master_db["Computational Neuroscience"]
-        elif 'DL' in interaction.guild.name:
-            nested_dict = master_db["Deep Learning"]
-        else:
-            nested_dict = master_db["Computational Tools for Climate Science"]
+
+        nested_dict = interact.guild_pick(master_db, interaction)
 
         for eachMega in nested_dict['structure']:
             this_cat = await interaction.guild.create_category(eachMega)
