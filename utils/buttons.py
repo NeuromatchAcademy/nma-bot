@@ -144,10 +144,10 @@ class RepodUser(discord.ui.Button):
 
         nested_dict = interact.guild_pick(master_db, interaction)
 
-        oldInfo = users.find_by_category(nested_dict, origin_pod, 'parent_category')
-        newInfo = users.find_by_category(nested_dict, target_pod, 'parent_category')
-        old_mega = discord.utils.get(interaction.guild.channels, name=f"{oldInfo['megapod'].replace(' ', '-')}-general")
-        new_mega = discord.utils.get(interaction.guild.channels, name=f"{newInfo['megapod'].replace(' ', '-')}-general")
+        old_mega = users.mega_from_pod(interaction, origin_pod)
+        new_mega = users.mega_from_pod(interaction, target_pod)
+        old_mega = discord.utils.get(interaction.guild.channels, name=f"{old_mega.replace(' ', '-')}-general")
+        new_mega = discord.utils.get(interaction.guild.channels, name=f"{new_mega.replace(' ', '-')}-general")
 
         await old_channel.set_permissions(target_user, view_channel=False, send_messages=False)
         await new_channel.set_permissions(target_user, view_channel=True, send_messages=True)

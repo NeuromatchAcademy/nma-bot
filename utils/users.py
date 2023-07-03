@@ -13,8 +13,15 @@ with open('discord-ids.json') as f:
 with open('config.json', 'r') as f:
     roleKey = json.load(f)
 
+async def mega_from_pod(obj, pod):
+    course_db = interact.guild_pick(master_db, obj)
+    for key, values in course_db['structure'].items():
+        if pod in values or pod.replace('-', ' ') in values:
+            return key
+    return 'Pod not found'
+
 async def lookup_user(obj, id):
-    course_db = interact.guild_pick(master_db,obj)
+    course_db = interact.guild_pick(master_db, obj)
     return course_db['users'][id_db[id]]
 
 async def verify_user(message):
