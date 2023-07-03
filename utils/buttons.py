@@ -183,7 +183,7 @@ class MergePods(discord.ui.Button):
 
         msg = await grab('Paste the name of the pod you want to merge from followed by the one you want to merge into. (e.g. shiny corals, blues clues)\n**Note that the first pod mentioned will be deleted.**',
                          interaction)
-        msg = msg.split(', ')
+        msg = msg.content.split(', ')
 
         if ' ' in msg[0]:
             origin_pod = msg[0].replace(' ', '-')
