@@ -126,36 +126,45 @@ class RepodUser(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         user = await grab('Tag the user you want to repod.', interaction)
-        target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
+        user = re.sub("[^0-9]", "", user.content)
+        target_user = await interaction.guild.fetch_member(int(user))
+        target_email = await users.lookup_user(interaction, user)
 
-        msg = await grab('Paste the name of the pod you want to move them from.', interaction)
-        if ' ' in msg.content:
-            origin_pod = msg.content.replace(' ', '-')
-        else:
-            origin_pod = msg.content
-        old_channel = discord.utils.get(interaction.guild.channels, name=origin_pod)
+        for eachChannel in interaction.guild.channels:
+            if eachChannel.category.lower() not in ['observer track', 'alumni', 'administrative', 'teaching assistants', 'content help',
+                                 'projects', 'information', 'lobby', 'professional development', 'social', 'contest',
+                                 'diversity']:
+                if target_user in eachChannel.members:
+                    await eachChannel.set_permissions(target_user, view_messages=False, send_messages=False)
 
-        msg = await grab('Paste the name of the pod you want to move them to.', interaction)
-        if ' ' in msg.content:
-            target_pod = msg.content.replace(' ', '-')
-        else:
-            target_pod = msg.content
-        new_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
+        nested_dict = interact.guild_pick(master_db,interaction)
+        userInfo = nested_dict['users'][target_email]
 
-        nested_dict = interact.guild_pick(master_db, interaction)
+        with open('config.json', 'r') as f:
+            roleKey = json.load(f)
 
-        old_mega = users.mega_from_pod(interaction, origin_pod)
-        new_mega = users.mega_from_pod(interaction, target_pod)
-        old_mega = discord.utils.get(interaction.guild.channels, name=f"{old_mega.replace(' ', '-')}-general")
-        new_mega = discord.utils.get(interaction.guild.channels, name=f"{new_mega.replace(' ', '-')}-general")
+        for eachPod in userInfo['pods']:
+            pod_channel = discord.utils.get(interaction.guild.channels, name=eachPod.replace(' ','-'))
+            await pod_channel.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0], send_messages=roleKey[userInfo['role']]['perms'][1], manage_messages=roleKey[userInfo['role']]['perms'][2])
+            announce = discord.utils.get(pod_channel.threads, name='General')
+            await announce.send(embed=interact.send_embed('custom', "Pod Announcement",f"{userInfo['name']} has joined the pod."))
 
-        await old_channel.set_permissions(target_user, view_channel=False, send_messages=False)
-        await new_channel.set_permissions(target_user, view_channel=True, send_messages=True)
-        await old_mega.set_permissions(target_user, view_channel=False, send_messages=False)
-        await new_mega.set_permissions(target_user, view_channel=True, send_messages=True)
+        for eachMega in userInfo['megapods']:
+            megapod_gen = discord.utils.get(interaction.guild.channels,name=f"{eachMega.replace(' ', '-')}-general")
+            megapod_ta = discord.utils.get(interaction.guild.channels,name=f"{eachMega.replace(' ', '-')}-ta-chat")
 
-        await interaction.response.send_message(f'Repodded {target_user} from {origin_pod} to {target_pod}.',
-                                                ephemeral=True)
+            await megapod_gen.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0],
+                                              send_messages=roleKey[userInfo['role']]['perms'][1],
+                                              manage_messages=roleKey[userInfo['role']]['perms'][2])
+            await megapod_ta.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['ta-perms'][0],
+                                             send_messages=roleKey[userInfo['role']]['ta-perms'][1],
+                                             manage_messages=roleKey[userInfo['role']]['ta-perms'][2])
+
+            await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",f"{userInfo['name']} has joined the megapod."))
+            await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",f"TA {userInfo['name']} has joined the megapod."))
+
+
+        await interaction.channel.send_message(embed=interact.send_embed('custom','Repod Notice',f'Repodded {target_user}.'))
 
 
 class MergePods(discord.ui.Button):
