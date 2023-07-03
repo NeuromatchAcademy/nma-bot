@@ -87,10 +87,10 @@ class AssignUser(discord.ui.Button):
         target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
 
         for eachPod in msg[1:]:
-            if ' ' in msg.content:
-                target_pod = msg.content.replace(' ', '-')
+            if ' ' in eachPod:
+                target_pod = eachPod.replace(' ', '-')
             else:
-                target_pod = msg.content
+                target_pod = eachPod
 
             target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
@@ -106,13 +106,13 @@ class RemoveUser(discord.ui.Button):
         msg = await grab('Tag the user you want to remove, followed by any pods from which you want to remove them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays', interaction)
         msg = msg.content.split(', ')
         user = msg[0]
-        target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
+        target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user))
 
         for eachPod in msg[1:]:
-            if ' ' in msg.content:
-                target_pod = msg.content.replace(' ', '-')
+            if ' ' in eachPod:
+                target_pod = eachPod.replace(' ', '-')
             else:
-                target_pod = msg.content
+                target_pod = eachPod
 
             target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
@@ -181,7 +181,7 @@ class MergePods(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
 
-        msg = await grab('Paste the name of the pod you want to merge from (**This is the pod that will be deleted.**) followed by the one you want to merge into. (e.g.',
+        msg = await grab('Paste the name of the pod you want to merge from (**This is the pod that will be deleted.**) followed by the one you want to merge into. (e.g. shiny corals, blues clues)',
                          interaction)
         if ' ' in msg.content:
             origin_pod = msg.content.replace(' ', '-')
