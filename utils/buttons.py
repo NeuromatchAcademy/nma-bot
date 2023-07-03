@@ -83,8 +83,8 @@ class AssignUser(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         msg = await grab('Tag the user you want to assign, followed by any pods to which you want to assign them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays', interaction)
         msg = msg.content.split(', ')
-        user = msg[0]
-        target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
+        user = re.sub("[^0-9]", "", msg[0])
+        target_user = await interaction.guild.fetch_member(int(user))
 
         for eachPod in msg[1:]:
             if ' ' in eachPod:
@@ -105,8 +105,8 @@ class RemoveUser(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         msg = await grab('Tag the user you want to remove, followed by any pods from which you want to remove them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays', interaction)
         msg = msg.content.split(', ')
-        user = msg[0]
-        target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user))
+        user = re.sub("[^0-9]", "", msg[0])
+        target_user = await interaction.guild.fetch_member(int(user))
 
         for eachPod in msg[1:]:
             if ' ' in eachPod:
@@ -181,21 +181,20 @@ class MergePods(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
 
-        msg = await grab('Paste the name of the pod you want to merge from (**This is the pod that will be deleted.**) followed by the one you want to merge into. (e.g. shiny corals, blues clues)',
+        msg = await grab('Paste the name of the pod you want to merge from followed by the one you want to merge into. (e.g. shiny corals, blues clues)\n**Note that the first pod mentioned will be deleted.**',
                          interaction)
-        if ' ' in msg.content:
-            origin_pod = msg.content.replace(' ', '-')
+        msg = msg.split(', ')
+
+        if ' ' in msg[0]:
+            origin_pod = msg[0].replace(' ', '-')
         else:
-            origin_pod = msg.content
+            origin_pod = msg[0]
         old_channel = discord.utils.get(interaction.guild.channels, name=origin_pod)
 
-        msg = await grab(
-            'Paste the name of the pod you want to merge into. **This is the pod that will be preserved.**',
-            interaction)
-        if ' ' in msg.content:
-            target_pod = msg.content.replace(' ', '-')
+        if ' ' in msg[1]:
+            target_pod = msg[1].replace(' ', '-')
         else:
-            target_pod = msg.content
+            target_pod = msg[1]
         new_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
         nested_dict = interact.guild_pick(master_db, interaction)
