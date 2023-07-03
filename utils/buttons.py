@@ -346,6 +346,8 @@ class ForceDB(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         await db.poll_db()
+        with open('pods.json', 'r') as f:
+            master_db = json.load(f)
         await interaction.response.send_message(
             embed=interact.send_embed('custom', 'Updated Database', 'The database was updated.'))
 
