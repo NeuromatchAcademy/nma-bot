@@ -4,14 +4,13 @@ from . import interact, users, db
 import re
 from .activities import create_activity_invite, get_activity_channel, get_activity_event
 
-
 # Load portal data.
 with open('pods.json') as f:
     master_db = json.load(f)
 
 
 class CheckAuthority(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Check Authority', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
@@ -24,7 +23,7 @@ class CheckAuthority(discord.ui.Button):
 
 
 class CheckUserDetails(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Check User Details', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
@@ -35,13 +34,14 @@ class CheckUserDetails(discord.ui.Button):
 
         target_id = re.sub("[^0-9]", "", msg.content)
         userEmail = id_db[target_id]
-        userInfo = await users.lookup_user(msg,target_id)
-        await interaction.channel.send(embed=interact.send_embed('custom','User Lookup',f'**Name:** {userInfo["name"]}\n**Email:**: {userEmail}\n**Role:** {userInfo["role"]}\n**Pods:** {userInfo["pods"]}\n**Timezone:** {userInfo["timeslot"]}\n\nInfo requested by {msg.author}.'))
+        userInfo = await users.lookup_user(msg, target_id)
+        await interaction.channel.send(embed=interact.send_embed('custom', 'User Lookup',
+                                                                 f'**Name:** {userInfo["name"]}\n**Email:**: {userEmail}\n**Role:** {userInfo["role"]}\n**Pods:** {userInfo["pods"]}\n**Timezone:** {userInfo["timeslot"]}\n\nInfo requested by {msg.author}.'))
         await msg.delete()
 
 
 class CheckPodDetails(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Check Pod Details', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
@@ -55,7 +55,7 @@ class CheckPodDetails(discord.ui.Button):
         for member in channel.members:
             if discord.utils.get(interaction.user.roles,
                                  name="NMA Organizers") not in member.roles and discord.utils.get(
-                    interaction.user.roles, name="NMA Staffers") not in member.roles:
+                interaction.user.roles, name="NMA Staffers") not in member.roles:
                 if discord.utils.get(interaction.user.roles, name="Lead TA") in member.roles:
                     members = f'{members}{member.name} **(Lead TA)**\n'
                 elif discord.utils.get(interaction.user.roles, name="Teaching Assistant") in member.roles:
@@ -67,7 +67,7 @@ class CheckPodDetails(discord.ui.Button):
 
 
 class CleanChannel(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Clean Channel', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
@@ -77,14 +77,16 @@ class CleanChannel(discord.ui.Button):
 
 
 class AssignUser(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Assign User to Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
         user = await grab('Tag the user you want to assign.', interaction)
         target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
 
-        msg = await grab('Paste the name of the pods you want to add them to, separated by commas. (e.g. shiny corals, windy city, blue rays)', interaction)
+        msg = await grab(
+            'Paste the name of the pods you want to add them to, separated by commas. (e.g. shiny corals, windy city, blue rays)',
+            interaction)
         pods = msg.split(', ')
         for eachPod in pods:
             if ' ' in msg.content:
@@ -99,14 +101,16 @@ class AssignUser(discord.ui.Button):
 
 
 class RemoveUser(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Remove User from Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
         user = await grab('Tag the user you want to remove.', interaction)
         target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
 
-        msg = await grab('Paste the name of the pods you want to remove them from, separated by commas. (e.g. shiny corals, windy city, blue rays)', interaction)
+        msg = await grab(
+            'Paste the name of the pods you want to remove them from, separated by commas. (e.g. shiny corals, windy city, blue rays)',
+            interaction)
         pods = msg.split(', ')
         for eachPod in pods:
             if ' ' in msg.content:
@@ -121,7 +125,7 @@ class RemoveUser(discord.ui.Button):
 
 
 class RepodUser(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Repod User', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
@@ -133,27 +137,35 @@ class RepodUser(discord.ui.Button):
         for eachChannel in interaction.guild.channels:
             if eachChannel.type == discord.ChannelType.category:
                 pass
-            elif eachChannel.category.name.lower() not in ['observer track', 'alumni', 'administrative', 'teaching assistants', 'content help',
-                                 'projects', 'information', 'lobby', 'professional development', 'social', 'contest',
-                                 'diversity']:
-                if target_user in eachChannel.members:
+            elif eachChannel.category.name.lower() not in ['observer track', 'alumni', 'administrative',
+                                                           'teaching assistants', 'content help',
+                                                           'projects', 'information', 'lobby',
+                                                           'professional development', 'social', 'contest',
+                                                           'diversity']:
+                if eachChannel.type == discord.ChannelType.forum:
+                    if target_user in eachChannel.overwrites:
+                        await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
+                elif target_user in eachChannel.members:
                     await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
 
-        nested_dict = interact.guild_pick(master_db,interaction)
+        nested_dict = interact.guild_pick(master_db, interaction)
         userInfo = nested_dict['users'][target_email]
 
         with open('config.json', 'r') as f:
             roleKey = json.load(f)
 
         for eachPod in userInfo['pods']:
-            pod_channel = discord.utils.get(interaction.guild.channels, name=eachPod.replace(' ','-'))
-            await pod_channel.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0], send_messages=roleKey[userInfo['role']]['perms'][1], manage_messages=roleKey[userInfo['role']]['perms'][2])
+            pod_channel = discord.utils.get(interaction.guild.channels, name=eachPod.replace(' ', '-'))
+            await pod_channel.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0],
+                                              send_messages=roleKey[userInfo['role']]['perms'][1],
+                                              manage_messages=roleKey[userInfo['role']]['perms'][2])
             announce = discord.utils.get(pod_channel.threads, name='General')
-            await announce.send(embed=interact.send_embed('custom', "Pod Announcement",f"{userInfo['name']} has joined the pod."))
+            await announce.send(
+                embed=interact.send_embed('custom', "Pod Announcement", f"{userInfo['name']} has joined the pod."))
 
         for eachMega in userInfo['megapods']:
-            megapod_gen = discord.utils.get(interaction.guild.channels,name=f"{eachMega.replace(' ', '-')}-general")
-            megapod_ta = discord.utils.get(interaction.guild.channels,name=f"{eachMega.replace(' ', '-')}-ta-chat")
+            megapod_gen = discord.utils.get(interaction.guild.channels, name=f"{eachMega.replace(' ', '-')}-general")
+            megapod_ta = discord.utils.get(interaction.guild.channels, name=f"{eachMega.replace(' ', '-')}-ta-chat")
 
             await megapod_gen.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0],
                                               send_messages=roleKey[userInfo['role']]['perms'][1],
@@ -162,27 +174,32 @@ class RepodUser(discord.ui.Button):
                                              send_messages=roleKey[userInfo['role']]['ta-perms'][1],
                                              manage_messages=roleKey[userInfo['role']]['ta-perms'][2])
 
-            await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",f"{userInfo['name']} has joined the megapod."))
-            await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",f"TA {userInfo['name']} has joined the megapod."))
+            await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",
+                                                             f"{userInfo['name']} has joined the megapod."))
+            await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
+                                                            f"TA {userInfo['name']} has joined the megapod."))
 
-
-        await interaction.channel.send_message(embed=interact.send_embed('custom','Repod Notice',f'Repodded {target_user}.'))
+        await interaction.channel.send_message(
+            embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
 
 
 class MergePods(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Merge Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
 
-        msg = await grab('Paste the name of the pod you want to merge from. **This is the pod that will be deleted.**', interaction)
+        msg = await grab('Paste the name of the pod you want to merge from. **This is the pod that will be deleted.**',
+                         interaction)
         if ' ' in msg.content:
             origin_pod = msg.content.replace(' ', '-')
         else:
             origin_pod = msg.content
         old_channel = discord.utils.get(interaction.guild.channels, name=origin_pod)
 
-        msg = await grab('Paste the name of the pod you want to merge into. **This is the pod that will be preserved.**', interaction)
+        msg = await grab(
+            'Paste the name of the pod you want to merge into. **This is the pod that will be preserved.**',
+            interaction)
         if ' ' in msg.content:
             target_pod = msg.content.replace(' ', '-')
         else:
@@ -209,19 +226,24 @@ class MergePods(discord.ui.Button):
             else:
                 manage_perm = False
 
-            await old_channel.set_permissions(eachMember, view_messages=False, send_messages=False, manage_messages=False)
-            await new_channel.set_permissions(eachMember, view_messages=True, send_messages=True, manage_messages=manage_perm)
+            await old_channel.set_permissions(eachMember, view_messages=False, send_messages=False,
+                                              manage_messages=False)
+            await new_channel.set_permissions(eachMember, view_messages=True, send_messages=True,
+                                              manage_messages=manage_perm)
 
             if old_mega != new_mega:
                 await old_mega.set_permissions(eachMember, view_messages=False, send_messages=False)
                 await new_mega.set_permissions(eachMember, view_messages=True, send_messages=True)
 
-        await new_channel.send(embed=interact.send_embed('custom','Pod Merge Notice',f'Pod {origin_pod} has been merged into {target_pod}.'))
-        await interaction.response.send_message(embed=interact.send_embed('custom','Pods Merged',f'Successfully merged pods {origin_pod} and {target_pod}. You may delete the old pod\'s channel now.'), ephemeral=True)
+        await new_channel.send(embed=interact.send_embed('custom', 'Pod Merge Notice',
+                                                         f'Pod {origin_pod} has been merged into {target_pod}.'))
+        await interaction.response.send_message(embed=interact.send_embed('custom', 'Pods Merged',
+                                                                          f'Successfully merged pods {origin_pod} and {target_pod}. You may delete the old pod\'s channel now.'),
+                                                ephemeral=True)
 
 
 class InitializeServer(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Initialize Server', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
@@ -253,14 +275,17 @@ class InitializeServer(discord.ui.Button):
 
 
 class GraduateServer(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Graduate Server', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
         if interaction.user == discord.utils.get(interaction.guild.members, name='blueneuron.net'):
-            await interaction.response.send_message(embed=interact.send_embed('custom','Administrative Notice','Graduating server. This may take a while!'), ephemeral=True)
+            await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                              'Graduating server. This may take a while!'),
+                                                    ephemeral=True)
             log_channel = discord.utils.get(interaction.guild.channels, name='bot-log')
-            await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice', f'User {interaction.user} triggered pod purge.'))
+            await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                             f'User {interaction.user} triggered pod purge.'))
 
             alumnus_role = discord.utils.get(interaction.guild.roles, name='Alumnus')
             ta_alumnus_role = discord.utils.get(interaction.guild.roles, name='TA Alumnus')
@@ -272,36 +297,46 @@ class GraduateServer(discord.ui.Button):
             grad_roles = [student_role, ta_role, lead_ta_role, project_ta_role]
             ta_roles = [ta_role, lead_ta_role, project_ta_role]
 
-            channel_types = [interaction.guild.text_channels, interaction.guild.forums, interaction.guild.voice_channels, interaction.guild.categories]
+            channel_types = [interaction.guild.text_channels, interaction.guild.forums,
+                             interaction.guild.voice_channels, interaction.guild.categories]
 
             for eachType in channel_types:
                 for eachObj in eachType:
                     if eachObj.type != discord.ChannelType.category:
-                        if eachObj.category.name.lower() not in ['observer track', 'alumni', 'administrative', 'teaching assistants', 'content help',
-                                 'projects', 'information', 'lobby', 'professional development', 'social', 'contest',
-                                 'diversity']:
+                        if eachObj.category.name.lower() not in ['observer track', 'alumni', 'administrative',
+                                                                 'teaching assistants', 'content help',
+                                                                 'projects', 'information', 'lobby',
+                                                                 'professional development', 'social', 'contest',
+                                                                 'diversity']:
                             if eachObj.type != discord.ChannelType.forum:
                                 for eachMember in eachObj.members:
                                     if alumnus_role not in eachMember.roles:
                                         await eachMember.add_roles(alumnus_role)
-                                        await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                  f'Assigned alumnus role to {eachMember}.'))
+                                        await log_channel.send(
+                                            embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                      f'Assigned alumnus role to {eachMember}.'))
                                     if any(role in eachMember.roles for role in ta_roles):
                                         await eachMember.add_roles(ta_alumnus_role)
-                                        await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                  f'Assigned TA alumnus role to {eachMember}.'))
+                                        await log_channel.send(
+                                            embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                      f'Assigned TA alumnus role to {eachMember}.'))
                                     for eachRole in grad_roles:
                                         if eachRole in eachMember.roles:
                                             await eachMember.remove_roles(eachRole)
-                                            await log_channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Removed {eachRole} role from {eachMember}.'))
+                                            await log_channel.send(
+                                                embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                          f'Removed {eachRole} role from {eachMember}.'))
 
-                            await log_channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Deleted pod {eachObj.name} from megapod {eachObj.category.name}.'))
+                            await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                             f'Deleted pod {eachObj.name} from megapod {eachObj.category.name}.'))
                             await eachObj.delete()
                     elif eachObj.type == discord.ChannelType.category:
                         if len(eachObj.channels) == 0:
-                            await log_channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Deleted megapod {eachObj.name}.'))
+                            await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                             f'Deleted megapod {eachObj.name}.'))
                             await eachObj.delete()
-            await interaction.channel.send(embed=interact.send_embed('custom','Administrative Notice','Deleted all pod channels and turned everyone into alumni.'))
+            await interaction.channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                     'Deleted all pod channels and turned everyone into alumni.'))
         else:
             await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
                                                                               f'For security reasons, only Kevin can trigger a pod purge.'),
@@ -309,25 +344,28 @@ class GraduateServer(discord.ui.Button):
 
 
 class ForceDB(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Force Database Update', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
         await db.poll_db()
-        await interaction.response.send_message(embed=interact.send_embed('custom','Updated Database','The database was updated.'))
+        await interaction.response.send_message(
+            embed=interact.send_embed('custom', 'Updated Database', 'The database was updated.'))
 
 
 class StudyTogether(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Start Study Group', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
+        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
+                                                ephemeral=True)
         act_channel = await get_activity_channel(interaction, 'Jamspace', 'study')
         act_invite = await create_activity_invite('Jamspace', act_channel.id)
         act_event = await get_activity_event(interaction, 'Study Session', act_channel)
         soc_channel = discord.utils.get(interaction.guild.channels, name='social-general')
-        await soc_channel.send(f'Click here to join {interaction.user}\'s study session: https://discord.gg/{act_invite}')
+        await soc_channel.send(
+            f'Click here to join {interaction.user}\'s study session: https://discord.gg/{act_invite}')
         await act_event.start()
 
 
@@ -336,21 +374,24 @@ class CodeTogether(discord.ui.Button):
         super().__init__(label='Start Coding Session', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
+        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
+                                                ephemeral=True)
         act_channel = await get_activity_channel(interaction, 'Jamspace', 'code')
         act_invite = await create_activity_invite('Jamspace', act_channel.id)
         act_event = await get_activity_event(interaction, 'Coding Session', act_channel)
         soc_channel = discord.utils.get(interaction.guild.channels, name='social-general')
-        await soc_channel.send(f'Click here to join {interaction.user}\'s coding session: https://discord.gg/{act_invite}')
+        await soc_channel.send(
+            f'Click here to join {interaction.user}\'s coding session: https://discord.gg/{act_invite}')
         await act_event.start()
 
 
 class WatchTogether(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Start a Watch Party', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
+        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
+                                                ephemeral=True)
         activity = "Watch Together"
         act_channel = await get_activity_channel(interaction, activity)
         act_invite = await create_activity_invite(activity, act_channel.id)
@@ -361,11 +402,12 @@ class WatchTogether(discord.ui.Button):
 
 
 class HangTogether(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='Start Hanging Out', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
+        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
+                                                ephemeral=True)
         act_channel = await get_activity_channel(interaction, 'Jamspace', 'hang')
         act_invite = await create_activity_invite('Jamspace', act_channel.id)
         act_event = await get_activity_event(interaction, 'Hang Out', act_channel)
@@ -375,11 +417,12 @@ class HangTogether(discord.ui.Button):
 
 
 class SampleTopic(discord.ui.Button):
-    def __init__(self,par):
+    def __init__(self, par):
         super().__init__(label='SampleTopic', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
+        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
+                                                ephemeral=True)
         act_channel = await get_activity_channel(interaction, 'Jamspace', 'hang')
         act_invite = await create_activity_invite('Jamspace', act_channel.id)
         act_event = await get_activity_event(interaction, 'Hang Out', act_channel)
@@ -387,21 +430,25 @@ class SampleTopic(discord.ui.Button):
         await soc_channel.send(f'Click here to join {interaction.user}\'s hangout: https://discord.gg/{act_invite}')
         await act_event.start()
 
+
 class ChatDropdown(discord.ui.Select):
     def __init__(self, view):
-
         # Set the options that will be presented inside the dropdown
         # NOTE: names need to the activity_index
         options = [
             discord.SelectOption(label='fMRI', description='Play Checkers!', emoji='🏁'),
             discord.SelectOption(label='Putt Party', description='Play minigold with up to 8 players!', emoji='⛳'),
-            discord.SelectOption(label='Know What I Meme', description='Test your meme knowledge with up to 9 players!', emoji='🤣'),
+            discord.SelectOption(label='Know What I Meme', description='Test your meme knowledge with up to 9 players!',
+                                 emoji='🤣'),
             discord.SelectOption(label='Chess In The Park', description='Play Chess!', emoji='♟️'),
-            discord.SelectOption(label='Gartic Phone', description='Guess each others drawings with up to 16 players!', emoji='☎️'),
-            discord.SelectOption(label='Bobble League', description='Play virtual soccer with up to 8 players!', emoji='⚽'),
+            discord.SelectOption(label='Gartic Phone', description='Guess each others drawings with up to 16 players!',
+                                 emoji='☎️'),
+            discord.SelectOption(label='Bobble League', description='Play virtual soccer with up to 8 players!',
+                                 emoji='⚽'),
             discord.SelectOption(label='Land-io', description='Up to 16 players!', emoji='⚒️'),
             discord.SelectOption(label='Sketch Heads', description='Pictionary, with up to 8 players!', emoji='✏️'),
-            discord.SelectOption(label='Blazing 8s', description='Want to do a deep dive with like-minded students?', emoji='🃏'),
+            discord.SelectOption(label='Blazing 8s', description='Want to do a deep dive with like-minded students?',
+                                 emoji='🃏'),
             discord.SelectOption(label='SpellCast', description='Do a word search with up to 6 players!', emoji='🤔'),
             discord.SelectOption(label='Scrabble', description='Play Scrabble with up to 8 players!', emoji='🅱️'),
             discord.SelectOption(label='Poker Night', description='Play Poker with up to 7 other players!', emoji='♣️'),
@@ -417,8 +464,8 @@ class ChatDropdown(discord.ui.Select):
         self.parent_view = view
 
     async def callback(self, interaction: discord.Interaction):
-
-        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
+        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
+                                                ephemeral=True)
         tmp_title = f"{self.values[0]} Discussion"
 
         act_cat = discord.utils.get(interaction.guild.channels, name='social')
@@ -430,24 +477,29 @@ class ChatDropdown(discord.ui.Select):
         act_event = await get_activity_event(interaction, tmp_title, act_channel)
         act_invite = await act_channel.create_invite()
         soc_channel = discord.utils.get(interaction.guild.channels, name='social-general')
-        await soc_channel.send(f'<@{interaction.user.id}> has started a discussion on {self.values[0]}! Click here to join: https://discord.gg/{act_invite}')
+        await soc_channel.send(
+            f'<@{interaction.user.id}> has started a discussion on {self.values[0]}! Click here to join: https://discord.gg/{act_invite}')
         await act_event.start()
+
 
 class GameDropdown(discord.ui.Select):
     def __init__(self, view):
-
         # Set the options that will be presented inside the dropdown
         # NOTE: names need to the activity_index
         options = [
             discord.SelectOption(label='Checkers In The Park', description='Play Checkers!', emoji='🏁'),
             discord.SelectOption(label='Putt Party', description='Play minigold with up to 8 players!', emoji='⛳'),
-            discord.SelectOption(label='Know What I Meme', description='Test your meme knowledge with up to 9 players!', emoji='🤣'),
+            discord.SelectOption(label='Know What I Meme', description='Test your meme knowledge with up to 9 players!',
+                                 emoji='🤣'),
             discord.SelectOption(label='Chess In The Park', description='Play Chess!', emoji='♟️'),
-            discord.SelectOption(label='Gartic Phone', description='Guess each others drawings with up to 16 players!', emoji='☎️'),
-            discord.SelectOption(label='Bobble League', description='Play virtual soccer with up to 8 players!', emoji='⚽'),
+            discord.SelectOption(label='Gartic Phone', description='Guess each others drawings with up to 16 players!',
+                                 emoji='☎️'),
+            discord.SelectOption(label='Bobble League', description='Play virtual soccer with up to 8 players!',
+                                 emoji='⚽'),
             discord.SelectOption(label='Land-io', description='Up to 16 players!', emoji='⚒️'),
             discord.SelectOption(label='Sketch Heads', description='Pictionary, with up to 8 players!', emoji='✏️'),
-            discord.SelectOption(label='Blazing 8s', description='Want to do a deep dive with like-minded students?', emoji='🃏'),
+            discord.SelectOption(label='Blazing 8s', description='Want to do a deep dive with like-minded students?',
+                                 emoji='🃏'),
             discord.SelectOption(label='SpellCast', description='Do a word search with up to 6 players!', emoji='🤔'),
             discord.SelectOption(label='Scrabble', description='Play Scrabble with up to 8 players!', emoji='🅱️'),
             discord.SelectOption(label='Poker Night', description='Play Poker with up to 7 other players!', emoji='♣️'),
@@ -463,14 +515,15 @@ class GameDropdown(discord.ui.Select):
         self.parent_view = view
 
     async def callback(self, interaction: discord.Interaction):
-
-        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
+        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
+                                                ephemeral=True)
         game = self.values[0]
         game_channel = await get_activity_channel(interaction, game)
         game_inv = await create_activity_invite(game, game_channel.id)
         game_event = await get_activity_event(interaction, f'{game} Party', game_channel)
         gaming_channel = discord.utils.get(interaction.guild.channels, name='gaming')
-        await gaming_channel.send(f'<@{interaction.user.id}> has started an activity! Click here to join: https://discord.gg/{game_inv}')
+        await gaming_channel.send(
+            f'<@{interaction.user.id}> has started an activity! Click here to join: https://discord.gg/{game_inv}')
         await game_event.start()
 
 
