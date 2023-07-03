@@ -163,7 +163,50 @@ class MergePods(discord.ui.Button):
         super().__init__(label='Merge Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.send_message('Merging pods', ephemeral=True)
+
+        msg = await grab('Paste the name of the pod you want to merge from. **This is the pod that will be deleted.**', interaction)
+        if ' ' in msg.content:
+            origin_pod = msg.content.replace(' ', '-')
+        else:
+            origin_pod = msg.content
+        old_channel = discord.utils.get(interaction.guild.channels, name=origin_pod)
+
+        msg = await grab('Paste the name of the pod you want to merge into. **This is the pod that will be preserved.**', interaction)
+        if ' ' in msg.content:
+            target_pod = msg.content.replace(' ', '-')
+        else:
+            target_pod = msg.content
+        new_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
+
+        nested_dict = interact.guild_pick(master_db, interaction)
+
+        old_mega = users.mega_from_pod(interaction, origin_pod)
+        new_mega = users.mega_from_pod(interaction, target_pod)
+        old_mega = discord.utils.get(interaction.guild.channels, name=f"{old_mega.replace(' ', '-')}-general")
+        old_ta = discord.utils.get(interaction.guild.channels, name=f"{old_mega.replace(' ', '-')}-ta-chat")
+        new_mega = discord.utils.get(interaction.guild.channels, name=f"{new_mega.replace(' ', '-')}-general")
+        new_ta = discord.utils.get(interaction.guild.channels, name=f"{new_mega.replace(' ', '-')}-ta-chat")
+
+        ta_role = discord.utils.get(interaction.guild.roles, name="Teaching Assistant")
+
+        for eachMember in old_channel.members:
+            if ta_role in eachMember.roles:
+                manage_perm = True
+                if old_mega != new_mega:
+                    await old_ta.set_permissions(eachMember, view_messages=False, send_messages=False)
+                    await new_ta.set_permissions(eachMember, view_messages=True, send_messages=True)
+            else:
+                manage_perm = False
+
+            await old_channel.set_permissions(eachMember, view_messages=False, send_messages=False, manage_messages=False)
+            await new_channel.set_permissions(eachMember, view_messages=True, send_messages=True, manage_messages=manage_perm)
+
+            if old_mega != new_mega:
+                await old_mega.set_permissions(eachMember, view_messages=False, send_messages=False)
+                await new_mega.set_permissions(eachMember, view_messages=True, send_messages=True)
+
+        await new_channel.send(embed=interact.send_embed('custom','Pod Merge Notice',f'Pod {origin_pod} has been merged into {target_pod}.'))
+        await interaction.response.send_message(embed=interact.send_embed('custom','Pods Merged',f'Successfully merged pods {origin_pod} and {target_pod}. You may delete the old pod\'s channel now.'), ephemeral=True)
 
 
 class InitializeServer(discord.ui.Button):
