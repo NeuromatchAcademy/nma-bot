@@ -82,7 +82,7 @@ class AssignUser(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         msg = await grab('Tag the user you want to assign, followed by any pods to which you want to assign them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays', interaction)
-        msg = msg.split(', ')
+        msg = msg.content.split(', ')
         user = msg[0]
         target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
 
@@ -104,7 +104,7 @@ class RemoveUser(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         msg = await grab('Tag the user you want to remove, followed by any pods from which you want to remove them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays', interaction)
-        msg = msg.split(', ')
+        msg = msg.content.split(', ')
         user = msg[0]
         target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
 
@@ -181,7 +181,7 @@ class MergePods(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
 
-        msg = await grab('Paste the name of the pod you want to merge from. **This is the pod that will be deleted.**',
+        msg = await grab('Paste the name of the pod you want to merge from (**This is the pod that will be deleted.**) followed by the one you want to merge into. (e.g.',
                          interaction)
         if ' ' in msg.content:
             origin_pod = msg.content.replace(' ', '-')
