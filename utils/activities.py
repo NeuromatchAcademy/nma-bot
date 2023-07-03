@@ -63,16 +63,17 @@ async def get_activity_channel(
         print("Making play channel.")
         act_channel = await interaction.guild.create_voice_channel(name=tmp_title, category=act_cat)
         print(f"Made {act_channel}")
+        return act_channel
     elif len(act_channel.members) < activity_index[activity]['max'] or activity_index[activity]['max'] == 0:
         print("Play channel already exists!")
-        pass
-    elif len(act_channel.members) > activity_index[activity]['max']:
+        return act_channel
+    elif len(act_channel.members) >= activity_index[activity]['max']:
         print("Expanding play channels!")
         # play_channel = await interaction.guild.create_voice_channel(name=f'{title}-2', category=play_cat)
         act_channel = await get_activity_channel(interaction, activity, title, count+1)
-
+        return act_channel
     # print(act_channel.members)
-    return act_channel
+    # return act_channel
 
     # if len(guild_events) == 0 or all(eachEvent.name != game for eachEvent in guild_events):
     #     play_event = await interaction.guild.create_scheduled_event(name='Checkers Party',
