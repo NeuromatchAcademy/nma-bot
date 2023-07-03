@@ -199,12 +199,12 @@ class MergePods(discord.ui.Button):
 
         nested_dict = interact.guild_pick(master_db, interaction)
 
-        old_mega = await users.mega_from_pod(interaction, origin_pod)
-        new_mega = await users.mega_from_pod(interaction, target_pod)
-        old_mega = discord.utils.get(interaction.guild.channels, name=f"{old_mega.replace(' ', '-')}-general")
-        old_ta = discord.utils.get(interaction.guild.channels, name=f"{old_mega.replace(' ', '-')}-ta-chat")
-        new_mega = discord.utils.get(interaction.guild.channels, name=f"{new_mega.replace(' ', '-')}-general")
-        new_ta = discord.utils.get(interaction.guild.channels, name=f"{new_mega.replace(' ', '-')}-ta-chat")
+        old_megapod = await users.mega_from_pod(interaction, origin_pod)
+        new_megapod = await users.mega_from_pod(interaction, target_pod)
+        old_mega = discord.utils.get(interaction.guild.channels, name=f"{old_megapod.replace(' ', '-')}-general")
+        old_ta = discord.utils.get(interaction.guild.channels, name=f"{old_megapod.replace(' ', '-')}-ta-chat")
+        new_mega = discord.utils.get(interaction.guild.channels, name=f"{new_megapod.replace(' ', '-')}-general")
+        new_ta = discord.utils.get(interaction.guild.channels, name=f"{new_megapod.replace(' ', '-')}-ta-chat")
 
         ta_role = discord.utils.get(interaction.guild.roles, name="Teaching Assistant")
 
