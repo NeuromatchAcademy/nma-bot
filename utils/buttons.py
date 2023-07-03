@@ -81,18 +81,21 @@ class AssignUser(discord.ui.Button):
         super().__init__(label='Assign User to Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        usr = await grab('Paste the ID of the user you want to assign.', interaction)
-        target_user = discord.utils.get(interaction.guild.members, name=usr.content)
+        user = await grab('Tag the user you want to assign.', interaction)
+        target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
 
-        msg = await grab('Paste the name of the pod you want to add them to.', interaction)
-        if ' ' in msg.content:
-            target_pod = msg.content.replace(' ', '-')
-        else:
-            target_pod = msg.content
-        target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
+        msg = await grab('Paste the name of the pods you want to add them to, separated by commas. (e.g. shiny corals, windy city, blue rays)', interaction)
+        pods = msg.split(', ')
+        for eachPod in pods:
+            if ' ' in msg.content:
+                target_pod = msg.content.replace(' ', '-')
+            else:
+                target_pod = msg.content
 
-        await target_channel.set_permissions(target_user, view_channel=True, send_messages=True)
-        await interaction.response.send_message(f'Assigned {target_user} to {target_channel}.', ephemeral=True)
+            target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
+
+            await target_channel.set_permissions(target_user, view_channel=True, send_messages=True)
+        await interaction.response.send_message(f'Assigned {target_user} to {pods}.', ephemeral=True)
 
 
 class RemoveUser(discord.ui.Button):
@@ -100,18 +103,21 @@ class RemoveUser(discord.ui.Button):
         super().__init__(label='Remove User from Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        usr = await grab('Paste the ID of the user you want to unassign.', interaction)
-        target_user = discord.utils.get(interaction.guild.members, name=usr.content)
+        user = await grab('Tag the user you want to remove.', interaction)
+        target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
 
-        msg = await grab('Paste the name of the pod you want to remove them from.', interaction)
-        if ' ' in msg.content:
-            target_pod = msg.content.replace(' ', '-')
-        else:
-            target_pod = msg.content
-        target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
+        msg = await grab('Paste the name of the pods you want to remove them from, separated by commas. (e.g. shiny corals, windy city, blue rays)', interaction)
+        pods = msg.split(', ')
+        for eachPod in pods:
+            if ' ' in msg.content:
+                target_pod = msg.content.replace(' ', '-')
+            else:
+                target_pod = msg.content
 
-        await target_channel.set_permissions(target_user, view_channel=False, send_messages=False)
-        await interaction.response.send_message(f'Unassigned {target_user} from {target_channel}.', ephemeral=True)
+            target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
+
+            await target_channel.set_permissions(target_user, view_channel=False, send_messages=False)
+        await interaction.response.send_message(f'Assigned {target_user} to {pods}.', ephemeral=True)
 
 
 class RepodUser(discord.ui.Button):
@@ -119,8 +125,8 @@ class RepodUser(discord.ui.Button):
         super().__init__(label='Repod User', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        usr = await grab('Paste the ID of the user you want to unassign.', interaction)
-        target_user = discord.utils.get(interaction.guild.members, name=usr.content)
+        user = await grab('Tag the user you want to repod.', interaction)
+        target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
 
         msg = await grab('Paste the name of the pod you want to move them from.', interaction)
         if ' ' in msg.content:
@@ -136,12 +142,7 @@ class RepodUser(discord.ui.Button):
             target_pod = msg.content
         new_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
-        if 'Climate' in message.guild.name:
-            nested_dict = master_db["Computational Tools for Climate Science"]
-        elif 'CN' in message.guild.name:
-            nested_dict = master_db["Computational Neuroscience"]
-        elif 'DL' in message.guild.name:
-            nested_dict = master_db["Deep Learning"]
+        nested_dict = interact.guild_pick(master_db, interaction)
 
         oldInfo = users.find_by_category(nested_dict, origin_pod, 'parent_category')
         newInfo = users.find_by_category(nested_dict, target_pod, 'parent_category')
