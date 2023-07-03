@@ -132,7 +132,7 @@ class RepodUser(discord.ui.Button):
         user = await grab('Tag the user you want to repod.', interaction)
         user = re.sub("[^0-9]", "", user.content)
         target_user = await interaction.guild.fetch_member(int(user))
-        target_email = await users.lookup_user(interaction, user)
+        userInfo = await users.lookup_user(interaction, user)
 
         for eachChannel in interaction.guild.channels:
             if eachChannel.type == discord.ChannelType.category:
@@ -147,9 +147,6 @@ class RepodUser(discord.ui.Button):
                         await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
                 elif target_user in eachChannel.members:
                     await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
-
-        nested_dict = interact.guild_pick(master_db, interaction)
-        userInfo = nested_dict['users'][target_email]
 
         with open('config.json', 'r') as f:
             roleKey = json.load(f)
