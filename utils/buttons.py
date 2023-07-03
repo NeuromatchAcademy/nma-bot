@@ -303,6 +303,7 @@ class ForceDB(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         await db.poll_db()
+        await interaction.response.send_message(embed=interact.send_embed('custom','Updated Database','The database was updated.'))
 
 
 class StudyTogether(discord.ui.Button):
