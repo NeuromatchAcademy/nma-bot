@@ -368,11 +368,58 @@ class SampleTopic(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
-        act_channel = await get_activity_channel(interaction, 'VC', 'topic')
-        act_invite = await create_activity_invite('VC', act_channel.id)
+        act_channel = await get_activity_channel(interaction, 'Jamspace', 'hang')
+        act_invite = await create_activity_invite('Jamspace', act_channel.id)
+        act_event = await get_activity_event(interaction, 'Hang Out', act_channel)
         soc_channel = discord.utils.get(interaction.guild.channels, name='social-general')
-        await soc_channel.send(f'Click here to join the activity: https://discord.gg/{act_invite}')
+        await soc_channel.send(f'Click here to join {interaction.user}\'s hangout: https://discord.gg/{act_invite}')
+        await act_event.start()
 
+class ChatDropdown(discord.ui.Select):
+    def __init__(self, view):
+
+        # Set the options that will be presented inside the dropdown
+        # NOTE: names need to the activity_index
+        options = [
+            discord.SelectOption(label='fMRI', description='Play Checkers!', emoji='🏁'),
+            discord.SelectOption(label='Putt Party', description='Play minigold with up to 8 players!', emoji='⛳'),
+            discord.SelectOption(label='Know What I Meme', description='Test your meme knowledge with up to 9 players!', emoji='🤣'),
+            discord.SelectOption(label='Chess In The Park', description='Play Chess!', emoji='♟️'),
+            discord.SelectOption(label='Gartic Phone', description='Guess each others drawings with up to 16 players!', emoji='☎️'),
+            discord.SelectOption(label='Bobble League', description='Play virtual soccer with up to 8 players!', emoji='⚽'),
+            discord.SelectOption(label='Land-io', description='Up to 16 players!', emoji='⚒️'),
+            discord.SelectOption(label='Sketch Heads', description='Pictionary, with up to 8 players!', emoji='✏️'),
+            discord.SelectOption(label='Blazing 8s', description='Want to do a deep dive with like-minded students?', emoji='🃏'),
+            discord.SelectOption(label='SpellCast', description='Do a word search with up to 6 players!', emoji='🤔'),
+            discord.SelectOption(label='Scrabble', description='Play Scrabble with up to 8 players!', emoji='🅱️'),
+            discord.SelectOption(label='Poker Night', description='Play Poker with up to 7 other players!', emoji='♣️'),
+        ]
+        place_h = 'Select a game!'
+
+        # The placeholder is what will be shown when no option is chosen
+        # The min and max values indicate we can only pick one of the three options
+        # The options parameter defines the dropdown options. We defined this above
+        super().__init__(placeholder=place_h, min_values=1, max_values=1, options=options)
+
+        # Save the parent view
+        self.parent_view = view
+
+    async def callback(self, interaction: discord.Interaction):
+
+        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
+        tmp_title = f"{self.values[0]} Discussion"
+
+        act_cat = discord.utils.get(interaction.guild.channels, name='social')
+        act_channel = discord.utils.get(interaction.guild.channels, name=tmp_title)
+
+        if act_channel is None:
+            act_channel = await interaction.guild.create_voice_channel(name=tmp_title, category=act_cat)
+
+        act_event = await get_activity_event(interaction, tmp_title, act_channel)
+        act_invite = await act_channel.create_invite()
+        soc_channel = discord.utils.get(interaction.guild.channels, name='social-general')
+        await soc_channel.send(f'<@{interaction.user.id}> has started a discussion on {self.values[0]}! Click here to join: https://discord.gg/{act_invite}')
+        await act_event.start()
 
 class GameDropdown(discord.ui.Select):
     def __init__(self, view):
