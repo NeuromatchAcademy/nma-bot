@@ -135,7 +135,7 @@ class RepodUser(discord.ui.Button):
                                  'projects', 'information', 'lobby', 'professional development', 'social', 'contest',
                                  'diversity']:
                 if target_user in eachChannel.members:
-                    await eachChannel.set_permissions(target_user, view_messages=False, send_messages=False)
+                    await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
 
         nested_dict = interact.guild_pick(master_db,interaction)
         userInfo = nested_dict['users'][target_email]
