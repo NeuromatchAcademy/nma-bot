@@ -176,8 +176,7 @@ class RepodUser(discord.ui.Button):
             await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
                                                             f"TA {userInfo['name']} has joined the megapod."))
 
-        await interaction.channel.send_message(
-            embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
+        await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
 
 
 class MergePods(discord.ui.Button):
