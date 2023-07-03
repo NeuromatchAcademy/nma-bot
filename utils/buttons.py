@@ -117,7 +117,7 @@ class RemoveUser(discord.ui.Button):
             target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
             await target_channel.set_permissions(target_user, view_channel=False, send_messages=False)
-        await interaction.channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Removed {target_user} to {msg[1:]}.'))
+        await interaction.channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Removed {target_user} from {msg[1:]}.'))
 
 
 class RepodUser(discord.ui.Button):
@@ -208,7 +208,12 @@ class MergePods(discord.ui.Button):
 
         ta_role = discord.utils.get(interaction.guild.roles, name="Teaching Assistant")
 
-        for eachMember in old_channel.members:
+        if old_channel.type == discord.ChannelType.forum:
+            member_list = old_channel.overwrites
+        else:
+            member_list = old_channel.members
+
+        for eachMember in member_list:
             if ta_role in eachMember.roles:
                 manage_perm = True
                 if old_mega != new_mega:
