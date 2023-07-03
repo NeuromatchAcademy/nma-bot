@@ -95,7 +95,7 @@ class AssignUser(discord.ui.Button):
             target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
             await target_channel.set_permissions(target_user, view_channel=True, send_messages=True)
-        await interaction.channel.send(embed=interact.send_embed('custon','Administrative Notice',f'Assigned {target_user} to {msg[1:]}.'))
+        await interaction.channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Assigned {target_user} to {msg[1:]}.'))
 
 
 class RemoveUser(discord.ui.Button):
