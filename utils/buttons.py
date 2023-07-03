@@ -131,7 +131,7 @@ class RepodUser(discord.ui.Button):
         target_email = await users.lookup_user(interaction, user)
 
         for eachChannel in interaction.guild.channels:
-            if eachChannel.category.lower() not in ['observer track', 'alumni', 'administrative', 'teaching assistants', 'content help',
+            if eachChannel.category.name.lower() not in ['observer track', 'alumni', 'administrative', 'teaching assistants', 'content help',
                                  'projects', 'information', 'lobby', 'professional development', 'social', 'contest',
                                  'diversity']:
                 if target_user in eachChannel.members:
