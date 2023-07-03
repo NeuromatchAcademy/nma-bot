@@ -23,7 +23,7 @@ async def create_activity_invite(activity, channel_id: int):
     }
     body = {
         'max_age': 0,
-        'target_type': 2,# 2 == InviteTargetType.EmbeddedApplication
+        'target_type': 2,  # 2 == InviteTargetType.EmbeddedApplication
         'target_application_id': application_id
     }
 
@@ -41,12 +41,11 @@ async def create_activity_invite(activity, channel_id: int):
 
 
 async def get_activity_channel(
-    interaction,
-    activity,
-    title: str = '',
-    count: int = 0
+        interaction,
+        activity,
+        title: str = '',
+        count: int = 0
 ):
-
     if count == 0 and title == '':
         tmp_title = activity
     elif title == '':
@@ -70,15 +69,16 @@ async def get_activity_channel(
     elif len(act_channel.members) >= activity_index[activity]['max']:
         print("Expanding play channels!")
         # play_channel = await interaction.guild.create_voice_channel(name=f'{title}-2', category=play_cat)
-        act_channel = await get_activity_channel(interaction, activity, title, count+1)
+        act_channel = await get_activity_channel(interaction, activity, title, count + 1)
         return act_channel
     # print(act_channel.members)
     # return act_channel
 
+
 async def get_activity_event(interaction, game, game_channel):
     guild_events = await interaction.guild.fetch_scheduled_events()
-    if len(guild_events) == 0 or all(eachEvent.name != f'{game} Party' for eachEvent in guild_events):
-        play_event = await interaction.guild.create_scheduled_event(name=f'{game} Party',
+    if len(guild_events) == 0 or all(eachEvent.name != game for eachEvent in guild_events):
+        play_event = await interaction.guild.create_scheduled_event(name=game,
                                                                     start_time=discord.utils.utcnow() + timedelta(
                                                                         seconds=60),
                                                                     entity_type=discord.EntityType.voice,
@@ -86,5 +86,5 @@ async def get_activity_event(interaction, game, game_channel):
                                                                     privacy_level=discord.PrivacyLevel.guild_only,
                                                                     reason=f"{interaction.user} started {game}.")
     else:
-        play_event = discord.utils.get(interaction.guild.scheduled_events, name=f'{game} Party')
+        play_event = discord.utils.get(interaction.guild.scheduled_events, name=game)
     return play_event

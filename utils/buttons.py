@@ -313,8 +313,10 @@ class StudyTogether(discord.ui.Button):
         await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
         act_channel = await get_activity_channel(interaction, 'Jamspace', 'study')
         act_invite = await create_activity_invite('Jamspace', act_channel.id)
+        act_event = await get_activity_event(interaction, 'Study Session', act_channel)
         soc_channel = discord.utils.get(interaction.guild.channels, name='social-general')
-        await soc_channel.send(f'Click here to join the activity: https://discord.gg/{act_invite}')
+        await soc_channel.send(f'Click here to join {interaction.user}\'s study session: https://discord.gg/{act_invite}')
+        await act_event.start()
 
 
 class CodeTogether(discord.ui.Button):
@@ -325,8 +327,10 @@ class CodeTogether(discord.ui.Button):
         await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
         act_channel = await get_activity_channel(interaction, 'Jamspace', 'code')
         act_invite = await create_activity_invite('Jamspace', act_channel.id)
+        act_event = await get_activity_event(interaction, 'Coding Session', act_channel)
         soc_channel = discord.utils.get(interaction.guild.channels, name='social-general')
-        await soc_channel.send(f'Click here to join the activity: https://discord.gg/{act_invite}')
+        await soc_channel.send(f'Click here to join {interaction.user}\'s coding session: https://discord.gg/{act_invite}')
+        await act_event.start()
 
 
 class WatchTogether(discord.ui.Button):
@@ -338,8 +342,10 @@ class WatchTogether(discord.ui.Button):
         activity = "Watch Together"
         act_channel = await get_activity_channel(interaction, activity)
         act_invite = await create_activity_invite(activity, act_channel.id)
+        act_event = await get_activity_event(interaction, 'Watch Party', act_channel)
         soc_channel = discord.utils.get(interaction.guild.channels, name='social-general')
-        await soc_channel.send(f'Click here to join the activity: https://discord.gg/{act_invite}')
+        await soc_channel.send(f'Click here to join {interaction.user}\'s watch party: https://discord.gg/{act_invite}')
+        await act_event.start()
 
 
 class HangTogether(discord.ui.Button):
@@ -350,8 +356,10 @@ class HangTogether(discord.ui.Button):
         await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!', ephemeral=True)
         act_channel = await get_activity_channel(interaction, 'Jamspace', 'hang')
         act_invite = await create_activity_invite('Jamspace', act_channel.id)
+        act_event = await get_activity_event(interaction, 'Hang Out', act_channel)
         soc_channel = discord.utils.get(interaction.guild.channels, name='social-general')
-        await soc_channel.send(f'Click here to join the activity: https://discord.gg/{act_invite}')
+        await soc_channel.send(f'Click here to join {interaction.user}\'s hangout: https://discord.gg/{act_invite}')
+        await act_event.start()
 
 
 class SampleTopic(discord.ui.Button):
@@ -382,7 +390,7 @@ class GameDropdown(discord.ui.Select):
             discord.SelectOption(label='Sketch Heads', description='Pictionary, with up to 8 players!', emoji='✏️'),
             discord.SelectOption(label='Blazing 8s', description='Want to do a deep dive with like-minded students?', emoji='🃏'),
             discord.SelectOption(label='SpellCast', description='Do a word search with up to 6 players!', emoji='🤔'),
-            # discord.SelectOption(label='Scrabble', description='Play Scrabble with up to 8 players!', emoji='🅱️'),
+            discord.SelectOption(label='Scrabble', description='Play Scrabble with up to 8 players!', emoji='🅱️'),
             discord.SelectOption(label='Poker Night', description='Play Poker with up to 7 other players!', emoji='♣️'),
         ]
         place_h = 'Select a game!'
@@ -401,7 +409,7 @@ class GameDropdown(discord.ui.Select):
         game = self.values[0]
         game_channel = await get_activity_channel(interaction, game)
         game_inv = await create_activity_invite(game, game_channel.id)
-        game_event = await get_activity_event(interaction, game, game_channel)
+        game_event = await get_activity_event(interaction, f'{game} Party', game_channel)
         gaming_channel = discord.utils.get(interaction.guild.channels, name='gaming')
         await gaming_channel.send(f'<@{interaction.user.id}> has started an activity! Click here to join: https://discord.gg/{game_inv}')
         await game_event.start()

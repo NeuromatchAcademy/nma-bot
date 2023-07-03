@@ -23,7 +23,7 @@ activity_index = {
         'max': 16,
         'id': 902271654783242291
     },
-    'Letter League': {
+    'Scrabble': {
         'max': 8,
         'id': 879863686565621790
     },
