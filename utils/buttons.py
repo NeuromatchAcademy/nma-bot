@@ -103,14 +103,12 @@ class RemoveUser(discord.ui.Button):
         super().__init__(label='Remove User from Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        user = await grab('Tag the user you want to remove.', interaction)
+        msg = await grab('Tag the user you want to remove, followed by any pods from which you want to remove them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays', interaction)
+        msg = msg.split(', ')
+        user = msg[0]
         target_user = discord.utils.get(interaction.guild.members, name=re.sub("[^0-9]", "", user.content))
 
-        msg = await grab(
-            'Paste the name of the pods you want to remove them from, separated by commas. (e.g. shiny corals, windy city, blue rays)',
-            interaction)
-        pods = msg.split(', ')
-        for eachPod in pods:
+        for eachPod in msg[1:]:
             if ' ' in msg.content:
                 target_pod = msg.content.replace(' ', '-')
             else:
@@ -119,7 +117,7 @@ class RemoveUser(discord.ui.Button):
             target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
             await target_channel.set_permissions(target_user, view_channel=False, send_messages=False)
-        await interaction.response.send_message(f'Assigned {target_user} to {pods}.', ephemeral=True)
+        await interaction.channel.send(embed=interact.send_embed('custon','Administrative Notice',f'Assigned {target_user} to {msg[1:]}.'))
 
 
 class RepodUser(discord.ui.Button):
