@@ -58,6 +58,7 @@ def get_pod_data_from_db(connection):
         # column_names = [desc[0] for desc in cursor.description[13:]]
 
         pod_data = {}
+        pods_missing_data = []
         for row in results:
             course_key = row[0]
             megapod_key = row[1]
@@ -84,7 +85,8 @@ def get_pod_data_from_db(connection):
                 assert project_ta_fn is not None
                 assert lead_ta_fn is not None
             except AssertionError:
-                print(f"missing information for pod {pod_key}, skipping db entry")
+                if pod_key not in pods_missing_data:
+                    pods_missing_data.append(pod_key)
                 continue
 
             if course_key not in pod_data:
@@ -133,6 +135,10 @@ def get_pod_data_from_db(connection):
                     pod_data[course_key]["users"][email]["megapods"].append(megapod_key)
                 if pod_key not in pod_data[course_key]["users"][email]["pods"]:
                     pod_data[course_key]["users"][email]["pods"].append(pod_key)
+
+        for pod in pods_missing_data:
+            print(f"missing information for pod {pod}, skipping db entries")
+
     return pod_data
 
 
