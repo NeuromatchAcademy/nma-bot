@@ -75,7 +75,18 @@ def get_pod_data_from_db(connection):
             student_fn = row[13]
             student_ln = row[14]
             student_email = row[15]
-            # item = {column_names[i]: value for i, value in enumerate(row[13:])}
+
+            # Verify all necessary data for names
+            # TODO: verify the rest of the data
+            try:
+                assert student_fn is not None
+                assert ta_fn is not None
+                assert project_ta_fn is not None
+                assert lead_ta_fn is not None
+            except AssertionError:
+                print(f"missing information for pod {pod_key}, skipping db entry")
+                continue
+
             if course_key not in pod_data:
                 pod_data[course_key] = {
                     "structure": {},
