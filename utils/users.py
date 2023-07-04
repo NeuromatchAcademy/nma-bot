@@ -65,9 +65,9 @@ async def verify_user(message):
             await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",f"{userInfo['name']} has joined the megapod."))
             await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",f"TA {userInfo['name']} has joined the megapod."))
 
-        if userInfo['timeslot'] in [1, 2]:
+        if userInfo['timeslot'] in [4, 5]:
             time_role = discord.utils.get(message.guild.roles, name='americas')
-        elif userInfo['timeslot'] in [3, 4]:
+        elif userInfo['timeslot'] in [3]:
             time_role = discord.utils.get(message.guild.roles, name='europe-africa')
         else:
             time_role = discord.utils.get(message.guild.roles, name='asia-pacific')
