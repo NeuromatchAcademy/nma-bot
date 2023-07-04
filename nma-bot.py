@@ -1,5 +1,6 @@
 import os
 import discord
+import asyncio
 from dotenv import load_dotenv
 from pathlib import Path
 from utils import administrator, users, interact, db
@@ -106,10 +107,33 @@ intents = discord.Intents(
     members=True,
     presences=True,
     reactions=True,
-    message_content=True
+    message_content=True,
+    voice_states=True
 )
 
 client = nmaClient(intents=intents)
+
+
+async def delete_channel_after(vc):
+    soc_chan = discord.utils.get(client.get_all_channels(), name='social-general')
+    await soc_chan.send(f'Voice Channel {vc.name} is empty, deleting after 5 minutes...')
+    print(f'Voice Channel {vc.name} is empty, deleting after 5 minutes...')
+    await asyncio.sleep(300)
+    if len(vc.members) == 0:
+        await soc_chan.send(f'Deleting channel {vc.name}')
+        print(f'Deleting channel {vc.name}')
+        await vc.delete(reason="Inactive for 5 Minutes")
+
+
+@client.event
+async def on_voice_state_update(member, before, after):
+    if before.channel:
+        chan_cat = before.channel.category.name
+        members = before.channel.members
+        if chan_cat == 'social' and len(members) == 0:
+            client.loop.create_task(delete_channel_after(before.channel))
+
+
 client.run(discordToken)
 activity = discord.Activity(
     name="Studying brains...", type=discord.ActivityType.watching

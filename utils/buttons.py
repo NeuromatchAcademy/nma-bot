@@ -518,10 +518,10 @@ class GameDropdown(discord.ui.Select):
         game = self.values[0]
         game_channel = await get_activity_channel(interaction, game)
         game_inv = await create_activity_invite(game, game_channel.id)
-        game_event = await get_activity_event(interaction, f'{game} Party', game_channel)
         gaming_channel = discord.utils.get(interaction.guild.channels, name='gaming')
         await gaming_channel.send(
             f'<@{interaction.user.id}> has started an activity! Click here to join: https://discord.gg/{game_inv}')
+        game_event = await get_activity_event(interaction, f'{game} Party', game_channel)
         await game_event.start()
 
 
