@@ -248,26 +248,58 @@ class InitializeServer(discord.ui.Button):
             ephemeral=True)
 
         nested_dict = interact.guild_pick(master_db, interaction)
+        log_channel = discord.utils.get(interaction.guild.channels, name='bot-log')
 
+        await log_channel.send(
+            embed=interact.send_embed(
+                'custom', 'Administrative Notice',
+                f'User {interaction.user} triggered pod initialization.'
+            )
+        )
         for eachMega in nested_dict['structure']:
-            this_cat = await interaction.guild.create_category(eachMega)
+            this_cat = discord.utils.get(interaction.guild.categories, name=eachMega)
+            if this_cat is None:
+                this_cat = await interaction.guild.create_category(eachMega)
+
+                this_gen = await interaction.guild.create_text_channel(f"{eachMega.replace(' ', '-')}-general",
+                                                                       category=this_cat)
+                this_ta = await interaction.guild.create_text_channel(f"{eachMega.replace(' ', '-')}-ta-chat",
+                                                                      category=this_cat)
+                for eachChan in [this_cat, this_gen, this_ta]:
+                    await eachChan.set_permissions(interaction.guild.default_role, view_channel=False, send_messages=False)
+
+                await log_channel.send(
+                    embed=interact.send_embed(
+                        'custom', 'Administrative Notice',
+                        f'Megapod {eachMega} created!'
+                    )
+                )
 
             for eachPod in nested_dict['structure'][eachMega]:
-                this_pod = await interaction.guild.create_forum(f"{eachPod.replace(' ', '-')}", category=this_cat)
-                await this_pod.set_permissions(interaction.guild.default_role, view_channel=False, send_messages=False)
-                await this_pod.create_thread(name='Off-Topic',
-                                             content='This thread is intended for off-topic discussions.')
-                await this_pod.create_thread(name='Coursework',
-                                             content='This thread is intended for coursework discussions.')
-                await this_pod.create_thread(name='General', content='This thread is intended for general discussions.')
+                this_pod = discord.utils.get(interaction.guild.forums, name=eachPod)
+                if this_pod is None:
+                    this_pod = await interaction.guild.create_forum(f"{eachPod.replace(' ', '-')}", category=this_cat)
+                    await this_pod.set_permissions(interaction.guild.default_role, view_channel=False, send_messages=False)
+                    await this_pod.create_thread(name='Off-Topic',
+                                                 content='This thread is intended for off-topic discussions.')
+                    await this_pod.create_thread(name='Coursework',
+                                                 content='This thread is intended for coursework discussions.')
+                    await this_pod.create_thread(name='General', content='This thread is intended for general discussions.')
 
-            this_gen = await interaction.guild.create_text_channel(f"{eachMega.replace(' ', '-')}-general",
-                                                                   category=this_cat)
-            this_ta = await interaction.guild.create_text_channel(f"{eachMega.replace(' ', '-')}-ta-chat",
-                                                                  category=this_cat)
+                    await log_channel.send(
+                        embed=interact.send_embed(
+                            'custom', 'Administrative Notice',
+                            f'Pod {eachPod} created!'
+                        )
+                    )
 
-            for eachChan in [this_cat, this_gen, this_ta]:
-                await eachChan.set_permissions(interaction.guild.default_role, view_channel=False, send_messages=False)
+        await log_channel.send(
+            embed=interact.send_embed(
+                'custom', 'Administrative Notice',
+                'Server initialization complete.'
+            )
+        )
+        print('Server initialization complete.')
 
 
 class GraduateServer(discord.ui.Button):
@@ -275,7 +307,7 @@ class GraduateServer(discord.ui.Button):
         super().__init__(label='Graduate Server', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
-        if interaction.user == discord.utils.get(interaction.guild.members, name='blueneuron.net'):
+        if interaction.user == discord.utils.get(interaction.guild.members, name='blueneuron.net') or interaction.user == discord.utils.get(interaction.guild.members, name='Zoltan'):
             await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
                                                                               'Graduating server. This may take a while!'),
                                                     ephemeral=True)
