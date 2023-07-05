@@ -88,9 +88,9 @@ class AssignUser(discord.ui.Button):
 
         for eachPod in msg[1:]:
             if ' ' in eachPod:
-                target_pod = eachPod.replace(' ', '-')
+                target_pod = eachPod.lower().replace(' ', '-')
             else:
-                target_pod = eachPod
+                target_pod = eachPod.lower()
 
             target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
@@ -110,9 +110,9 @@ class RemoveUser(discord.ui.Button):
 
         for eachPod in msg[1:]:
             if ' ' in eachPod:
-                target_pod = eachPod.replace(' ', '-')
+                target_pod = eachPod.lower().replace(' ', '-')
             else:
-                target_pod = eachPod
+                target_pod = eachPod.lower()
 
             target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
@@ -151,7 +151,7 @@ class RepodUser(discord.ui.Button):
             roleKey = json.load(f)
 
         for eachPod in userInfo['pods']:
-            pod_channel = discord.utils.get(interaction.guild.channels, name=eachPod.replace(' ', '-'))
+            pod_channel = discord.utils.get(interaction.guild.channels, name=eachPod.lower().replace(' ', '-'))
             await pod_channel.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0],
                                               send_messages=roleKey[userInfo['role']]['perms'][1],
                                               manage_messages=roleKey[userInfo['role']]['perms'][2])
@@ -161,8 +161,8 @@ class RepodUser(discord.ui.Button):
             await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {pod_channel}.'))
 
         for eachMega in userInfo['megapods']:
-            megapod_gen = discord.utils.get(interaction.guild.channels, name=f"{eachMega.replace(' ', '-')}-general")
-            megapod_ta = discord.utils.get(interaction.guild.channels, name=f"{eachMega.replace(' ', '-')}-ta-chat")
+            megapod_gen = discord.utils.get(interaction.guild.channels, name=f"{eachMega.lower().replace(' ', '-')}-general")
+            megapod_ta = discord.utils.get(interaction.guild.channels, name=f"{eachMega.lower().replace(' ', '-')}-ta-chat")
 
             await megapod_gen.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0],
                                               send_messages=roleKey[userInfo['role']]['perms'][1],
@@ -191,25 +191,25 @@ class MergePods(discord.ui.Button):
         msg = msg.content.split(', ')
 
         if ' ' in msg[0]:
-            origin_pod = msg[0].replace(' ', '-')
+            origin_pod = msg[0].lower().replace(' ', '-')
         else:
-            origin_pod = msg[0]
+            origin_pod = msg[0].lower()
         old_channel = discord.utils.get(interaction.guild.channels, name=origin_pod)
 
         if ' ' in msg[1]:
-            target_pod = msg[1].replace(' ', '-')
+            target_pod = msg[1].lower().replace(' ', '-')
         else:
-            target_pod = msg[1]
+            target_pod = msg[1].lower()
         new_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
         nested_dict = interact.guild_pick(master_db, interaction)
 
         old_megapod = await users.mega_from_pod(interaction, origin_pod)
         new_megapod = await users.mega_from_pod(interaction, target_pod)
-        old_mega = discord.utils.get(interaction.guild.channels, name=f"{old_megapod.replace(' ', '-')}-general")
-        old_ta = discord.utils.get(interaction.guild.channels, name=f"{old_megapod.replace(' ', '-')}-ta-chat")
-        new_mega = discord.utils.get(interaction.guild.channels, name=f"{new_megapod.replace(' ', '-')}-general")
-        new_ta = discord.utils.get(interaction.guild.channels, name=f"{new_megapod.replace(' ', '-')}-ta-chat")
+        old_mega = discord.utils.get(interaction.guild.channels, name=f"{old_megapod.lower().replace(' ', '-')}-general")
+        old_ta = discord.utils.get(interaction.guild.channels, name=f"{old_megapod.lower().replace(' ', '-')}-ta-chat")
+        new_mega = discord.utils.get(interaction.guild.channels, name=f"{new_megapod.lower().replace(' ', '-')}-general")
+        new_ta = discord.utils.get(interaction.guild.channels, name=f"{new_megapod.lower().replace(' ', '-')}-ta-chat")
 
         ta_role = discord.utils.get(interaction.guild.roles, name="Teaching Assistant")
 
