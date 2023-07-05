@@ -27,12 +27,12 @@ async def lookup_user(obj, id):
 async def verify_user(message):
     logChan = discord.utils.get(message.guild.channels, name="bot-log")
     try:
-        target_email = message.content
+        target_email = message.content.lower()
         user = message.author
 
         print(f"{user} attempting to verify with {message.content}.")
 
-        nested_dict = interact.guild_pick(master_db,message)
+        nested_dict = interact.guild_pick(master_db, message)
 
         userInfo = nested_dict['users'][target_email]
         await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
@@ -65,7 +65,8 @@ async def verify_user(message):
                                              manage_messages=roleKey[userInfo['role']]['ta-perms'][2])
 
             await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",f"{userInfo['name']} has joined the megapod."))
-            await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",f"TA {userInfo['name']} has joined the megapod."))
+            if userInfo['role'] != 'student':
+                await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",f"TA {userInfo['name']} has joined the megapod."))
 
         if userInfo['timeslot'] in [4, 5]:
             time_role = discord.utils.get(message.guild.roles, name='americas')
