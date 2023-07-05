@@ -115,12 +115,12 @@ client = nmaClient(intents=intents)
 
 
 async def delete_channel_after(vc):
-    soc_chan = discord.utils.get(client.get_all_channels(), name='social-general')
-    await soc_chan.send(f'Voice Channel {vc.name} is empty, deleting after 5 minutes...')
+    bot_chan = discord.utils.get(client.get_all_channels(), name='bot-log')
+    await bot_chan.send(f'Voice Channel {vc.name} is empty, deleting after 5 minutes...')
     print(f'Voice Channel {vc.name} is empty, deleting after 5 minutes...')
     await asyncio.sleep(300)
     if len(vc.members) == 0:
-        await soc_chan.send(f'Deleting channel {vc.name}')
+        await bot_chan.send(f'Deleting channel {vc.name}')
         print(f'Deleting channel {vc.name}')
         await vc.delete(reason="Inactive for 5 Minutes")
 
@@ -130,7 +130,8 @@ async def on_voice_state_update(member, before, after):
     if before.channel:
         chan_cat = before.channel.category.name
         members = before.channel.members
-        if chan_cat == 'social' and len(members) == 0:
+        chan_name = before.channel.name
+        if chan_cat == 'social' and len(members) == 0 and 'Social Voice Chat' not in chan_name:
             client.loop.create_task(delete_channel_after(before.channel))
 
 
