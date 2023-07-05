@@ -115,7 +115,7 @@ client = nmaClient(intents=intents)
 
 
 async def delete_channel_after(vc):
-    bot_chan = discord.utils.get(client.get_all_channels(), name='bot-log')
+    bot_chan = discord.utils.get(vc.guild.channels, name='bot-log')
     await bot_chan.send(f'Voice Channel {vc.name} is empty, deleting after 5 minutes...')
     print(f'Voice Channel {vc.name} is empty, deleting after 5 minutes...')
     await asyncio.sleep(300)
