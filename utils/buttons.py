@@ -81,7 +81,9 @@ class AssignUser(discord.ui.Button):
         super().__init__(label='Assign User to Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        msg = await grab('Tag the user you want to assign, followed by any pods to which you want to assign them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays', interaction)
+        msg = await grab(
+            'Tag the user you want to assign, followed by any pods to which you want to assign them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays',
+            interaction)
         msg = msg.content.split(', ')
         user = re.sub("[^0-9]", "", msg[0])
         target_user = await interaction.guild.fetch_member(int(user))
@@ -95,7 +97,8 @@ class AssignUser(discord.ui.Button):
             target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
             await target_channel.set_permissions(target_user, view_channel=True, send_messages=True)
-        await interaction.channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Assigned {target_user} to {msg[1:]}.'))
+        await interaction.channel.send(
+            embed=interact.send_embed('custom', 'Administrative Notice', f'Assigned {target_user} to {msg[1:]}.'))
 
 
 class RemoveUser(discord.ui.Button):
@@ -103,7 +106,9 @@ class RemoveUser(discord.ui.Button):
         super().__init__(label='Remove User from Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        msg = await grab('Tag the user you want to remove, followed by any pods from which you want to remove them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays', interaction)
+        msg = await grab(
+            'Tag the user you want to remove, followed by any pods from which you want to remove them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays',
+            interaction)
         msg = msg.content.split(', ')
         user = re.sub("[^0-9]", "", msg[0])
         target_user = await interaction.guild.fetch_member(int(user))
@@ -117,7 +122,8 @@ class RemoveUser(discord.ui.Button):
             target_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
             await target_channel.set_permissions(target_user, view_channel=False, send_messages=False)
-        await interaction.channel.send(embed=interact.send_embed('custom','Administrative Notice',f'Removed {target_user} from {msg[1:]}.'))
+        await interaction.channel.send(
+            embed=interact.send_embed('custom', 'Administrative Notice', f'Removed {target_user} from {msg[1:]}.'))
 
 
 class RepodUser(discord.ui.Button):
@@ -128,9 +134,14 @@ class RepodUser(discord.ui.Button):
         user = await grab('Tag the user you want to repod.', interaction)
         user = re.sub("[^0-9]", "", user.content)
         target_user = await interaction.guild.fetch_member(int(user))
-        userInfo = await users.lookup_user(interaction, user)
+        try:
+            userInfo = await users.lookup_user(interaction, user)
+        except:
+            await interaction.channel.send(
+                embed=interact.send_embed('custom', 'Repod Notice', f'{target_user} has not verified yet.'))
 
-        await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Checking {target_user}\'s existing pod...'))
+        await interaction.channel.send(
+            embed=interact.send_embed('custom', 'Repod Notice', f'Checking {target_user}\'s existing pod...'))
         for eachChannel in interaction.guild.channels:
             if eachChannel.type == discord.ChannelType.category:
                 pass
@@ -142,10 +153,12 @@ class RepodUser(discord.ui.Button):
                 if eachChannel.type == discord.ChannelType.forum:
                     if target_user in eachChannel.overwrites:
                         await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
-                        await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Removing {target_user} from {eachChannel}.'))
+                        await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice',
+                                                                                 f'Removing {target_user} from {eachChannel}.'))
                 elif target_user in eachChannel.members:
                     await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
-                    await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Removing {target_user} from {eachChannel}.'))
+                    await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice',
+                                                                             f'Removing {target_user} from {eachChannel}.'))
 
         with open('config.json', 'r') as f:
             roleKey = json.load(f)
@@ -158,11 +171,14 @@ class RepodUser(discord.ui.Button):
             announce = discord.utils.get(pod_channel.threads, name='General')
             await announce.send(
                 embed=interact.send_embed('custom', "Pod Announcement", f"{userInfo['name']} has joined the pod."))
-            await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {pod_channel}.'))
+            await interaction.channel.send(
+                embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {pod_channel}.'))
 
         for eachMega in userInfo['megapods']:
-            megapod_gen = discord.utils.get(interaction.guild.channels, name=f"{eachMega.lower().replace(' ', '-')}-general")
-            megapod_ta = discord.utils.get(interaction.guild.channels, name=f"{eachMega.lower().replace(' ', '-')}-ta-chat")
+            megapod_gen = discord.utils.get(interaction.guild.channels,
+                                            name=f"{eachMega.lower().replace(' ', '-')}-general")
+            megapod_ta = discord.utils.get(interaction.guild.channels,
+                                           name=f"{eachMega.lower().replace(' ', '-')}-ta-chat")
 
             await megapod_gen.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0],
                                               send_messages=roleKey[userInfo['role']]['perms'][1],
@@ -173,7 +189,8 @@ class RepodUser(discord.ui.Button):
 
             await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",
                                                              f"{userInfo['name']} has joined the megapod."))
-            await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {megapod_gen}.'))
+            await interaction.channel.send(
+                embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {megapod_gen}.'))
             await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
                                                             f"TA {userInfo['name']} has joined the megapod."))
 
@@ -186,8 +203,9 @@ class MergePods(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
 
-        msg = await grab('Paste the name of the pod you want to merge from followed by the one you want to merge into. (e.g. shiny corals, blues clues)\n**Note that the first pod mentioned will be deleted.**',
-                         interaction)
+        msg = await grab(
+            'Paste the name of the pod you want to merge from followed by the one you want to merge into. (e.g. shiny corals, blues clues)\n**Note that the first pod mentioned will be deleted.**',
+            interaction)
         msg = msg.content.split(', ')
 
         if ' ' in msg[0]:
@@ -206,9 +224,11 @@ class MergePods(discord.ui.Button):
 
         old_megapod = await users.mega_from_pod(interaction, origin_pod)
         new_megapod = await users.mega_from_pod(interaction, target_pod)
-        old_mega = discord.utils.get(interaction.guild.channels, name=f"{old_megapod.lower().replace(' ', '-')}-general")
+        old_mega = discord.utils.get(interaction.guild.channels,
+                                     name=f"{old_megapod.lower().replace(' ', '-')}-general")
         old_ta = discord.utils.get(interaction.guild.channels, name=f"{old_megapod.lower().replace(' ', '-')}-ta-chat")
-        new_mega = discord.utils.get(interaction.guild.channels, name=f"{new_megapod.lower().replace(' ', '-')}-general")
+        new_mega = discord.utils.get(interaction.guild.channels,
+                                     name=f"{new_megapod.lower().replace(' ', '-')}-general")
         new_ta = discord.utils.get(interaction.guild.channels, name=f"{new_megapod.lower().replace(' ', '-')}-ta-chat")
 
         ta_role = discord.utils.get(interaction.guild.roles, name="Teaching Assistant")
@@ -240,7 +260,7 @@ class MergePods(discord.ui.Button):
         await new_channel.send(embed=interact.send_embed('custom', 'Pod Merge Notice',
                                                          f'Pod {origin_pod} has been merged into {target_pod}.'))
         await interaction.channel.send(embed=interact.send_embed('custom', 'Pods Merged',
-                                                                          f'Successfully merged pods {origin_pod} and {target_pod}. You may delete the old pod\'s channel now.'))
+                                                                 f'Successfully merged pods {origin_pod} and {target_pod}. You may delete the old pod\'s channel now.'))
 
 
 class InitializeServer(discord.ui.Button):
@@ -271,7 +291,8 @@ class InitializeServer(discord.ui.Button):
                 this_ta = await interaction.guild.create_text_channel(f"{eachMega.replace(' ', '-')}-ta-chat",
                                                                       category=this_cat)
                 for eachChan in [this_cat, this_gen, this_ta]:
-                    await eachChan.set_permissions(interaction.guild.default_role, view_channel=False, send_messages=False)
+                    await eachChan.set_permissions(interaction.guild.default_role, view_channel=False,
+                                                   send_messages=False)
 
                 await log_channel.send(
                     embed=interact.send_embed(
@@ -284,12 +305,14 @@ class InitializeServer(discord.ui.Button):
                 this_pod = discord.utils.get(interaction.guild.forums, name=eachPod.lower())
                 if this_pod is None:
                     this_pod = await interaction.guild.create_forum(f"{eachPod.replace(' ', '-')}", category=this_cat)
-                    await this_pod.set_permissions(interaction.guild.default_role, view_channel=False, send_messages=False)
+                    await this_pod.set_permissions(interaction.guild.default_role, view_channel=False,
+                                                   send_messages=False)
                     await this_pod.create_thread(name='Off-Topic',
                                                  content='This thread is intended for off-topic discussions.')
                     await this_pod.create_thread(name='Coursework',
                                                  content='This thread is intended for coursework discussions.')
-                    await this_pod.create_thread(name='General', content='This thread is intended for general discussions.')
+                    await this_pod.create_thread(name='General',
+                                                 content='This thread is intended for general discussions.')
 
                     await log_channel.send(
                         embed=interact.send_embed(
@@ -312,7 +335,9 @@ class GraduateServer(discord.ui.Button):
         super().__init__(label='Graduate Server', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
-        if interaction.user == discord.utils.get(interaction.guild.members, name='blueneuron.net') or interaction.user == discord.utils.get(interaction.guild.members, name='Zoltan'):
+        if interaction.user == discord.utils.get(interaction.guild.members,
+                                                 name='blueneuron.net') or interaction.user == discord.utils.get(
+                interaction.guild.members, name='Zoltan'):
             await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
                                                                               'Graduating server. This may take a while!'),
                                                     ephemeral=True)
