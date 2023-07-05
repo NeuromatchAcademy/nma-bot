@@ -35,6 +35,8 @@ async def verify_user(message):
         nested_dict = interact.guild_pick(master_db,message)
 
         userInfo = nested_dict['users'][target_email]
+        await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
+                                                     f"Attempting to verify {message.author} with info {userInfo}."))
 
         if len(userInfo["name"]) > 30:
             await user.edit(nick=userInfo["name"][0:30]) # Change user's nickname to full real name.
@@ -46,7 +48,7 @@ async def verify_user(message):
             await user.add_roles(disc_role)
 
         for eachPod in userInfo['pods']:
-            pod_channel = discord.utils.get(message.guild.channels, name=eachPod.replace(' ','-'))
+            pod_channel = discord.utils.get(message.guild.channels, name=eachPod.lower().replace(' ','-'))
             await pod_channel.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0], send_messages=roleKey[userInfo['role']]['perms'][1], manage_messages=roleKey[userInfo['role']]['perms'][2])
             announce = discord.utils.get(pod_channel.threads, name='General')
             await announce.send(embed=interact.send_embed('custom', "Pod Announcement",f"{userInfo['name']} has joined the pod."))
@@ -77,7 +79,6 @@ async def verify_user(message):
 
         with open('discord-ids.json', 'w') as f:
             json.dump(id_db, f, ensure_ascii=False, indent=4)
-
 
         print(f"Verified user {user} with email {target_email}.")
         await logChan.send(embed=interact.send_embed('custom',"Verified User",f"{message.author} verified for megapod(s) {userInfo['megapods']} and pod(s) {userInfo['pods']}."))
