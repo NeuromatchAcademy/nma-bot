@@ -55,7 +55,7 @@ async def get_activity_channel(
     else:
         tmp_title = title + f"-{count}"
 
-    act_cat = discord.utils.get(interaction.guild.channels, name='social')
+    act_cat = discord.utils.get(interaction.guild.categories, name='social')
     act_channel = discord.utils.get(interaction.guild.channels, name=tmp_title)
 
     if act_channel is None:
