@@ -59,6 +59,7 @@ class nmaClient(discord.Client):
 
             if message.channel.name == 'verify' and '@' in message.content:  # If the user sent an email in #verify...
                 await users.verify_user(message)  # ...Attempt verification.
+            elif message.channel.name == 'verify':
                 await message.delete()  # ...Then delete the message.
             elif isinstance(message.channel, discord.DMChannel):  # If the user is DMing the bot...
                 await interact.send_embed(message, 'dm')  # ...Send a special message.
