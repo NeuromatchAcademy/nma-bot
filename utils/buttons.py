@@ -281,7 +281,7 @@ class InitializeServer(discord.ui.Button):
                 )
 
             for eachPod in nested_dict['structure'][eachMega]:
-                this_pod = discord.utils.get(interaction.guild.forums, name=eachPod)
+                this_pod = discord.utils.get(interaction.guild.forums, name=eachPod.lower())
                 if this_pod is None:
                     this_pod = await interaction.guild.create_forum(f"{eachPod.replace(' ', '-')}", category=this_cat)
                     await this_pod.set_permissions(interaction.guild.default_role, view_channel=False, send_messages=False)
