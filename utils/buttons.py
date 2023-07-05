@@ -130,6 +130,7 @@ class RepodUser(discord.ui.Button):
         target_user = await interaction.guild.fetch_member(int(user))
         userInfo = await users.lookup_user(interaction, user)
 
+        await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Checking {target_user}\'s existing pod...'))
         for eachChannel in interaction.guild.channels:
             if eachChannel.type == discord.ChannelType.category:
                 pass
@@ -141,8 +142,10 @@ class RepodUser(discord.ui.Button):
                 if eachChannel.type == discord.ChannelType.forum:
                     if target_user in eachChannel.overwrites:
                         await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
+                        await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Removing {target_user} from {eachChannel}.'))
                 elif target_user in eachChannel.members:
                     await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
+                    await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Removing {target_user} from {eachChannel}.'))
 
         with open('config.json', 'r') as f:
             roleKey = json.load(f)
@@ -155,6 +158,7 @@ class RepodUser(discord.ui.Button):
             announce = discord.utils.get(pod_channel.threads, name='General')
             await announce.send(
                 embed=interact.send_embed('custom', "Pod Announcement", f"{userInfo['name']} has joined the pod."))
+            await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {pod_channel}.'))
 
         for eachMega in userInfo['megapods']:
             megapod_gen = discord.utils.get(interaction.guild.channels, name=f"{eachMega.replace(' ', '-')}-general")
@@ -169,6 +173,7 @@ class RepodUser(discord.ui.Button):
 
             await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",
                                                              f"{userInfo['name']} has joined the megapod."))
+            await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {megapod_gen}.'))
             await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
                                                             f"TA {userInfo['name']} has joined the megapod."))
 
