@@ -87,7 +87,6 @@ def get_pod_data_from_db(connection):
             except AssertionError:
                 if pod_key not in pods_missing_data:
                     pods_missing_data.append(pod_key)
-                continue
 
             if course_key not in pod_data:
                 pod_data[course_key] = {
@@ -98,7 +97,7 @@ def get_pod_data_from_db(connection):
                 pod_data[course_key]["structure"][megapod_key] = []
             if pod_key not in pod_data[course_key]["structure"][megapod_key]:
                 pod_data[course_key]["structure"][megapod_key].append(pod_key)
-            if student_email not in pod_data[course_key]["users"]:
+            if student_email and student_email not in pod_data[course_key]["users"]:
                 pod_data[course_key]["users"][student_email] = {
                     "name": student_fn + " " + student_ln,
                     "role": "student",
@@ -106,7 +105,7 @@ def get_pod_data_from_db(connection):
                     "megapods": [],
                     "pods": []
                 }
-            if lead_ta_email not in pod_data[course_key]["users"]:
+            if lead_ta_email and lead_ta_email not in pod_data[course_key]["users"]:
                 pod_data[course_key]["users"][lead_ta_email] = {
                     "name": lead_ta_fn + " " + lead_ta_ln,
                     "role": "lead_ta",
@@ -114,7 +113,7 @@ def get_pod_data_from_db(connection):
                     "megapods": [],
                     "pods": []
                 }
-            if ta_email not in pod_data[course_key]["users"]:
+            if ta_email and ta_email not in pod_data[course_key]["users"]:
                 pod_data[course_key]["users"][ta_email] = {
                     "name": ta_fn + " " + ta_ln,
                     "role": "ta",
@@ -122,7 +121,7 @@ def get_pod_data_from_db(connection):
                     "megapods": [],
                     "pods": []
                 }
-            if project_ta_email not in pod_data[course_key]["users"]:
+            if project_ta_email and project_ta_email not in pod_data[course_key]["users"]:
                 pod_data[course_key]["users"][project_ta_email] = {
                     "name": project_ta_fn + " " + project_ta_ln,
                     "role": "project_ta",
@@ -131,10 +130,11 @@ def get_pod_data_from_db(connection):
                     "pods": []
                 }
             for email in [student_email, lead_ta_email, project_ta_email, ta_email]:
-                if megapod_key not in pod_data[course_key]["users"][email]["megapods"]:
-                    pod_data[course_key]["users"][email]["megapods"].append(megapod_key)
-                if pod_key not in pod_data[course_key]["users"][email]["pods"]:
-                    pod_data[course_key]["users"][email]["pods"].append(pod_key)
+                if email:
+                    if megapod_key not in pod_data[course_key]["users"][email]["megapods"]:
+                        pod_data[course_key]["users"][email]["megapods"].append(megapod_key)
+                    if pod_key not in pod_data[course_key]["users"][email]["pods"]:
+                        pod_data[course_key]["users"][email]["pods"].append(pod_key)
 
         for pod in pods_missing_data:
             print(f"missing information for pod {pod}, skipping db entries")
