@@ -71,9 +71,7 @@ class CleanChannel(discord.ui.Button):
         super().__init__(label='Clean Channel', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
-        async for message in interaction.channel.history(limit=200):
-            await message.delete()
-        await interaction.channel.send(embed=interact.send_embed('master'), view=administrator.CommandDropdownView())
+        exit()
 
 
 class AssignUser(discord.ui.Button):
