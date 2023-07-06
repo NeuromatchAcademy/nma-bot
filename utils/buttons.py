@@ -52,16 +52,17 @@ class CheckPodDetails(discord.ui.Button):
             target_pod = msg.content
         channel = discord.utils.get(interaction.guild.channels, name=target_pod)
         members = ''
-        for member in channel.members:
-            if discord.utils.get(interaction.user.roles,
-                                 name="NMA Organizers") not in member.roles and discord.utils.get(
-                interaction.user.roles, name="NMA Staffers") not in member.roles:
-                if discord.utils.get(interaction.user.roles, name="Lead TA") in member.roles:
-                    members = f'{members}{member.name} **(Lead TA)**\n'
-                elif discord.utils.get(interaction.user.roles, name="Teaching Assistant") in member.roles:
-                    members = f'{members}{member.name} **(TA)**\n'
-                else:
-                    members = f'{members}{member.name}\n'
+        for member in channel.overwrites:
+            if isinstance(member, discord.Member):
+                if discord.utils.get(interaction.user.roles,
+                                     name="NMA Organizers") not in member.roles and discord.utils.get(
+                    interaction.user.roles, name="NMA Staffers") not in member.roles:
+                    if discord.utils.get(interaction.user.roles, name="Lead TA") in member.roles:
+                        members = f'{members}{member.name} **(Lead TA)**\n'
+                    elif discord.utils.get(interaction.user.roles, name="Teaching Assistant") in member.roles:
+                        members = f'{members}{member.name} **(TA)**\n'
+                    else:
+                        members = f'{members}{member.name}\n'
         await interaction.channel.send(embed=interact.send_embed('custom', 'Pod Breakdown', f'**Members:**\n{members}'))
         await msg.delete()
 
