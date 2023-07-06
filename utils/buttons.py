@@ -136,64 +136,72 @@ class RepodUser(discord.ui.Button):
         try:
             userInfo = await users.lookup_user(interaction, user)
         except:
+            userInfo = None
             await interaction.channel.send(
                 embed=interact.send_embed('custom', 'Repod Notice', f'{target_user} has not verified yet.'))
 
-        await interaction.channel.send(
-            embed=interact.send_embed('custom', 'Repod Notice', f'Checking {target_user}\'s existing pod...'))
-        for eachChannel in interaction.guild.channels:
-            if eachChannel.type == discord.ChannelType.category:
-                pass
-            elif eachChannel.category.name.lower() not in ['observer track', 'alumni', 'administrative',
-                                                           'teaching assistants', 'content help',
-                                                           'projects', 'information', 'lobby',
-                                                           'professional development', 'social', 'contest',
-                                                           'diversity']:
-                if eachChannel.type == discord.ChannelType.forum:
-                    if target_user in eachChannel.overwrites:
+
+        try:
+            await interaction.channel.send(
+                embed=interact.send_embed('custom', 'Repod Notice', f'Checking {target_user}\'s existing pod...'))
+            for eachChannel in interaction.guild.channels:
+                if eachChannel.type == discord.ChannelType.category:
+                    pass
+                elif eachChannel.category.name.lower() not in ['observer track', 'alumni', 'administrative',
+                                                               'teaching assistants', 'content help',
+                                                               'projects', 'information', 'lobby',
+                                                               'professional development', 'social', 'contest',
+                                                               'diversity']:
+                    if eachChannel.type == discord.ChannelType.forum:
+                        if target_user in eachChannel.overwrites:
+                            await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
+                            await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice',
+                                                                                     f'Removing {target_user} from {eachChannel}.'))
+                    elif target_user in eachChannel.members:
                         await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
                         await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice',
                                                                                  f'Removing {target_user} from {eachChannel}.'))
-                elif target_user in eachChannel.members:
-                    await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
-                    await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice',
-                                                                             f'Removing {target_user} from {eachChannel}.'))
 
-        with open('config.json', 'r') as f:
-            roleKey = json.load(f)
+            with open('config.json', 'r') as f:
+                roleKey = json.load(f)
 
-        for eachPod in userInfo['pods']:
-            pod_channel = discord.utils.get(interaction.guild.channels, name=eachPod.lower().replace(' ', '-'))
-            await pod_channel.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0],
-                                              send_messages=roleKey[userInfo['role']]['perms'][1],
-                                              manage_messages=roleKey[userInfo['role']]['perms'][2])
-            announce = discord.utils.get(pod_channel.threads, name='General')
-            await announce.send(
-                embed=interact.send_embed('custom', "Pod Announcement", f"{userInfo['name']} has joined the pod."))
-            await interaction.channel.send(
-                embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {pod_channel}.'))
+            for eachPod in userInfo['pods']:
+                pod_channel = discord.utils.get(interaction.guild.channels, name=eachPod.lower().replace(' ', '-'))
+                await pod_channel.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0],
+                                                  send_messages=roleKey[userInfo['role']]['perms'][1],
+                                                  manage_messages=roleKey[userInfo['role']]['perms'][2])
+                announce = discord.utils.get(pod_channel.threads, name='General')
+                await announce.send(
+                    embed=interact.send_embed('custom', "Pod Announcement", f"{userInfo['name']} has joined the pod."))
+                await interaction.channel.send(
+                    embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {pod_channel}.'))
 
-        for eachMega in userInfo['megapods']:
-            megapod_gen = discord.utils.get(interaction.guild.channels,
-                                            name=f"{eachMega.lower().replace(' ', '-')}-general")
-            megapod_ta = discord.utils.get(interaction.guild.channels,
-                                           name=f"{eachMega.lower().replace(' ', '-')}-ta-chat")
+            for eachMega in userInfo['megapods']:
+                megapod_gen = discord.utils.get(interaction.guild.channels,
+                                                name=f"{eachMega.lower().replace(' ', '-')}-general")
+                megapod_ta = discord.utils.get(interaction.guild.channels,
+                                               name=f"{eachMega.lower().replace(' ', '-')}-ta-chat")
 
-            await megapod_gen.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0],
-                                              send_messages=roleKey[userInfo['role']]['perms'][1],
-                                              manage_messages=roleKey[userInfo['role']]['perms'][2])
-            await megapod_ta.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['ta-perms'][0],
-                                             send_messages=roleKey[userInfo['role']]['ta-perms'][1],
-                                             manage_messages=roleKey[userInfo['role']]['ta-perms'][2])
+                await megapod_gen.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['perms'][0],
+                                                  send_messages=roleKey[userInfo['role']]['perms'][1],
+                                                  manage_messages=roleKey[userInfo['role']]['perms'][2])
+                await megapod_ta.set_permissions(target_user, view_channel=roleKey[userInfo['role']]['ta-perms'][0],
+                                                 send_messages=roleKey[userInfo['role']]['ta-perms'][1],
+                                                 manage_messages=roleKey[userInfo['role']]['ta-perms'][2])
 
-            await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",
-                                                             f"{userInfo['name']} has joined the megapod."))
-            await interaction.channel.send(
-                embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {megapod_gen}.'))
-            await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
-                                                            f"TA {userInfo['name']} has joined the megapod."))
+                await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",
+                                                                 f"{userInfo['name']} has joined the megapod."))
+                await interaction.channel.send(
+                    embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {megapod_gen}.'))
+                await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
+                                                                f"TA {userInfo['name']} has joined the megapod."))
 
-        await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
+            await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
+
+        except Exception as error:
+            print(f"Repod failed for {target_user} with userInfo {userInfo}")
+            await interaction.channel.send(embed=interact.send_embed('custom', "Failed Repodding",
+                                                         f"Could not repod {target_user}.\nRan into this issue: {error}\nuserInfo printout: {userInfo}"))
 
 
 class MergePods(discord.ui.Button):
@@ -336,7 +344,7 @@ class GraduateServer(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         if interaction.user == discord.utils.get(interaction.guild.members,
                                                  name='blueneuron.net') or interaction.user == discord.utils.get(
-                interaction.guild.members, name='Zoltan'):
+            interaction.guild.members, name='Zoltan'):
             await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
                                                                               'Graduating server. This may take a while!'),
                                                     ephemeral=True)
