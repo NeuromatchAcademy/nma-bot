@@ -192,7 +192,8 @@ class RepodUser(discord.ui.Button):
                                                                  f"{userInfo['name']} has joined the megapod."))
                 await interaction.channel.send(
                     embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {megapod_gen}.'))
-                await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
+                if userInfo['role'] != 'student':
+                    await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
                                                                 f"TA {userInfo['name']} has joined the megapod."))
 
             await interaction.channel.send(
