@@ -155,6 +155,7 @@ async def poll_db():
     with connect_to_db() as connection:
         try:
             new_data = get_pod_data_from_db(connection)
+            print("Polled db")
             with open('./pods.json', 'r') as f:
                 old_data = json.load(f)
             if old_data != new_data:
