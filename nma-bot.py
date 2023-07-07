@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from pathlib import Path
 from utils import administrator, users, interact, db
 
-
 # Auth
 current_dir = Path(__file__).resolve().parent
 # parent_dir = current_dir.parent
@@ -14,9 +13,10 @@ load_dotenv(dotenv_path=env_file_path)
 
 discordToken = os.getenv("DISCORD_TOKEN")
 
+
 ## TODO: likely remove this
 ## Load portal data.
-#with open('servers.json') as f:
+# with open('servers.json') as f:
 #    master_db = json.load(f)
 
 
@@ -32,7 +32,8 @@ class nmaClient(discord.Client):
                 if channel.name == "command-center":
                     async for message in channel.history(limit=200):
                         await message.delete()
-                    msg = await channel.send(embed=interact.send_embed('master'), view=administrator.CommandDropdownView())
+                    msg = await channel.send(embed=interact.send_embed('master'),
+                                             view=administrator.CommandDropdownView())
                     await msg.pin()
                 elif channel.name == 'verify':
                     async for message in channel.history(limit=200):
@@ -42,7 +43,8 @@ class nmaClient(discord.Client):
                 elif channel.name == 'activity-center':
                     async for message in channel.history(limit=200):
                         await message.delete()
-                    msg = await channel.send(embed=interact.send_embed('social'), view=administrator.SocialDropdownView())
+                    msg = await channel.send(embed=interact.send_embed('social'),
+                                             view=administrator.SocialDropdownView())
                     await msg.pin()
                 elif channel.name == 'bot-log':
                     await channel.send(embed=interact.send_embed('restart'))
@@ -94,7 +96,21 @@ class nmaClient(discord.Client):
                         await message.delete()
                     elif msg_cmd[1] == 'auth':
                         await message.channel.send(f"{message.author} auth status: {admin}.")
-        #elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
+                    elif msg_cmd[1] == 'podcheck':
+                        channel = message.channel
+                        members = ''
+                        for member in channel.overwrites:
+                            if isinstance(member, discord.Member):
+                                if discord.utils.get(message.guild.roles, name="NMA Organizers") not in member.roles and discord.utils.get(message.guild.roles, name="NMA Staffers") not in member.roles and discord.utils.get(message.guild.roles, name="Robots") not in member.roles:
+                                    if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
+                                        members = f'{members}{member.name} **(Lead TA)**\n'
+                                    elif discord.utils.get(message.guild.roles, name="Teaching Assistant") in member.roles:
+                                        members = f'{members}{member.name} **(TA)**\n'
+                                    else:
+                                        members = f'{members}{member.name}\n'
+                        await message.channel.send(
+                            embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
+        # elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
         #    await asyncio.sleep(60)
         #    await message.delete()
         else:
@@ -118,7 +134,8 @@ client = nmaClient(intents=intents)
 
 async def delete_channel_after(vc):
     bot_chan = discord.utils.get(vc.guild.channels, name='bot-log')
-    await bot_chan.send(embed=interact.send_embed('custom', 'Social', f'Voice Channel {vc.name} is empty, deleting after 5 minutes...'))
+    await bot_chan.send(
+        embed=interact.send_embed('custom', 'Social', f'Voice Channel {vc.name} is empty, deleting after 5 minutes...'))
     print(f'Voice Channel {vc.name} is empty, deleting after 5 minutes...')
     await asyncio.sleep(300)
     if len(vc.members) == 0:

@@ -140,7 +140,6 @@ class RepodUser(discord.ui.Button):
             await interaction.channel.send(
                 embed=interact.send_embed('custom', 'Repod Notice', f'{target_user} has not verified yet.'))
 
-
         try:
             await interaction.channel.send(
                 embed=interact.send_embed('custom', 'Repod Notice', f'Checking {target_user}\'s existing pod...'))
@@ -196,12 +195,13 @@ class RepodUser(discord.ui.Button):
                 await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
                                                                 f"TA {userInfo['name']} has joined the megapod."))
 
-            await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
+            await interaction.channel.send(
+                embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
 
         except Exception as error:
             print(f"Repod failed for {target_user} with userInfo {userInfo}")
             await interaction.channel.send(embed=interact.send_embed('custom', "Failed Repodding",
-                                                         f"Could not repod {target_user}.\nRan into this issue: {error}\nuserInfo printout: {userInfo}"))
+                                                                     f"Could not repod {target_user}.\nRan into this issue: {error}\nuserInfo printout: {userInfo}"))
 
 
 class MergePods(discord.ui.Button):
