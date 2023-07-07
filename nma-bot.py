@@ -99,7 +99,7 @@ class nmaClient(discord.Client):
                     elif msg_cmd[1] == 'podcheck':
                         channel = message.channel
                         members = ''
-                        for member in channel.overwrites:
+                        for member in channel.members:
                             if isinstance(member, discord.Member):
                                 if discord.utils.get(message.guild.roles, name="NMA Organizers") not in member.roles and discord.utils.get(message.guild.roles, name="NMA Staffers") not in member.roles and discord.utils.get(message.guild.roles, name="Robots") not in member.roles:
                                     if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
