@@ -138,10 +138,13 @@ async def delete_channel_after(vc):
         embed=interact.send_embed('custom', 'Social', f'Voice Channel {vc.name} is empty, deleting after 5 minutes...'))
     print(f'Voice Channel {vc.name} is empty, deleting after 5 minutes...')
     await asyncio.sleep(300)
-    if len(vc.members) == 0:
+    vc_still_exists = discord.utils.get(vc.guild.channels, name=vc.name)
+    if len(vc.members) == 0 and vc_still_exists:
         await bot_chan.send(embed=interact.send_embed('custom', 'Social', f'Deleting channel {vc.name}'))
         print(f'Deleting channel {vc.name}')
         await vc.delete(reason="Inactive for 5 Minutes")
+    elif not vc_still_exists:
+        print(f'User deleted channel {vc.name}')
 
 
 @client.event

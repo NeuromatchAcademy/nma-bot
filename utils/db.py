@@ -165,6 +165,14 @@ async def poll_db():
             print(f"Error occurred while getting data: {e}")
 
 
+@poll_db.before_loop
+async def before_poll_db():
+    print('db sync waiting for bot...')
+    await asyncio.sleep(20)
+    # TODO: maybe figure out how to tie this to bot? as cog class?
+    # await wait_until_ready()
+
+
 async def main():
     await poll_db()
 
