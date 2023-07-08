@@ -14,8 +14,8 @@ class CheckAuthority(discord.ui.Button):
         super().__init__(label='Check Authority', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
-        role = discord.utils.get(interaction.user.roles, name="NMA Organizers")
-        if role is not None and role.name == 'NMA Organizers':
+        role = discord.utils.get(interaction.user.roles, name="Organizers")
+        if role is not None and role.name == 'Organizers':
             outcome = 'You do possess administrative powers.'
         else:
             outcome = 'You do not possess administrative powers.'
@@ -55,8 +55,8 @@ class CheckPodDetails(discord.ui.Button):
         for member in channel.overwrites:
             if isinstance(member, discord.Member):
                 if discord.utils.get(interaction.user.roles,
-                                     name="NMA Organizers") not in member.roles and discord.utils.get(
-                    interaction.user.roles, name="NMA Staffers") not in member.roles:
+                                     name="Organizers") not in member.roles and discord.utils.get(
+                    interaction.user.roles, name="Staffers") not in member.roles:
                     if discord.utils.get(interaction.user.roles, name="Lead TA") in member.roles:
                         members = f'{members}{member.name} **(Lead TA)**\n'
                     elif discord.utils.get(interaction.user.roles, name="Teaching Assistant") in member.roles:
@@ -194,7 +194,7 @@ class RepodUser(discord.ui.Button):
                     embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {megapod_gen}.'))
                 if userInfo['role'] != 'student':
                     await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
-                                                                f"TA {userInfo['name']} has joined the megapod."))
+                                                                    f"TA {userInfo['name']} has joined the megapod."))
 
             await interaction.channel.send(
                 embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
@@ -356,7 +356,7 @@ class GraduateServer(discord.ui.Button):
             alumnus_role = discord.utils.get(interaction.guild.roles, name='Alumnus')
             ta_alumnus_role = discord.utils.get(interaction.guild.roles, name='TA Alumnus')
 
-            student_role = discord.utils.get(interaction.guild.roles, name='Interactive Student')
+            student_role = discord.utils.get(interaction.guild.roles, name='Approved User')
             ta_role = discord.utils.get(interaction.guild.roles, name='Teaching Assistant')
             lead_ta_role = discord.utils.get(interaction.guild.roles, name='Lead TA')
             project_ta_role = discord.utils.get(interaction.guild.roles, name='Project TA')

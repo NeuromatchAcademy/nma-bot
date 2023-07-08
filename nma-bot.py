@@ -71,8 +71,8 @@ class nmaClient(discord.Client):
 
                 if msg_cmd[0] == '--nma':  # Checking for a command.
 
-                    role = discord.utils.get(message.author.roles, name="NMA Organizers")
-                    if role is not None and role.name == 'NMA Organizers':
+                    role = discord.utils.get(message.author.roles, name="Organizer")
+                    if role is not None and role.name == 'Organizer':
                         admin = 1
                     else:
                         admin = 0
@@ -84,11 +84,11 @@ class nmaClient(discord.Client):
                     elif msg_cmd[1] == 'identify':
                         id_channels = []
                         if 'lgbtq' in msg_cmd[2]:
-                            id_channels += [discord.utils.get(message.guild.channels, name="lgbtq-in-neuro")]
+                            id_channels += [discord.utils.get(message.guild.channels, name="lgbtq")]
                         if 'gender' in msg_cmd[2]:
-                            id_channels += [discord.utils.get(message.guild.channels, name="gender-in-neuro")]
+                            id_channels += [discord.utils.get(message.guild.channels, name="gender")]
                         if 'race' in msg_cmd[2]:
-                            id_channels += [discord.utils.get(message.guild.channels, name="race-in-neuro")]
+                            id_channels += [discord.utils.get(message.guild.channels, name="race")]
 
                         for eachChan in id_channels:
                             await eachChan.set_permissions(message.author, view_channel=True, send_messages=True)
@@ -101,7 +101,7 @@ class nmaClient(discord.Client):
                         members = ''
                         for member in channel.overwrites:
                             if isinstance(member, discord.Member):
-                                if discord.utils.get(message.guild.roles, name="NMA Organizers") not in member.roles and discord.utils.get(message.guild.roles, name="NMA Staffers") not in member.roles and discord.utils.get(message.guild.roles, name="Robots") not in member.roles:
+                                if discord.utils.get(message.guild.roles, name="Organizer") not in member.roles and discord.utils.get(message.guild.roles, name="Staffers") not in member.roles and discord.utils.get(message.guild.roles, name="Robots") not in member.roles:
                                     if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
                                         members = f'{members}{member.name} **(Lead TA)**\n'
                                     elif discord.utils.get(message.guild.roles, name="Teaching Assistant") in member.roles:
