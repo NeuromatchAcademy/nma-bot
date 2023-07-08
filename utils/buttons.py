@@ -171,7 +171,7 @@ class RepodUser(discord.ui.Button):
                                                   manage_messages=roleKey[userInfo['role']]['perms'][2])
                 announce = discord.utils.get(pod_channel.threads, name='General')
                 await announce.send(
-                    embed=interact.send_embed('custom', "Pod Announcement", f"{userInfo['name']} has joined the pod."))
+                    embed=interact.send_embed('custom', "Pod Announcement", f"{userInfo['role']} {userInfo['name']} has joined the pod."))
                 await interaction.channel.send(
                     embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {pod_channel}.'))
 
@@ -189,12 +189,12 @@ class RepodUser(discord.ui.Button):
                                                  manage_messages=roleKey[userInfo['role']]['ta-perms'][2])
 
                 await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",
-                                                                 f"{userInfo['name']} has joined the megapod."))
+                                                                 f"{userInfo['role']} {userInfo['name']} has joined the megapod."))
                 await interaction.channel.send(
                     embed=interact.send_embed('custom', 'Repod Notice', f'Added {target_user} to {megapod_gen}.'))
                 if userInfo['role'] != 'student':
                     await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
-                                                                    f"TA {userInfo['name']} has joined the megapod."))
+                                                                    f"{userInfo['role']} {userInfo['name']} has joined the megapod."))
 
             await interaction.channel.send(
                 embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
