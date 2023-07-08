@@ -99,15 +99,26 @@ class nmaClient(discord.Client):
                     elif msg_cmd[1] == 'podcheck':
                         channel = message.channel.parent
                         members = ''
-                        for member in channel.overwrites:
-                            if isinstance(member, discord.Member):
-                                if discord.utils.get(message.guild.roles, name="Organizer") not in member.roles and discord.utils.get(message.guild.roles, name="Staffers") not in member.roles and discord.utils.get(message.guild.roles, name="Robots") not in member.roles:
-                                    if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
-                                        members = f'{members}{member.name} **(Lead TA)**\n'
-                                    elif discord.utils.get(message.guild.roles, name="Teaching Assistant") in member.roles:
-                                        members = f'{members}{member.name} **(TA)**\n'
-                                    else:
-                                        members = f'{members}{member.name}\n'
+                        if channel.type == discord.ChannelType.forum:
+                            for member in channel.overwrites:
+                                if isinstance(member, discord.Member):
+                                    if discord.utils.get(message.guild.roles, name="Organizer") not in member.roles and discord.utils.get(message.guild.roles, name="Staffers") not in member.roles and discord.utils.get(message.guild.roles, name="Robots") not in member.roles:
+                                        if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
+                                            members = f'{members}{member.name} **(Lead TA)**\n'
+                                        elif discord.utils.get(message.guild.roles, name="Teaching Assistant") in member.roles:
+                                            members = f'{members}{member.name} **(TA)**\n'
+                                        else:
+                                            members = f'{members}{member.name}\n'
+                        elif channel.type == discord.ChannelType.text and '-general' in channel.name:
+                            for member in channel.members:
+                                if isinstance(member, discord.Member):
+                                    if discord.utils.get(message.guild.roles, name="Organizer") not in member.roles and discord.utils.get(message.guild.roles, name="Staffers") not in member.roles and discord.utils.get(message.guild.roles, name="Robots") not in member.roles:
+                                        if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
+                                            members = f'{members}{member.name} **(Lead TA)**\n'
+                                        elif discord.utils.get(message.guild.roles, name="Teaching Assistant") in member.roles:
+                                            members = f'{members}{member.name} **(TA)**\n'
+                                        else:
+                                            members = f'{members}{member.name}\n'
                         await message.channel.send(
                             embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
         # elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
