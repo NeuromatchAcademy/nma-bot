@@ -3,28 +3,37 @@ import discord
 from . import interact
 
 
+#TODO: create loader funcs
 # Load portal data.
-with open('pods.json') as f:
-    master_db = json.load(f)
+# with open('pods.json') as f:
+#     master_db = json.load(f)
 
-with open('discord-ids.json') as f:
-    id_db = json.load(f)
+# with open('discord-ids.json') as f:
+#     id_db = json.load(f)
 
+# This might be ok since it does not dynamically change
 with open('config.json', 'r') as f:
     roleKey = json.load(f)
 
+
 async def mega_from_pod(obj, pod):
-    course_db = interact.guild_pick(master_db, obj)
+    course_db = interact.guild_pick(obj)
     for key, values in course_db['structure'].items():
         if pod in values or pod.replace('-', ' ') in values:
             return key
     return 'Pod not found'
 
+
 async def lookup_user(obj, id):
-    course_db = interact.guild_pick(master_db, obj)
+    with open('discord-ids.json') as f:
+        id_db = json.load(f)
+    course_db = interact.guild_pick(obj)
     return course_db['users'][id_db[id]]
 
+
 async def verify_user(message):
+    with open('discord-ids.json') as f:
+        id_db = json.load(f)
     logChan = discord.utils.get(message.guild.channels, name="bot-log")
     try:
         target_email = message.content.lower()
@@ -32,7 +41,7 @@ async def verify_user(message):
 
         print(f"{user} attempting to verify with {message.content}.")
 
-        nested_dict = interact.guild_pick(master_db, message)
+        nested_dict = interact.guild_pick(message)
 
         userInfo = nested_dict['users'][target_email]
         await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",

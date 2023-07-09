@@ -5,8 +5,8 @@ import re
 from .activities import create_activity_invite, get_activity_channel, get_activity_event
 
 # Load portal data.
-with open('pods.json') as f:
-    master_db = json.load(f)
+# with open('pods.json') as f:
+#     master_db = json.load(f)
 
 
 class CheckAuthority(discord.ui.Button):
@@ -228,7 +228,7 @@ class MergePods(discord.ui.Button):
             target_pod = msg[1].lower()
         new_channel = discord.utils.get(interaction.guild.channels, name=target_pod)
 
-        nested_dict = interact.guild_pick(master_db, interaction)
+        # nested_dict = interact.guild_pick(interaction)
 
         old_megapod = await users.mega_from_pod(interaction, origin_pod)
         new_megapod = await users.mega_from_pod(interaction, target_pod)
@@ -264,9 +264,9 @@ class MergePods(discord.ui.Button):
                 if old_mega != new_mega:
                     await old_mega.set_permissions(eachMember, view_messages=False, send_messages=False)
                     await new_mega.set_permissions(eachMember, view_messages=True, send_messages=True)
-
-        await new_channel.send(embed=interact.send_embed('custom', 'Pod Merge Notice',
-                                                         f'Pod {origin_pod} has been merged into {target_pod}.'))
+        # TODO: maybe remove this message? forum channels do not have a .send method
+        # await new_channel.send(embed=interact.send_embed('custom', 'Pod Merge Notice',
+        #                                                  f'Pod {origin_pod} has been merged into {target_pod}.'))
         await interaction.channel.send(embed=interact.send_embed('custom', 'Pods Merged',
                                                                  f'Successfully merged pods {origin_pod} and {target_pod}. You may delete the old pod\'s channel now.'))
 
@@ -280,7 +280,7 @@ class InitializeServer(discord.ui.Button):
             embed=interact.send_embed('custom', 'Administrative Notice', 'Initializing server. This may take a while!'),
             ephemeral=True)
 
-        nested_dict = interact.guild_pick(master_db, interaction)
+        nested_dict = interact.guild_pick(interaction)
         log_channel = discord.utils.get(interaction.guild.channels, name='bot-log')
 
         await log_channel.send(
@@ -415,8 +415,8 @@ class ForceDB(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         await db.poll_db()
-        with open('pods.json', 'r') as f:
-            master_db = json.load(f)
+        # with open('pods.json', 'r') as f:
+        #     master_db = json.load(f)
         await interaction.response.send_message(
             embed=interact.send_embed('custom', 'Updated Database', 'The database was updated.'))
 

@@ -1,10 +1,15 @@
+import json
 import discord
 from .constants import embed_dict
 
 
-def guild_pick(db, obj):
+def guild_pick(obj):
     # TODO: set this up in config
     # Is this being used?
+
+    with open('pods.json') as f:
+        db = json.load(f)
+
     if 'Climate' in obj.guild.name:
         return db["Computational Tools for Climate Science"]
     elif 'CN' in obj.guild.name:
