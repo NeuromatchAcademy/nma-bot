@@ -146,9 +146,9 @@ class RepodUser(discord.ui.Button):
                 embed=interact.send_embed('custom', 'Repod Notice', f'Checking {target_user}\'s existing pod...'))
             for eachChannel in interaction.guild.channels:
                 if eachChannel.type == discord.ChannelType.category:
-                    pass
+                    continue
                 elif not hasattr(eachChannel, 'category'):
-                    pass
+                    continue
                 elif eachChannel.category.name.lower() not in ['observer track', 'alumni', 'administrative',
                                                                'teaching assistants', 'content help',
                                                                'projects', 'information', 'lobby',
