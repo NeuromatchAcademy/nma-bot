@@ -58,6 +58,7 @@ def get_pod_data_from_db(connection):
         # column_names = [desc[0] for desc in cursor.description[13:]]
 
         pod_data = {}
+        pods_missing_data = []
         for row in results:
             course_key = row[0]
             megapod_key = row[1]
@@ -75,7 +76,18 @@ def get_pod_data_from_db(connection):
             student_fn = row[13]
             student_ln = row[14]
             student_email = row[15]
-            # item = {column_names[i]: value for i, value in enumerate(row[13:])}
+
+            # Verify all necessary data for names
+            # TODO: verify the rest of the data
+            try:
+                assert student_fn is not None
+                assert ta_fn is not None
+                assert project_ta_fn is not None
+                assert lead_ta_fn is not None
+            except AssertionError:
+                if pod_key not in pods_missing_data:
+                    pods_missing_data.append(pod_key)
+
             if course_key not in pod_data:
                 pod_data[course_key] = {
                     "structure": {},
@@ -85,7 +97,7 @@ def get_pod_data_from_db(connection):
                 pod_data[course_key]["structure"][megapod_key] = []
             if pod_key not in pod_data[course_key]["structure"][megapod_key]:
                 pod_data[course_key]["structure"][megapod_key].append(pod_key)
-            if student_email not in pod_data[course_key]["users"]:
+            if student_email and student_email not in pod_data[course_key]["users"]:
                 pod_data[course_key]["users"][student_email] = {
                     "name": student_fn + " " + student_ln,
                     "role": "student",
@@ -93,7 +105,7 @@ def get_pod_data_from_db(connection):
                     "megapods": [],
                     "pods": []
                 }
-            if lead_ta_email not in pod_data[course_key]["users"]:
+            if lead_ta_email and lead_ta_email not in pod_data[course_key]["users"]:
                 pod_data[course_key]["users"][lead_ta_email] = {
                     "name": lead_ta_fn + " " + lead_ta_ln,
                     "role": "lead_ta",
@@ -101,7 +113,7 @@ def get_pod_data_from_db(connection):
                     "megapods": [],
                     "pods": []
                 }
-            if ta_email not in pod_data[course_key]["users"]:
+            if ta_email and ta_email not in pod_data[course_key]["users"]:
                 pod_data[course_key]["users"][ta_email] = {
                     "name": ta_fn + " " + ta_ln,
                     "role": "ta",
@@ -109,7 +121,7 @@ def get_pod_data_from_db(connection):
                     "megapods": [],
                     "pods": []
                 }
-            if project_ta_email not in pod_data[course_key]["users"]:
+            if project_ta_email and project_ta_email not in pod_data[course_key]["users"]:
                 pod_data[course_key]["users"][project_ta_email] = {
                     "name": project_ta_fn + " " + project_ta_ln,
                     "role": "project_ta",
@@ -118,10 +130,15 @@ def get_pod_data_from_db(connection):
                     "pods": []
                 }
             for email in [student_email, lead_ta_email, project_ta_email, ta_email]:
-                if megapod_key not in pod_data[course_key]["users"][email]["megapods"]:
-                    pod_data[course_key]["users"][email]["megapods"].append(megapod_key)
-                if pod_key not in pod_data[course_key]["users"][email]["pods"]:
-                    pod_data[course_key]["users"][email]["pods"].append(pod_key)
+                if email:
+                    if megapod_key not in pod_data[course_key]["users"][email]["megapods"]:
+                        pod_data[course_key]["users"][email]["megapods"].append(megapod_key)
+                    if pod_key not in pod_data[course_key]["users"][email]["pods"]:
+                        pod_data[course_key]["users"][email]["pods"].append(pod_key)
+
+        for pod in pods_missing_data:
+            print(f"missing information for pod {pod}, skipping db entries")
+
     return pod_data
 
 
@@ -138,6 +155,7 @@ async def poll_db():
     with connect_to_db() as connection:
         try:
             new_data = get_pod_data_from_db(connection)
+            print("Polled db")
             with open('./pods.json', 'r') as f:
                 old_data = json.load(f)
             if old_data != new_data:
@@ -145,6 +163,14 @@ async def poll_db():
                 save_data_to_json(new_data, 'pods.json')
         except Exception as e:
             print(f"Error occurred while getting data: {e}")
+
+
+@poll_db.before_loop
+async def before_poll_db():
+    print('db sync waiting for bot...')
+    await asyncio.sleep(20)
+    # TODO: maybe figure out how to tie this to bot? as cog class?
+    # await wait_until_ready()
 
 
 async def main():

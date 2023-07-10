@@ -1,21 +1,21 @@
 {
     "project_ta": {
-        "roles":["Project TA", "Teaching Assistant", "Interactive Student"],
+        "roles":["Project TA", "Teaching Assistant", "Approved User"],
         "perms":[true, true, true],
         "ta-perms":[true, true, true]
     },
     "lead_ta": {
-        "roles":["Project TA", "Lead TA", "Teaching Assistant", "Interactive Student"],
+        "roles":["Project TA", "Lead TA", "Teaching Assistant", "Approved User"],
         "perms":[true, true, true],
         "ta-perms":[true, true, false]
     },
     "ta":{
-        "roles":["Teaching Assistant", "Interactive Student"],
+        "roles":["Teaching Assistant", "Approved User"],
         "perms":[true, true, true],
         "ta-perms":[true, true, false]
     },
     "student":{
-        "roles":["Interactive Student"],
+        "roles":["Approved User"],
         "perms":[true, true, false],
         "ta-perms":[false, false, false]
     }

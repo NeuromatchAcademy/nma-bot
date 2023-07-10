@@ -1,11 +1,9 @@
 import os
-import json
 import discord
+import asyncio
 from dotenv import load_dotenv
 from pathlib import Path
-import asyncio
 from utils import administrator, users, interact, db
-
 
 # Auth
 current_dir = Path(__file__).resolve().parent
@@ -15,9 +13,10 @@ load_dotenv(dotenv_path=env_file_path)
 
 discordToken = os.getenv("DISCORD_TOKEN")
 
+
 ## TODO: likely remove this
 ## Load portal data.
-#with open('servers.json') as f:
+# with open('servers.json') as f:
 #    master_db = json.load(f)
 
 
@@ -33,7 +32,8 @@ class nmaClient(discord.Client):
                 if channel.name == "command-center":
                     async for message in channel.history(limit=200):
                         await message.delete()
-                    msg = await channel.send(embed=interact.send_embed('master'), view=administrator.CommandDropdownView())
+                    msg = await channel.send(embed=interact.send_embed('master'),
+                                             view=administrator.CommandDropdownView())
                     await msg.pin()
                 elif channel.name == 'verify':
                     async for message in channel.history(limit=200):
@@ -43,7 +43,8 @@ class nmaClient(discord.Client):
                 elif channel.name == 'activity-center':
                     async for message in channel.history(limit=200):
                         await message.delete()
-                    msg = await channel.send(embed=interact.send_embed('social'), view=administrator.SocialDropdownView())
+                    msg = await channel.send(embed=interact.send_embed('social'),
+                                             view=administrator.SocialDropdownView())
                     await msg.pin()
                 elif channel.name == 'bot-log':
                     await channel.send(embed=interact.send_embed('restart'))
@@ -61,6 +62,8 @@ class nmaClient(discord.Client):
             if message.channel.name == 'verify' and '@' in message.content:  # If the user sent an email in #verify...
                 await users.verify_user(message)  # ...Attempt verification.
                 await message.delete()  # ...Then delete the message.
+            elif message.channel.name == 'verify':
+                await message.delete()  # ...Then delete the message.
             elif isinstance(message.channel, discord.DMChannel):  # If the user is DMing the bot...
                 await interact.send_embed(message, 'dm')  # ...Send a special message.
             else:  # If the user is neither verifying nor DMing...
@@ -68,8 +71,8 @@ class nmaClient(discord.Client):
 
                 if msg_cmd[0] == '--nma':  # Checking for a command.
 
-                    role = discord.utils.get(message.author.roles, name="NMA Organizers")
-                    if role is not None and role.name == 'NMA Organizers':
+                    role = discord.utils.get(message.author.roles, name="Organizer")
+                    if role is not None and role.name == 'Organizer':
                         admin = 1
                     else:
                         admin = 0
@@ -81,11 +84,11 @@ class nmaClient(discord.Client):
                     elif msg_cmd[1] == 'identify':
                         id_channels = []
                         if 'lgbtq' in msg_cmd[2]:
-                            id_channels += [discord.utils.get(message.guild.channels, name="lgbtq-in-neuro")]
+                            id_channels += [discord.utils.get(message.guild.channels, name="lgbtq")]
                         if 'gender' in msg_cmd[2]:
-                            id_channels += [discord.utils.get(message.guild.channels, name="gender-in-neuro")]
+                            id_channels += [discord.utils.get(message.guild.channels, name="gender")]
                         if 'race' in msg_cmd[2]:
-                            id_channels += [discord.utils.get(message.guild.channels, name="race-in-neuro")]
+                            id_channels += [discord.utils.get(message.guild.channels, name="race")]
 
                         for eachChan in id_channels:
                             await eachChan.set_permissions(message.author, view_channel=True, send_messages=True)
@@ -93,7 +96,32 @@ class nmaClient(discord.Client):
                         await message.delete()
                     elif msg_cmd[1] == 'auth':
                         await message.channel.send(f"{message.author} auth status: {admin}.")
-        #elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
+                    elif msg_cmd[1] == 'podcheck':
+                        channel = message.channel.parent
+                        members = ''
+                        if channel.type == discord.ChannelType.forum:
+                            for member in channel.overwrites:
+                                if isinstance(member, discord.Member):
+                                    if discord.utils.get(message.guild.roles, name="Organizer") not in member.roles and discord.utils.get(message.guild.roles, name="Staffers") not in member.roles and discord.utils.get(message.guild.roles, name="Robots") not in member.roles:
+                                        if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
+                                            members = f'{members}{member.name} **(Lead TA)**\n'
+                                        elif discord.utils.get(message.guild.roles, name="Teaching Assistant") in member.roles:
+                                            members = f'{members}{member.name} **(TA)**\n'
+                                        else:
+                                            members = f'{members}{member.name}\n'
+                        elif channel.type == discord.ChannelType.text and '-general' in channel.name:
+                            for member in channel.members:
+                                if isinstance(member, discord.Member):
+                                    if discord.utils.get(message.guild.roles, name="Organizer") not in member.roles and discord.utils.get(message.guild.roles, name="Staffers") not in member.roles and discord.utils.get(message.guild.roles, name="Robots") not in member.roles:
+                                        if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
+                                            members = f'{members}{member.name} **(Lead TA)**\n'
+                                        elif discord.utils.get(message.guild.roles, name="Teaching Assistant") in member.roles:
+                                            members = f'{members}{member.name} **(TA)**\n'
+                                        else:
+                                            members = f'{members}{member.name}\n'
+                        await message.channel.send(
+                            embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
+        # elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
         #    await asyncio.sleep(60)
         #    await message.delete()
         else:
@@ -108,10 +136,38 @@ intents = discord.Intents(
     members=True,
     presences=True,
     reactions=True,
-    message_content=True
+    message_content=True,
+    voice_states=True
 )
 
 client = nmaClient(intents=intents)
+
+
+async def delete_channel_after(vc):
+    bot_chan = discord.utils.get(vc.guild.channels, name='bot-log')
+    await bot_chan.send(
+        embed=interact.send_embed('custom', 'Social', f'Voice Channel {vc.name} is empty, deleting after 5 minutes...'))
+    print(f'Voice Channel {vc.name} is empty, deleting after 5 minutes...')
+    await asyncio.sleep(300)
+    vc_still_exists = discord.utils.get(vc.guild.channels, name=vc.name)
+    if len(vc.members) == 0 and vc_still_exists:
+        await bot_chan.send(embed=interact.send_embed('custom', 'Social', f'Deleting channel {vc.name}'))
+        print(f'Deleting channel {vc.name}')
+        await vc.delete(reason="Inactive for 5 Minutes")
+    elif not vc_still_exists:
+        print(f'User deleted channel {vc.name}')
+
+
+@client.event
+async def on_voice_state_update(member, before, after):
+    if before.channel:
+        chan_cat = before.channel.category.name
+        members = before.channel.members
+        chan_name = before.channel.name
+        if chan_cat == 'social' and len(members) == 0 and 'Social Voice Chat' not in chan_name:
+            client.loop.create_task(delete_channel_after(before.channel))
+
+
 client.run(discordToken)
 activity = discord.Activity(
     name="Studying brains...", type=discord.ActivityType.watching
