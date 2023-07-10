@@ -147,6 +147,8 @@ class RepodUser(discord.ui.Button):
             for eachChannel in interaction.guild.channels:
                 if eachChannel.type == discord.ChannelType.category:
                     pass
+                elif not hasattr(eachChannel, 'category'):
+                    pass
                 elif eachChannel.category.name.lower() not in ['observer track', 'alumni', 'administrative',
                                                                'teaching assistants', 'content help',
                                                                'projects', 'information', 'lobby',
