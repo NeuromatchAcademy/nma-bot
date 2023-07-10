@@ -1,3 +1,4 @@
+import sys, os
 import discord
 import json
 from . import interact, users, db
@@ -200,9 +201,11 @@ class RepodUser(discord.ui.Button):
                 embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
 
         except Exception as error:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(f"Repod failed for {target_user} with userInfo {userInfo}")
             await interaction.channel.send(embed=interact.send_embed('custom', "Failed Repodding",
-                                                                     f"Could not repod {target_user}.\nRan into this issue: {error}\nuserInfo printout: {userInfo}"))
+                                                                     f"Could not repod {target_user}.\nRan into this issue: {error}\nuserInfo printout: {userInfo}, {fname, exc_type, exc_tb.tb_lineno}"))
 
 
 class MergePods(discord.ui.Button):
