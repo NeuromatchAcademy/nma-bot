@@ -143,7 +143,7 @@ class nmaClient(discord.Client):
                                     time_role = asia_role
 
                                 await eachMember.add_roles(time_role)
-                            await message.channel.send(embed=interact.send_embed('custom', "Time Check",f"{userInfo['name']} timechecked."))
+                            await message.channel.send(embed=interact.send_embed('custom', "Time Check",f"Checked server times."))
                         except Exception as error:
                             exc_type, exc_obj, exc_tb = sys.exc_info()
                             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
