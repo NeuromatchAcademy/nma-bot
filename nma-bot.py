@@ -72,7 +72,7 @@ class nmaClient(discord.Client):
 
                 if msg_cmd[0] == '--nma':  # Checking for a command.
 
-                    role = discord.utils.get(message.author.roles, name="Organizer")
+                    role = discord.utils.get(message.author.roles, name="Organizers")
                     if role is not None and role.name == 'Organizer':
                         admin = 1
                     else:
