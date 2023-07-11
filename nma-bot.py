@@ -148,7 +148,7 @@ class nmaClient(discord.Client):
                                 exc_type, exc_obj, exc_tb = sys.exc_info()
                                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                                 await message.channel.send(embed=interact.send_embed('custom', "Time Check",
-                                                                                         f"{userInfo}, {fname, exc_type, exc_tb.tb_lineno}"))
+                                                                                         f"{eachMember}, {fname, exc_type, exc_tb.tb_lineno}"))
 
 
         # elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
