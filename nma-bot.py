@@ -1,4 +1,5 @@
 import os
+import sys
 import discord
 import asyncio
 from dotenv import load_dotenv
@@ -121,6 +122,35 @@ class nmaClient(discord.Client):
                                             members = f'{members}{member.name}\n'
                         await message.channel.send(
                             embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
+                    elif msg_cmd[1] == 'timefix' and admin == 1:
+                        america_role = discord.utils.get(message.guild.roles, name='americas')
+                        eurafrica_role = discord.utils.get(message.guild.roles, name='europe-africa')
+                        asia_role = discord.utils.get(message.guild.roles, name='asia-pacific')
+
+                        try:
+                            for eachMember in message.guild.members:
+                                userInfo = await users.lookup_user(message,eachMember.id)
+
+                                for eachRole in [america_role, eurafrica_role, asia_role]:
+                                    if eachRole in eachMember.roles:
+                                        await eachMember.remove_roles(eachRole)
+
+                                if userInfo['timeslot'] in ['4', '5']:
+                                    time_role = america_role
+                                elif userInfo['timeslot'] in ['3']:
+                                    time_role = eurafrica_role
+                                elif userInfo['timeslot'] in ['1', '2']:
+                                    time_role = asia_role
+
+                                await eachMember.add_roles(time_role)
+                            await message.channel.send(embed=interact.send_embed('custom', "Time Check",f"{userInfo['name']} timechecked."))
+                        except Exception as error:
+                            exc_type, exc_obj, exc_tb = sys.exc_info()
+                            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                            await message.channel.send(embed=interact.send_embed('custom', "Time Check",
+                                                                                     f"{userInfo}, {fname, exc_type, exc_tb.tb_lineno}"))
+
+
         # elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
         #    await asyncio.sleep(60)
         #    await message.delete()
