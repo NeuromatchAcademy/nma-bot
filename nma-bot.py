@@ -53,6 +53,9 @@ async def start_activity(interaction: discord.Interaction, activity: app_command
         game_inv = await activities.create_activity_invite(game, game_channel.id)
         await gen_channel.send(
             f'<@{interaction.user.id}> has started an activity! Click here to join: https://discord.gg/{game_inv}')
+    else:
+        await interaction.response.send_message(f'You can only use this in megapod channels, {interaction.user}!',
+                                                ephemeral=True)
 
 # Actual Discord bot.
 class nmaClient(discord.Client):
