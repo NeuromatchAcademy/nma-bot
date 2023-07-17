@@ -51,6 +51,9 @@ async def start_activity(interaction: discord.Interaction, activity: app_command
             await game_channel.set_permissions(interaction.guild.default_role, view_channel=False)
 
             for eachUser in gen_channel.members:
+                print(eachUser)
+                print(game_channel)
+                print(gen_channel)
                 await game_channel.set_permissions(eachUser, view_channel=True)
 
         game_inv = await activities.create_activity_invite(game, game_channel.id)
