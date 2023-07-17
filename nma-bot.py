@@ -180,17 +180,26 @@ class nmaClient(discord.Client):
                         await message.channel.send(
                             embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
                     elif msg_cmd[1] == 'getposts' and admin == 1:
-                        target_channel = discord.utils.get(message.guild.channels, name=msg_cmd[2])
-                        message_dict = []
-                        async for eachMessage in target_channel.history(limit=None):
-                            message_dict += {
-                                'Date': eachMessage.created_at,
-                                'Author': eachMessage.author,
-                                'Content': eachMessage.content
-                            }
-                        df = pd.Dataframe(message_dict)
-                        df.to_csv(f'{target_channel.name}-log.csv')
-                        await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
+                        if isinstance(msg_cmd[2],str):
+                            target_channel = discord.utils.get(message.guild.channels, name=msg_cmd[2])
+                        else:
+                            target_channel = msg_cmd[2]
+
+                        await message.channel.send(embed=interact.send_embed('custom','Administrative Notice','Starting getposts -- this might take a while!'))
+
+                        try:
+                            message_dict = []
+                            async for eachMessage in target_channel.history(limit=None):
+                                message_dict += {
+                                    'Date': eachMessage.created_at,
+                                    'Author': eachMessage.author,
+                                    'Content': eachMessage.content
+                                }
+                            df = pd.Dataframe(message_dict)
+                            df.to_csv(f'{target_channel.name}-log.csv')
+                            await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
+                        except:
+                            await message.channel.send(embed=interact.send_embed('custom','Error!','Channel archival failed!'))
 
                     elif msg_cmd[1] == 'timefix' and admin == 1:
                         america_role = discord.utils.get(message.guild.roles, name='americas')
@@ -201,7 +210,6 @@ class nmaClient(discord.Client):
                         for eachMember in message.guild.members:
                             if current_role in eachMember.roles:
                                 try:
-                                    print(eachMember, eachMember.id)
                                     userInfo = await users.lookup_user(message, eachMember.id)
 
                                     for eachRole in [america_role, eurafrica_role, asia_role]:
