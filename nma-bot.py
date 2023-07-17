@@ -48,7 +48,7 @@ async def start_activity(interaction: discord.Interaction, activity: app_command
         gen_channel = discord.utils.get(game_cat.channels, name=f'{game_cat.name.lower()}-general')
         admin_role = discord.utils.get(interaction.guild.roles, name="Organizers")
         staff_role = discord.utils.get(interaction.guild.roles, name="Staffers")
-        robot_role = discord.utils.get(interaction.guild.roles, name="Robot")
+        robot_role = discord.utils.get(interaction.guild.roles, name="Robots")
         if game_channel is None:
             game_channel = await game_cat.create_voice_channel('megapod-games')
             await game_channel.set_permissions(interaction.guild.default_role, view_channel=False)
