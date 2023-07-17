@@ -185,7 +185,7 @@ class nmaClient(discord.Client):
                         else:
                             target_channel = msg_cmd[2]
 
-                        await message.channel.send(embed=interact.send_embed('custom','Administrative Notice','Starting getposts -- this might take a while!'))
+                        await message.channel.send(embed=interact.send_embed('custom','Administrative Notice','Starting channel archival -- this might take a while!'))
 
                         try:
                             message_dict = []
@@ -198,8 +198,11 @@ class nmaClient(discord.Client):
                             df = pd.Dataframe(message_dict)
                             df.to_csv(f'{target_channel.name}-log.csv')
                             await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
-                        except:
-                            await message.channel.send(embed=interact.send_embed('custom','Error!','Channel archival failed!'))
+                        except Exception as error:
+                            exc_type, exc_obj, exc_tb = sys.exc_info()
+                            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                            await message.channel.send(embed=interact.send_embed('custom', "Error!",
+                                                                                 f"{eachMember}, channel archival failed because:\n{fname, exc_type, exc_tb.tb_lineno},\n{eachMember.id}"))
 
                     elif msg_cmd[1] == 'timefix' and admin == 1:
                         america_role = discord.utils.get(message.guild.roles, name='americas')
