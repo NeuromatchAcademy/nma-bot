@@ -180,10 +180,11 @@ class nmaClient(discord.Client):
                         await message.channel.send(
                             embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
                     elif msg_cmd[1] == 'getposts' and admin == 1:
-                        if isinstance(msg_cmd[2],str):
-                            target_channel = discord.utils.get(message.guild.channels, name=msg_cmd[2])
+                        if '#' in msg_cmd[2]:
+                            target_channel = re.sub("[^0-9]", "", msg[2])
+                            target_channel = discord.utils.get(message.guild.channels, id=target_channel)
                         else:
-                            target_channel = msg_cmd[2]
+                            target_channel = discord.utils.get(message.guild.channels, name=msg_cmd[2])
 
                         await message.channel.send(embed=interact.send_embed('custom','Administrative Notice','Starting channel archival -- this might take a while!'))
 
@@ -195,7 +196,7 @@ class nmaClient(discord.Client):
                                 'Author': eachMessage.author,
                                 'Content': eachMessage.content
                             }
-                        df = pd.Dataframe(message_dict)
+                        df = pd.DataFrame(message_dict)
                         df.to_csv(f'{target_channel.name}-log.csv')
                         await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
                         #except Exception as error:
