@@ -5,7 +5,7 @@ from discord import app_commands
 import asyncio
 from dotenv import load_dotenv
 from pathlib import Path
-from utils import administrator, users, interact, db
+from utils import administrator, users, interact, db, activities
 import pandas as pd
 
 # Auth
