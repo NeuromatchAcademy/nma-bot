@@ -16,6 +16,37 @@ This bot uses environmental variables stored in a .env file. You need to create 
 DISCORD_TOKEN=<Your Bot Token>
 ```
 
+## Contest Instructions
+If you're forking this repository to participate in the NMA bot contest, here's some guidance to help you navigate the code:
+
+### How to add a command.
+In `nma-bot.py`, under the `on_message` function, you can see that we split incoming messages based on spaces and if the first string in the list is `'--nma'`, we assume that what follows is a command. From there, all you have to do is add an `elif msg_cmd[1] == 'yourcommand'` add add your code underneath. A sample command might thus look like this:
+
+```python
+elif msg_cmd[1] == 'samplecommand':
+    await message.channel.send(f"Sample command response, {message.author}!")
+```
+
+### How to add a button.
+In `nma-bot.py`, under the `on_ready` function, you can see that we send a message with a special view in the `activity-center` channel. This view is imported from `utils/administrator.py`, and if you look at the `BUTTON_MAPPING` dictionary in that file, you might notice that the dictionary's keys correspond to options in the #activity-center dropdown and the dictionary's values correspond to the buttons and dropdowns the bot loads if the appropriate option is picked in the dropdown. These are defined in `utils/buttons.py` as such:
+
+```python
+class SampleButton(discord.ui.Button):
+    def __init__(self, par):
+        super().__init__(label='Button Label', style=discord.ButtonStyle.green)
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f'Sample button response, {interaction.user}!', ephemeral=True)
+```
+
+From there, you'd add `buttons.SampleButton` into the appropriate list in the `BUTTON_MAPPING` dictionary in `utils/administrator.py`.
+
+### Key documentation
+- [How to get a Discord token](https://www.writebots.com/discord-bot-token/)
+- [Discord.py Documentation](https://discordpy.readthedocs.io/en/stable/)
+- [Discord.py Support Server](https://discord.gg/r3sSKJJ)
+- [Discord.py FAQ](https://discordpy.readthedocs.io/en/stable/faq.html)
+
 ## Disclaimer
 This bot is designed to be used in Neuromatch Academy course servers and expects a certain server structure as a result. If you server is misconfigured, it will not work for you.
 
