@@ -212,16 +212,21 @@ class nmaClient(discord.Client):
                                 try:
                                     userInfo = await users.lookup_user(message, eachMember.id)
 
-                                    for eachRole in [america_role, eurafrica_role, asia_role]:
+                                    # Define the mappings
+                                    role_mappings = {
+                                        '4': ([eurafrica_role, asia_role], america_role),
+                                        '5': ([eurafrica_role, asia_role], america_role),
+                                        '3': ([america_role, asia_role], eurafrica_role),
+                                        '1': ([eurafrica_role, america_role], asia_role),
+                                        '2': ([eurafrica_role, america_role], asia_role),
+                                    }
+
+                                    roles_to_remove, time_role = role_mappings[userInfo['timeslot']]
+
+                                    # Remove the roles
+                                    for eachRole in roles_to_remove:
                                         if eachRole in eachMember.roles:
                                             await eachMember.remove_roles(eachRole)
-
-                                    if userInfo['timeslot'] in ['4', '5']:
-                                        time_role = america_role
-                                    elif userInfo['timeslot'] in ['3']:
-                                        time_role = eurafrica_role
-                                    elif userInfo['timeslot'] in ['1', '2']:
-                                        time_role = asia_role
 
                                     await eachMember.add_roles(time_role)
                                     await message.channel.send(embed=interact.send_embed('custom', "Time Check",
