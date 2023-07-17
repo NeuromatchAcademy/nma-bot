@@ -182,7 +182,7 @@ class nmaClient(discord.Client):
                             embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
                     elif msg_cmd[1] == 'getposts' and admin == 1:
                         if '#' in msg_cmd[2]:
-                            target_channel = re.sub("[^0-9]", "", msg[2])
+                            target_channel = re.sub("[^0-9]", "", msg_cmd[2])
                             target_channel = discord.utils.get(message.guild.channels, id=target_channel)
                         else:
                             target_channel = discord.utils.get(message.guild.channels, name=msg_cmd[2])
