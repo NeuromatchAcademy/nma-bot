@@ -68,6 +68,7 @@ class nmaClient(discord.Client):
         db.poll_db.start()
 
     async def on_ready(self):
+        await tree.sync()
         for guild in client.guilds:
             for channel in guild.channels:
                 if channel.name == "command-center":
@@ -234,6 +235,8 @@ intents = discord.Intents(
 )
 
 client = nmaClient(intents=intents)
+tree = app_commands.CommandTree(client)
+tree.add_command(start_activity)
 
 
 async def delete_channel_after(vc):
