@@ -3,6 +3,7 @@ import sys
 import discord
 from discord import app_commands
 import asyncio
+import re
 from dotenv import load_dotenv
 from pathlib import Path
 from utils import administrator, users, interact, db, activities
@@ -191,11 +192,11 @@ class nmaClient(discord.Client):
                         #try:
                         message_dict = []
                         async for eachMessage in target_channel.history(limit=None):
-                            message_dict += {
+                            message_dict.append({
                                 'Date': eachMessage.created_at,
                                 'Author': eachMessage.author,
                                 'Content': eachMessage.content
-                            }
+                            })
                         df = pd.DataFrame(message_dict)
                         df.to_csv(f'{target_channel.name}-log.csv')
                         await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
