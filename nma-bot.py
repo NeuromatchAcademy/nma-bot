@@ -40,18 +40,22 @@ async def start_activity(interaction: discord.Interaction, activity: app_command
                                                          'projects', 'information', 'lobby',
                                                          'professional development', 'social', 'contest',
                                                          'diversity', 'python precourse', 'earth expo']:
-        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
+        await interaction.response.send_message(f'If this is the first time this command is run in this megapod, this could take a minute. Please be patient, {interaction.user}!',
                                                 ephemeral=True)
         game = activity.value
         game_cat = interaction.channel.category
         game_channel = discord.utils.get(game_cat.channels, name='megapod-games')
         gen_channel = discord.utils.get(game_cat.channels, name=f'{game_cat.name.lower()}-general')
+        admin_role = discord.utils.get(message.author.roles, name="Organizer")
+        staff_role = discord.utils.get(message.author.roles, name="Staffer")
+        robot_role = discord.utils.get(message.author.roles, name="Robot")
         if game_channel is None:
             game_channel = await game_cat.create_voice_channel('megapod-games')
             await game_channel.set_permissions(interaction.guild.default_role, view_channel=False)
 
             for eachUser in gen_channel.members:
-                await game_channel.set_permissions(eachUser, view_channel=True)
+                if admin_role not in eachUser.roles or staff_role not in eachUser.roles or robot_role not in eachUser.roles:
+                    await game_channel.set_permissions(eachUser, view_channel=True)
 
         game_inv = await activities.create_activity_invite(game, game_channel.id)
         await gen_channel.send(
