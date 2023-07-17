@@ -124,16 +124,17 @@ class nmaClient(discord.Client):
                         await message.channel.send(
                             embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
                     elif msg_cmd[1] == 'getposts' and admin == 1:
+                        target_channel = discord.utils.get(message.guild.channels, name=msg_cmd[2])
                         message_dict = []
-                        async for eachMessage in message.channel.history(limit=None):
+                        async for eachMessage in target_channel.history(limit=None):
                             message_dict += {
                                 'Date':eachMessage.created_at,
                                 'Author':eachMessage.author,
                                 'Content':eachMessage.content
                             }
                         df = pd.Dataframe(message_dict)
-                        df.to_csv(f'{message.channel.name}-log.csv')
-                        await message.channel.send(file=discord.File(f'{message.channel.name}-log.csv'))
+                        df.to_csv(f'{target_channel.name}-log.csv')
+                        await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
 
                     elif msg_cmd[1] == 'timefix' and admin == 1:
                         america_role = discord.utils.get(message.guild.roles, name='americas')
