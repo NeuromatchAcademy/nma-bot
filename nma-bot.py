@@ -5,6 +5,7 @@ import asyncio
 from dotenv import load_dotenv
 from pathlib import Path
 from utils import administrator, users, interact, db
+import pandas as pd
 
 # Auth
 current_dir = Path(__file__).resolve().parent
@@ -122,6 +123,18 @@ class nmaClient(discord.Client):
                                             members = f'{members}{member.name}\n'
                         await message.channel.send(
                             embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
+                    elif msg_cmd[1] == 'getposts' and admin == 1:
+                        message_dict = []
+                        async for eachMessage in message.channel.history(limit=None):
+                            message_dict += {
+                                'Date':eachMessage.created_at,
+                                'Author':eachMessage.author,
+                                'Content':eachMessage.content
+                            }
+                        df = pd.Dataframe(message_dict)
+                        df.to_csv(f'{message.channel.name}-log.csv')
+                        await message.channel.send(file=discord.File(f'{message.channel.name}-log.csv'))
+
                     elif msg_cmd[1] == 'timefix' and admin == 1:
                         america_role = discord.utils.get(message.guild.roles, name='americas')
                         eurafrica_role = discord.utils.get(message.guild.roles, name='europe-africa')
