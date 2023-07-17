@@ -153,7 +153,7 @@ class RepodUser(discord.ui.Button):
                                                                'teaching assistants', 'content help',
                                                                'projects', 'information', 'lobby',
                                                                'professional development', 'social', 'contest',
-                                                               'diversity']:
+                                                               'diversity', 'python precourse', 'earth expo']:
                     if eachChannel.type == discord.ChannelType.forum:
                         if target_user in eachChannel.overwrites:
                             await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
@@ -378,7 +378,7 @@ class GraduateServer(discord.ui.Button):
                                                                  'teaching assistants', 'content help',
                                                                  'projects', 'information', 'lobby',
                                                                  'professional development', 'social', 'contest',
-                                                                 'diversity']:
+                                                                 'diversity', 'python precourse', 'earth expo']:
                             if eachObj.type != discord.ChannelType.forum:
                                 for eachMember in eachObj.members:
                                     if alumnus_role not in eachMember.roles:
