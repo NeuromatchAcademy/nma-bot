@@ -110,8 +110,8 @@ class nmaClient(discord.Client):
 
                 if msg_cmd[0] == '--nma':  # Checking for a command.
 
-                    role = discord.utils.get(message.author.roles, name="Organizers")
-                    if role is not None and role.name == 'Organizers':
+                    role = discord.utils.get(message.author.roles, name="Organizer")
+                    if role is not None and role.name == 'Organizer':
                         admin = 1
                     else:
                         admin = 0
@@ -178,8 +178,8 @@ class nmaClient(discord.Client):
                         eurafrica_role = discord.utils.get(message.guild.roles, name='europe-africa')
                         asia_role = discord.utils.get(message.guild.roles, name='asia-pacific')
 
-                        for eachMember in message.guild.members:
-                            try:
+                        try:
+                            for eachMember in message.guild.members:
                                 userInfo = await users.lookup_user(message,eachMember.id)
 
                                 for eachRole in [america_role, eurafrica_role, asia_role]:
@@ -194,12 +194,12 @@ class nmaClient(discord.Client):
                                     time_role = asia_role
 
                                 await eachMember.add_roles(time_role)
-                                await message.channel.send(embed=interact.send_embed('custom', "Time Check",f"Checked {userInfo['name']}'s time."))
-                            except Exception as error:
-                                exc_type, exc_obj, exc_tb = sys.exc_info()
-                                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                                await message.channel.send(embed=interact.send_embed('custom', "Time Check",
-                                                                                         f"{eachMember}, {fname, exc_type, exc_tb.tb_lineno}"))
+                            await message.channel.send(embed=interact.send_embed('custom', "Time Check",f"Checked server times."))
+                        except Exception as error:
+                            exc_type, exc_obj, exc_tb = sys.exc_info()
+                            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                            await message.channel.send(embed=interact.send_embed('custom', "Time Check",
+                                                                                     f"{userInfo}, {fname, exc_type, exc_tb.tb_lineno}"))
 
 
         # elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
