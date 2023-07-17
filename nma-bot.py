@@ -183,28 +183,28 @@ class nmaClient(discord.Client):
                     elif msg_cmd[1] == 'getposts' and admin == 1:
                         if '#' in msg_cmd[2]:
                             target_channel = re.sub("[^0-9]", "", msg_cmd[2])
-                            target_channel = discord.utils.get(message.guild.channels, id=target_channel)
+                            target_channel = discord.utils.get(message.guild.channels, id=int(target_channel))
                         else:
                             target_channel = discord.utils.get(message.guild.channels, name=msg_cmd[2])
 
                         await message.channel.send(embed=interact.send_embed('custom','Administrative Notice','Starting channel archival -- this might take a while!'))
 
-                        #try:
-                        message_dict = []
-                        async for eachMessage in target_channel.history(limit=None):
-                            message_dict.append({
-                                'Date': eachMessage.created_at,
-                                'Author': eachMessage.author,
-                                'Content': eachMessage.content
-                            })
-                        df = pd.DataFrame(message_dict)
-                        df.to_csv(f'{target_channel.name}-log.csv')
-                        await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
-                        #except Exception as error:
-                        #    exc_type, exc_obj, exc_tb = sys.exc_info()
-                        #    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                        #    await message.channel.send(embed=interact.send_embed('custom', "Error!",
-                        #                                                         f"{message.author}, channel archival failed because:\n{fname, exc_type, exc_tb.tb_lineno}"))
+                        try:
+                            message_dict = []
+                            async for eachMessage in target_channel.history(limit=None):
+                                message_dict.append({
+                                    'Date': eachMessage.created_at,
+                                    'Author': eachMessage.author,
+                                    'Content': eachMessage.content
+                                })
+                            df = pd.DataFrame(message_dict)
+                            df.to_csv(f'{target_channel.name}-log.csv')
+                            await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
+                        except Exception as error:
+                           exc_type, exc_obj, exc_tb = sys.exc_info()
+                           fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                           await message.channel.send(embed=interact.send_embed('custom', "Error!",
+                                                                                f"{message.author}, channel archival failed because:\n{fname, exc_type, exc_tb.tb_lineno}"))
 
                     elif msg_cmd[1] == 'timefix' and admin == 1:
                         america_role = discord.utils.get(message.guild.roles, name='americas')
