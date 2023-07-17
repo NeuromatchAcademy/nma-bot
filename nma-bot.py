@@ -16,6 +16,7 @@ load_dotenv(dotenv_path=env_file_path)
 
 discordToken = os.getenv("DISCORD_TOKEN")
 
+
 @app_commands.command()
 @app_commands.describe(activity='activity to play')
 @app_commands.choices(activity=[
@@ -35,10 +36,10 @@ discordToken = os.getenv("DISCORD_TOKEN")
 ])
 async def start_activity(interaction: discord.Interaction, activity: app_commands.Choice[str]):
     if interaction.channel.category.name.lower() not in ['observer track', 'alumni', 'administrative',
-                                                                 'teaching assistants', 'content help',
-                                                                 'projects', 'information', 'lobby',
-                                                                 'professional development', 'social', 'contest',
-                                                                 'diversity', 'python precourse', 'earth expo']:
+                                                         'teaching assistants', 'content help',
+                                                         'projects', 'information', 'lobby',
+                                                         'professional development', 'social', 'contest',
+                                                         'diversity', 'python precourse', 'earth expo']:
         await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
                                                 ephemeral=True)
         game = activity.value
@@ -58,6 +59,7 @@ async def start_activity(interaction: discord.Interaction, activity: app_command
     else:
         await interaction.response.send_message(f'You can only use this in megapod channels, {interaction.user}!',
                                                 ephemeral=True)
+
 
 # Actual Discord bot.
 class nmaClient(discord.Client):
@@ -141,20 +143,30 @@ class nmaClient(discord.Client):
                         if channel.type == discord.ChannelType.forum:
                             for member in channel.overwrites:
                                 if isinstance(member, discord.Member):
-                                    if discord.utils.get(message.guild.roles, name="Organizer") not in member.roles and discord.utils.get(message.guild.roles, name="Staffers") not in member.roles and discord.utils.get(message.guild.roles, name="Robots") not in member.roles:
+                                    if discord.utils.get(message.guild.roles,
+                                                         name="Organizer") not in member.roles and discord.utils.get(
+                                            message.guild.roles,
+                                            name="Staffers") not in member.roles and discord.utils.get(
+                                            message.guild.roles, name="Robots") not in member.roles:
                                         if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
                                             members = f'{members}{member.name} **(Lead TA)**\n'
-                                        elif discord.utils.get(message.guild.roles, name="Teaching Assistant") in member.roles:
+                                        elif discord.utils.get(message.guild.roles,
+                                                               name="Teaching Assistant") in member.roles:
                                             members = f'{members}{member.name} **(TA)**\n'
                                         else:
                                             members = f'{members}{member.name}\n'
                         elif channel.type == discord.ChannelType.text and '-general' in channel.name:
                             for member in channel.members:
                                 if isinstance(member, discord.Member):
-                                    if discord.utils.get(message.guild.roles, name="Organizer") not in member.roles and discord.utils.get(message.guild.roles, name="Staffers") not in member.roles and discord.utils.get(message.guild.roles, name="Robots") not in member.roles:
+                                    if discord.utils.get(message.guild.roles,
+                                                         name="Organizer") not in member.roles and discord.utils.get(
+                                            message.guild.roles,
+                                            name="Staffers") not in member.roles and discord.utils.get(
+                                            message.guild.roles, name="Robots") not in member.roles:
                                         if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
                                             members = f'{members}{member.name} **(Lead TA)**\n'
-                                        elif discord.utils.get(message.guild.roles, name="Teaching Assistant") in member.roles:
+                                        elif discord.utils.get(message.guild.roles,
+                                                               name="Teaching Assistant") in member.roles:
                                             members = f'{members}{member.name} **(TA)**\n'
                                         else:
                                             members = f'{members}{member.name}\n'
@@ -165,9 +177,9 @@ class nmaClient(discord.Client):
                         message_dict = []
                         async for eachMessage in target_channel.history(limit=None):
                             message_dict += {
-                                'Date':eachMessage.created_at,
-                                'Author':eachMessage.author,
-                                'Content':eachMessage.content
+                                'Date': eachMessage.created_at,
+                                'Author': eachMessage.author,
+                                'Content': eachMessage.content
                             }
                         df = pd.Dataframe(message_dict)
                         df.to_csv(f'{target_channel.name}-log.csv')
@@ -180,7 +192,7 @@ class nmaClient(discord.Client):
 
                         for eachMember in message.guild.members:
                             try:
-                                userInfo = await users.lookup_user(message,eachMember.id)
+                                userInfo = await users.lookup_user(message, eachMember.id)
 
                                 for eachRole in [america_role, eurafrica_role, asia_role]:
                                     if eachRole in eachMember.roles:
@@ -194,12 +206,13 @@ class nmaClient(discord.Client):
                                     time_role = asia_role
 
                                 await eachMember.add_roles(time_role)
-                                await message.channel.send(embed=interact.send_embed('custom', "Time Check",f"Checked {userInfo['name']}'s time."))
+                                await message.channel.send(embed=interact.send_embed('custom', "Time Check",
+                                                                                     f"Checked {userInfo['name']}'s time."))
                             except Exception as error:
                                 exc_type, exc_obj, exc_tb = sys.exc_info()
                                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                                 await message.channel.send(embed=interact.send_embed('custom', "Time Check",
-                                                                                         f"{eachMember}, {fname, exc_type, exc_tb.tb_lineno}"))
+                                                                                     f"{eachMember}, {fname, exc_type, exc_tb.tb_lineno}"))
 
         # elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
         #    await asyncio.sleep(60)
