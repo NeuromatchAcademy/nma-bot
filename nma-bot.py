@@ -202,7 +202,7 @@ class nmaClient(discord.Client):
                             exc_type, exc_obj, exc_tb = sys.exc_info()
                             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                             await message.channel.send(embed=interact.send_embed('custom', "Error!",
-                                                                                 f"{eachMember}, channel archival failed because:\n{fname, exc_type, exc_tb.tb_lineno},\n{eachMember.id}"))
+                                                                                 f"{message.author}, channel archival failed because:\n{fname, exc_type, exc_tb.tb_lineno}"))
 
                     elif msg_cmd[1] == 'timefix' and admin == 1:
                         america_role = discord.utils.get(message.guild.roles, name='americas')
