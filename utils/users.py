@@ -28,7 +28,7 @@ async def lookup_user(obj, id):
     with open('discord-ids.json') as f:
         id_db = json.load(f)
     course_db = interact.guild_pick(obj)
-    return course_db['users'][id_db[id]]
+    return course_db['users'][id_db[str(id)]]
 
 
 async def verify_user(message):
