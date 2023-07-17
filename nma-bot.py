@@ -4,7 +4,7 @@ import discord
 import asyncio
 from dotenv import load_dotenv
 from pathlib import Path
-from utils import administrator, users, interact, db, activities
+from utils import administrator, users, interact, db
 import pandas as pd
 
 # Auth
@@ -15,48 +15,12 @@ load_dotenv(dotenv_path=env_file_path)
 
 discordToken = os.getenv("DISCORD_TOKEN")
 
-@app_commands.command()
-@app_commands.describe(activity='activity to play')
-@app_commands.choices(activity=[
-    app_commands.Choice(name='🏁 Checkers', value='Checkers In The Park'),
-    app_commands.Choice(name='⛳ Minigolf', value='Putt Party'),
-    app_commands.Choice(name='🤣 Know What I Meme', value='Know What I Meme'),
-    app_commands.Choice(name='♟️ Chess', value='Chess In The Park'),
-    app_commands.Choice(name='☎️ Gartic Phone', value='Gartic Phone'),
-    app_commands.Choice(name='⚽ Soccer', value='Bobble League'),
-    app_commands.Choice(name='⚒️ Land-io', value='Land-io'),
-    app_commands.Choice(name='✏️ Pictionary', value='Sketch Heads'),
-    app_commands.Choice(name='🃏 Blazing 8s', value='Blazing 8s'),
-    app_commands.Choice(name='🤔 Crosswords', value='SpellCast'),
-    app_commands.Choice(name='🅱️ Scrabble', value='Scrabble'),
-    app_commands.Choice(name='♣️ Poker', value='Poker Night'),
-    app_commands.Choice(name='🖊️ Whiteboard', value='Jamspace'),
-])
-async def start_activity(interaction: discord.Interaction, activity: app_commands.Choice[str]):
-    if interaction.channel.category.name.lower() not in ['observer track', 'alumni', 'administrative',
-                                                                 'teaching assistants', 'content help',
-                                                                 'projects', 'information', 'lobby',
-                                                                 'professional development', 'social', 'contest',
-                                                                 'diversity', 'python precourse', 'earth expo']:
-        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
-                                                ephemeral=True)
-        game = activity.value
-        game_cat = interaction.channel.category
-        game_channel = discord.utils.get(game_cat.channels, name='megapod-games')
-        gen_channel = discord.utils.get(game_cat.channels, name=f'{game_cat.name.lower()}-general')
-        if game_channel is None:
-            game_channel = await game_cat.create_voice_channel('megapod-games')
-            await game_channel.set_permissions(interaction.guild.default_role, view_channel=False)
 
-            for eachUser in gen_channel.members:
-                await game_channel.set_permissions(eachUser, view_channel=True)
+## TODO: likely remove this
+## Load portal data.
+# with open('servers.json') as f:
+#    master_db = json.load(f)
 
-        game_inv = await activities.create_activity_invite(game, game_channel.id)
-        await gen_channel.send(
-            f'<@{interaction.user.id}> has started an activity! Click here to join: https://discord.gg/{game_inv}')
-    else:
-        await interaction.response.send_message(f'You can only use this in megapod channels, {interaction.user}!',
-                                                ephemeral=True)
 
 # Actual Discord bot.
 class nmaClient(discord.Client):
@@ -65,7 +29,6 @@ class nmaClient(discord.Client):
         db.poll_db.start()
 
     async def on_ready(self):
-        await tree.sync()
         for guild in client.guilds:
             for channel in guild.channels:
                 if channel.name == "command-center":
@@ -222,8 +185,6 @@ intents = discord.Intents(
 )
 
 client = nmaClient(intents=intents)
-tree = app_commands.CommandTree(client)
-tree.add_command(start_activity)
 
 
 async def delete_channel_after(vc):
