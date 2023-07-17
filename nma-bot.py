@@ -29,6 +29,7 @@ discordToken = os.getenv("DISCORD_TOKEN")
     app_commands.Choice(name='🤔 Crosswords', value='SpellCast'),
     app_commands.Choice(name='🅱️ Scrabble', value='Scrabble'),
     app_commands.Choice(name='♣️ Poker', value='Poker Night'),
+    app_commands.Choice(name='🖊️ Whiteboard', value='Jamspace'),
 ])
 async def start_activity(interaction: discord.Interaction, activity: app_commands.Choice[str]):
     await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
