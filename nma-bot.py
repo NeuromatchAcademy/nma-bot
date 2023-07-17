@@ -32,22 +32,27 @@ discordToken = os.getenv("DISCORD_TOKEN")
     app_commands.Choice(name='🖊️ Whiteboard', value='Jamspace'),
 ])
 async def start_activity(interaction: discord.Interaction, activity: app_commands.Choice[str]):
-    await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
-                                            ephemeral=True)
-    game = activity.value
-    game_cat = interaction.channel.category
-    game_channel = discord.utils.get(game_cat.channels, name='megapod-games')
-    gen_channel = discord.utils.get(game_cat.channels, name=f'{game_cat.name.lower()}-general')
-    if game_channel is None:
-        game_channel = await game_cat.create_voice_channel('megapod-games')
-        await game_channel.set_permissions(interaction.guild.default_role, view_channel=False)
+    if interaction.channel.category.name.lower() not in ['observer track', 'alumni', 'administrative',
+                                                                 'teaching assistants', 'content help',
+                                                                 'projects', 'information', 'lobby',
+                                                                 'professional development', 'social', 'contest',
+                                                                 'diversity', 'python precourse', 'earth expo']:
+        await interaction.response.send_message(f'This may take a second. Please be patient, {interaction.user}!',
+                                                ephemeral=True)
+        game = activity.value
+        game_cat = interaction.channel.category
+        game_channel = discord.utils.get(game_cat.channels, name='megapod-games')
+        gen_channel = discord.utils.get(game_cat.channels, name=f'{game_cat.name.lower()}-general')
+        if game_channel is None:
+            game_channel = await game_cat.create_voice_channel('megapod-games')
+            await game_channel.set_permissions(interaction.guild.default_role, view_channel=False)
 
-        for eachUser in gen_channel.members:
-            await game_channel.set_permissions(eachUser, view_channel=True)
+            for eachUser in gen_channel.members:
+                await game_channel.set_permissions(eachUser, view_channel=True)
 
-    game_inv = await activities.create_activity_invite(game, game_channel.id)
-    await gen_channel.send(
-        f'<@{interaction.user.id}> has started an activity! Click here to join: https://discord.gg/{game_inv}')
+        game_inv = await activities.create_activity_invite(game, game_channel.id)
+        await gen_channel.send(
+            f'<@{interaction.user.id}> has started an activity! Click here to join: https://discord.gg/{game_inv}')
 
 # Actual Discord bot.
 class nmaClient(discord.Client):
