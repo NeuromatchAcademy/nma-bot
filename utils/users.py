@@ -44,6 +44,8 @@ async def verify_mentor(id_db, logChan, message, email):
     # search for email in 'mentor' column
     match = data[data['mentor'] == email]
 
+    print(match)
+
     # check if email was found
     if len(match) > 0:
         # return the 'podname' corresponding to the matched 'mentor' email
@@ -66,9 +68,11 @@ async def verify_mentor(id_db, logChan, message, email):
         print(f"Verified user {message.author} with email {email}.")
         await logChan.send(embed=interact.send_embed('custom', "Verified User",
                                                      f"Mentor {message.author} verified for pod {target_pod}."))
+        return True
 
     else:
         print(f'{email} does not belong to a mentor.')
+        return False
 
 
 async def verify_user(message):
@@ -84,9 +88,16 @@ async def verify_user(message):
         nested_dict = interact.guild_pick(message)
 
         userInfo = nested_dict['users'][target_email]
+        print(userInfo)
 
         if len(userInfo) < 0:
-            verify_mentor(id_db, logChan, message, target_email)
+            print('verify mentor triggered')
+            mentor_status = verify_mentor(id_db, logChan, message, target_email)
+            if mentor_status is False:
+                await logChan.send(embed=interact.send_embed('custom', "Verification Failed",
+                                                             f"Could not find {target_email} in portal or mentor database."))
+                return
+
 
         await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
                                                      f"Attempting to verify {message.author} with info {userInfo}."))
