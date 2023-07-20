@@ -32,8 +32,14 @@ async def lookup_user(obj, id):
 
 
 async def verify_mentor(id_db, logChan, message, email):
+
+    if 'CN' in message.guild.name:
+        mentor_file = 'mentors-cn.csv'
+    elif 'DL' in message.guild.name:
+        mentor_file = 'mentors-dl.csv'
+
     # load data from csv
-    data = pd.read_csv('mentors.csv')
+    data = pd.read_csv(mentor_file)
 
     # search for email in 'mentor' column
     match = data[data['mentor'] == email]

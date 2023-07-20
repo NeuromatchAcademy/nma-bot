@@ -8,3 +8,4 @@ discord.log
 invite.txt
 discord-ids.json
 mentors.csv
+*.csv
