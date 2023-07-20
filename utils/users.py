@@ -1,9 +1,9 @@
 import json
 import discord
 from . import interact
+import pandas as pd
 
-
-#TODO: create loader funcs
+# TODO: create loader funcs
 # Load portal data.
 # with open('pods.json') as f:
 #     master_db = json.load(f)
@@ -31,6 +31,40 @@ async def lookup_user(obj, id):
     return course_db['users'][id_db[str(id)]]
 
 
+async def verify_mentor(id_db, logChan, message, email):
+    # load data from csv
+    data = pd.read_csv('mentors.csv')
+
+    # search for email in 'mentor' column
+    match = data[data['mentor'] == email]
+
+    # check if email was found
+    if len(match) > 0:
+        # return the 'podname' corresponding to the matched 'mentor' email
+        target_pod = match['podname'].values[0]
+        target_pod = target_pod[:-2]
+
+        mentor_role = discord.utils.get(message.guild.roles, name="Mentor")
+        user_role = discord.utils.get(message.guild.roles, name="Approved User")
+        await message.author.add_roles(mentor_role)
+        await message.author.add_roles(user_role)
+
+        pod_channel = discord.utils.get(message.guild.channels, name=target_pod)
+        await pod_channel.set_permissions(message.author, view_channel=True, send_messages=True, manage_messages=True)
+
+        id_db[message.author.id] = email
+
+        with open('discord-ids.json', 'w') as f:
+            json.dump(id_db, f, ensure_ascii=False, indent=4)
+
+        print(f"Verified user {message.author} with email {email}.")
+        await logChan.send(embed=interact.send_embed('custom', "Verified User",
+                                                     f"Mentor {message.author} verified for pod {target_pod}."))
+
+    else:
+        print(f'{email} does not belong to a mentor.')
+
+
 async def verify_user(message):
     with open('discord-ids.json') as f:
         id_db = json.load(f)
@@ -44,27 +78,35 @@ async def verify_user(message):
         nested_dict = interact.guild_pick(message)
 
         userInfo = nested_dict['users'][target_email]
+
+        if len(userInfo) > 0:
+            verify_mentor(id_db, logChan, message, target_email)
+
         await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
                                                      f"Attempting to verify {message.author} with info {userInfo}."))
 
         if len(userInfo["name"]) > 30:
-            await user.edit(nick=userInfo["name"][0:30]) # Change user's nickname to full real name.
+            await user.edit(nick=userInfo["name"][0:30])  # Change user's nickname to full real name.
         else:
-            await user.edit(nick=userInfo["name"]) # Change user's nickname to full real name.
+            await user.edit(nick=userInfo["name"])  # Change user's nickname to full real name.
 
-        for eachRole in roleKey[userInfo['role']]['roles']: # Assign user appropriate discord roles.
+        for eachRole in roleKey[userInfo['role']]['roles']:  # Assign user appropriate discord roles.
             disc_role = discord.utils.get(message.guild.roles, name=eachRole)
             await user.add_roles(disc_role)
 
         for eachPod in userInfo['pods']:
-            pod_channel = discord.utils.get(message.guild.channels, name=eachPod.lower().replace(' ','-'))
-            await pod_channel.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0], send_messages=roleKey[userInfo['role']]['perms'][1], manage_messages=roleKey[userInfo['role']]['perms'][2])
+            pod_channel = discord.utils.get(message.guild.channels, name=eachPod.lower().replace(' ', '-'))
+            await pod_channel.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0],
+                                              send_messages=roleKey[userInfo['role']]['perms'][1],
+                                              manage_messages=roleKey[userInfo['role']]['perms'][2])
             announce = discord.utils.get(pod_channel.threads, name='General')
-            await announce.send(embed=interact.send_embed('custom', "Pod Announcement",f"{userInfo['name']} has joined the pod."))
+            await announce.send(
+                embed=interact.send_embed('custom', "Pod Announcement", f"{userInfo['name']} has joined the pod."))
 
         for eachMega in userInfo['megapods']:
-            megapod_gen = discord.utils.get(message.guild.channels,name=f"{eachMega.lower().replace(' ', '-')}-general")
-            megapod_ta = discord.utils.get(message.guild.channels,name=f"{eachMega.lower().replace(' ', '-')}-ta-chat")
+            megapod_gen = discord.utils.get(message.guild.channels,
+                                            name=f"{eachMega.lower().replace(' ', '-')}-general")
+            megapod_ta = discord.utils.get(message.guild.channels, name=f"{eachMega.lower().replace(' ', '-')}-ta-chat")
 
             await megapod_gen.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0],
                                               send_messages=roleKey[userInfo['role']]['perms'][1],
@@ -73,10 +115,12 @@ async def verify_user(message):
                                              send_messages=roleKey[userInfo['role']]['ta-perms'][1],
                                              manage_messages=roleKey[userInfo['role']]['ta-perms'][2])
 
-            await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",f"{userInfo['role']} {userInfo['name']} has joined the megapod."))
+            await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",
+                                                             f"{userInfo['role']} {userInfo['name']} has joined the megapod."))
 
             if userInfo['role'] != 'student':
-                await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",f"{userInfo['role']} {userInfo['name']} has joined the megapod."))
+                await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
+                                                                f"{userInfo['role']} {userInfo['name']} has joined the megapod."))
 
         if userInfo['timeslot'] in ['4', '5']:
             time_role = discord.utils.get(message.guild.roles, name='americas')
@@ -92,7 +136,9 @@ async def verify_user(message):
             json.dump(id_db, f, ensure_ascii=False, indent=4)
 
         print(f"Verified user {user} with email {target_email}.")
-        await logChan.send(embed=interact.send_embed('custom',"Verified User",f"{message.author} verified for megapod(s) {userInfo['megapods']} and pod(s) {userInfo['pods']}."))
+        await logChan.send(embed=interact.send_embed('custom', "Verified User",
+                                                     f"{message.author} verified for megapod(s) {userInfo['megapods']} and pod(s) {userInfo['pods']}."))
     except Exception as error:
         print(f"Verification failed for {message.author} with email {message.content}")
-        await logChan.send(embed=interact.send_embed('custom',"Failed Verification",f"{message.author} tried to verify with email {message.content}. Ran into this issue: {error}"))
+        await logChan.send(embed=interact.send_embed('custom', "Failed Verification",
+                                                     f"{message.author} tried to verify with email {message.content}. Ran into this issue: {error}"))
