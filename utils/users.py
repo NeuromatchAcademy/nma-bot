@@ -48,7 +48,7 @@ async def verify_mentor(id_db, logChan, message, email):
     if len(match) > 0:
         # return the 'podname' corresponding to the matched 'mentor' email
         target_pod = match['podname'].values[0]
-        target_pod = target_pod[:-2]
+        target_pod = target_pod[:-2].lower(0)
 
         mentor_role = discord.utils.get(message.guild.roles, name="Mentor")
         user_role = discord.utils.get(message.guild.roles, name="Approved User")
