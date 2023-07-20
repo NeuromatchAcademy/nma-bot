@@ -47,7 +47,7 @@ async def verify_mentor(id_db, logChan, message, email):
                                                  f"```{head}```"))
 
     # check if email was found
-    if email in data['mentor']:
+    if data['mentor'].isin([email]).any():
         match = data[data['mentor'] == email]
 
         # return the 'podname' corresponding to the matched 'mentor' email
@@ -69,13 +69,13 @@ async def verify_mentor(id_db, logChan, message, email):
 
         print(f"Verified user {message.author} with email {email}.")
         await logChan.send(embed=interact.send_embed('custom', "Verified User",
-                                                     f"Mentor {message.author} verified for pod {target_pod}."))
+                                                     f"Mentor {message.author} verified for pod `{target_pod}`."))
         return True
 
     else:
         print(f'{email} does not belong to a mentor.')
         await logChan.send(embed=interact.send_embed('custom', "Verification Failed",
-                                                                 f"Could not find {email} in portal or mentor database."))
+                                                                 f"User {message.author} failed to verify:\nCould not find `{email}` in portal or mentor database."))
         return False
 
 
