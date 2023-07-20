@@ -46,16 +46,13 @@ async def verify_mentor(id_db, logChan, message, email):
     await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
                                                  f"```{head}```"))
 
-    # search for email in 'mentor' column
-    match = data[data['mentor'] == email]
-
-    print(match)
-
     # check if email was found
-    if len(match) > 0:
+    if email in data['mentor']:
+        match = data[data['mentor'] == email]
+
         # return the 'podname' corresponding to the matched 'mentor' email
         target_pod = match['podname'].values[0]
-        target_pod = target_pod[:-2].lower(0)
+        target_pod = target_pod[:-2].lower()
 
         mentor_role = discord.utils.get(message.guild.roles, name="Mentor")
         user_role = discord.utils.get(message.guild.roles, name="Approved User")
