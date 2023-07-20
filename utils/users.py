@@ -41,6 +41,11 @@ async def verify_mentor(id_db, logChan, message, email):
     # load data from csv
     data = pd.read_csv(mentor_file)
 
+    print(data.head())
+    head = data.head()
+    await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
+                                                 f"```{head}```"))
+
     # search for email in 'mentor' column
     match = data[data['mentor'] == email]
 
