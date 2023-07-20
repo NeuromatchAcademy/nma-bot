@@ -99,7 +99,7 @@ async def verify_user(message):
             userInfo = nested_dict['users'][target_email]
         else:
             print('Verify mentor triggered')
-            verify_mentor(id_db, logChan, message, target_email)
+            await verify_mentor(id_db, logChan, message, target_email)
             return
 
         if len(userInfo["name"]) > 30:
