@@ -94,65 +94,68 @@ async def verify_user(message):
     nested_dict = interact.guild_pick(message)
 
     try:
-        userInfo = nested_dict['users'][target_email]
-    except Exception as error:
-        if str(error) == target_email:
-            print('verify mentor triggered')
-            mentor_status = verify_mentor(id_db, logChan, message, target_email)
+
+        if target_email in nested_dict['users']:
+            userInfo = nested_dict['users'][target_email]
         else:
-            await logChan.send(embed=interact.send_embed('custom', "Failed Verification",f"{message.author} tried to verify with email {message.content}.\nRan into this issue: {error}"))
+            print('Verify mentor triggered')
+            verify_mentor(id_db, logChan, message, target_email)
             return
 
-    if len(userInfo["name"]) > 30:
-        await user.edit(nick=userInfo["name"][0:30])  # Change user's nickname to full real name.
-    else:
-        await user.edit(nick=userInfo["name"])  # Change user's nickname to full real name.
+        if len(userInfo["name"]) > 30:
+            await user.edit(nick=userInfo["name"][0:30])  # Change user's nickname to full real name.
+        else:
+            await user.edit(nick=userInfo["name"])  # Change user's nickname to full real name.
 
-    for eachRole in roleKey[userInfo['role']]['roles']:  # Assign user appropriate discord roles.
-        disc_role = discord.utils.get(message.guild.roles, name=eachRole)
-        await user.add_roles(disc_role)
+        for eachRole in roleKey[userInfo['role']]['roles']:  # Assign user appropriate discord roles.
+            disc_role = discord.utils.get(message.guild.roles, name=eachRole)
+            await user.add_roles(disc_role)
 
-    for eachPod in userInfo['pods']:
-        pod_channel = discord.utils.get(message.guild.channels, name=eachPod.lower().replace(' ', '-'))
-        await pod_channel.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0],
-                                          send_messages=roleKey[userInfo['role']]['perms'][1],
-                                          manage_messages=roleKey[userInfo['role']]['perms'][2])
-        announce = discord.utils.get(pod_channel.threads, name='General')
-        await announce.send(
-            embed=interact.send_embed('custom', "Pod Announcement", f"{userInfo['name']} has joined the pod."))
+        for eachPod in userInfo['pods']:
+            pod_channel = discord.utils.get(message.guild.channels, name=eachPod.lower().replace(' ', '-'))
+            await pod_channel.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0],
+                                              send_messages=roleKey[userInfo['role']]['perms'][1],
+                                              manage_messages=roleKey[userInfo['role']]['perms'][2])
+            announce = discord.utils.get(pod_channel.threads, name='General')
+            await announce.send(
+                embed=interact.send_embed('custom', "Pod Announcement", f"{userInfo['name']} has joined the pod."))
 
-    for eachMega in userInfo['megapods']:
-        megapod_gen = discord.utils.get(message.guild.channels,
-                                        name=f"{eachMega.lower().replace(' ', '-')}-general")
-        megapod_ta = discord.utils.get(message.guild.channels, name=f"{eachMega.lower().replace(' ', '-')}-ta-chat")
+        for eachMega in userInfo['megapods']:
+            megapod_gen = discord.utils.get(message.guild.channels,
+                                            name=f"{eachMega.lower().replace(' ', '-')}-general")
+            megapod_ta = discord.utils.get(message.guild.channels, name=f"{eachMega.lower().replace(' ', '-')}-ta-chat")
 
-        await megapod_gen.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0],
-                                          send_messages=roleKey[userInfo['role']]['perms'][1],
-                                          manage_messages=roleKey[userInfo['role']]['perms'][2])
-        await megapod_ta.set_permissions(user, view_channel=roleKey[userInfo['role']]['ta-perms'][0],
-                                         send_messages=roleKey[userInfo['role']]['ta-perms'][1],
-                                         manage_messages=roleKey[userInfo['role']]['ta-perms'][2])
+            await megapod_gen.set_permissions(user, view_channel=roleKey[userInfo['role']]['perms'][0],
+                                              send_messages=roleKey[userInfo['role']]['perms'][1],
+                                              manage_messages=roleKey[userInfo['role']]['perms'][2])
+            await megapod_ta.set_permissions(user, view_channel=roleKey[userInfo['role']]['ta-perms'][0],
+                                             send_messages=roleKey[userInfo['role']]['ta-perms'][1],
+                                             manage_messages=roleKey[userInfo['role']]['ta-perms'][2])
 
-        await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",
-                                                         f"{userInfo['role']} {userInfo['name']} has joined the megapod."))
+            await megapod_gen.send(embed=interact.send_embed('custom', "Megapod Announcement",
+                                                             f"{userInfo['role']} {userInfo['name']} has joined the megapod."))
 
-        if userInfo['role'] != 'student':
-            await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
-                                                            f"{userInfo['role']} {userInfo['name']} has joined the megapod."))
+            if userInfo['role'] != 'student':
+                await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",
+                                                                f"{userInfo['role']} {userInfo['name']} has joined the megapod."))
 
-    if userInfo['timeslot'] in ['4', '5']:
-        time_role = discord.utils.get(message.guild.roles, name='americas')
-    elif userInfo['timeslot'] in ['3']:
-        time_role = discord.utils.get(message.guild.roles, name='europe-africa')
-    elif userInfo['timeslot'] in ['1', '2']:
-        time_role = discord.utils.get(message.guild.roles, name='asia-pacific')
-    await user.add_roles(time_role)
+        if userInfo['timeslot'] in ['4', '5']:
+            time_role = discord.utils.get(message.guild.roles, name='americas')
+        elif userInfo['timeslot'] in ['3']:
+            time_role = discord.utils.get(message.guild.roles, name='europe-africa')
+        elif userInfo['timeslot'] in ['1', '2']:
+            time_role = discord.utils.get(message.guild.roles, name='asia-pacific')
+        await user.add_roles(time_role)
 
-    id_db[user.id] = target_email
+        id_db[user.id] = target_email
 
-    with open('discord-ids.json', 'w') as f:
-        json.dump(id_db, f, ensure_ascii=False, indent=4)
+        with open('discord-ids.json', 'w') as f:
+            json.dump(id_db, f, ensure_ascii=False, indent=4)
 
-    print(f"Verified user {user} with email {target_email}.")
-    await logChan.send(embed=interact.send_embed('custom', "Verified User",
-                                                 f"{message.author} verified for megapod(s) {userInfo['megapods']} and pod(s) {userInfo['pods']}."))
+        print(f"Verified user {user} with email {target_email}.")
+        await logChan.send(embed=interact.send_embed('custom', "Verified User",
+                                                     f"{message.author} verified for megapod(s) {userInfo['megapods']} and pod(s) {userInfo['pods']}."))
+    except Exception as error:
+        print(f"Failed to verify user {user} with email {target_email}.")
+        await logChan.send(embed=interact.send_embed('custom', "Failed Verification",
+                                                     f"{message.author} failed to verify with emai {target_email} because {error}."))
