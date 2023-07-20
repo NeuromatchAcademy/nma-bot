@@ -79,7 +79,7 @@ async def verify_user(message):
 
         userInfo = nested_dict['users'][target_email]
 
-        if len(userInfo) > 0:
+        if len(userInfo) < 0:
             verify_mentor(id_db, logChan, message, target_email)
 
         await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
