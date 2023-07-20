@@ -100,7 +100,8 @@ async def verify_user(message):
             print('verify mentor triggered')
             mentor_status = verify_mentor(id_db, logChan, message, target_email)
         else:
-            await logChan.send(embed=interact.send_embed('custom', "Failed Verification",f"{message.author} tried to verify with email {message.content}. Ran into this issue: {error}"))
+            await logChan.send(embed=interact.send_embed('custom', "Failed Verification",f"{message.author} tried to verify with email {message.content}.\nRan into this issue: {error}"))
+            return
 
     if len(userInfo["name"]) > 30:
         await user.edit(nick=userInfo["name"][0:30])  # Change user's nickname to full real name.
