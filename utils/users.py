@@ -96,7 +96,7 @@ async def verify_user(message):
     try:
         userInfo = nested_dict['users'][target_email]
     except Exception as error:
-        if error == target_email:
+        if '@' in error:
             print('verify mentor triggered')
             mentor_status = verify_mentor(id_db, logChan, message, target_email)
         else:
