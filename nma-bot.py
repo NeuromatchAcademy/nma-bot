@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from utils import administrator, users, interact, db, activities
 import pandas as pd
+import openai
 
 # Auth
 current_dir = Path(__file__).resolve().parent
@@ -16,6 +17,7 @@ env_file_path = current_dir / ".env"
 load_dotenv(dotenv_path=env_file_path)
 
 discordToken = os.getenv("DISCORD_TOKEN")
+gptToken = os.getenv("gpt_token")
 
 
 @app_commands.command()
@@ -289,6 +291,30 @@ async def on_voice_state_update(member, before, after):
         chan_name = before.channel.name
         if chan_cat == 'social' and len(members) == 0 and 'Social Voice Chat' not in chan_name:
             client.loop.create_task(delete_channel_after(before.channel))
+
+
+async def gen_ticket_summaries():
+    for eachGuild in client.guilds:
+        mod_channel = discord.utils.get(eachGuild.channels, name="Staffers")
+        staff_role = discord.utils.get(eachGuild.roles, name="Staffers")
+        ticket_summaries = {}
+        for eachChannel in eachGuild.channels:
+            if 'ticket' in eachChannel.name or 'claimed' in eachChannel.name:
+                history_string = "Please write a single sentence that summarizes what's going on in this ticket, whether we're waiting for anyone, and if not, what currently needs to be done by whom to resolve it."
+                for eachMessage in eachChannel.history(limit=None):
+                    history_string = history_string + f'\n{eachMessage.author}: "{eachMessage.content}"'
+
+                summary = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant tasked with creating single-sentence summaries of the current status of support tickets and what remains to be done to solve them using their logs."},
+                        {"role": "user", "content": history_string}
+                    ]
+                )
+
+                ticket_summaries[eachChannel.id] = summary
+        summary_message = "**DAILY DISCORD SUPPORT REPORT:**\n"
+
 
 
 client.run(discordToken)
