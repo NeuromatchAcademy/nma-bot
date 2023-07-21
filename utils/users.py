@@ -40,11 +40,7 @@ async def verify_mentor(id_db, logChan, message, email):
 
     # load data from csv
     data = pd.read_csv(mentor_file)
-
-    print(data.head())
-    head = data.head()
-    await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
-                                                 f"```{head}```"))
+    data['mentor'] = data['mentor'].str.lower()
 
     # check if email was found
     if data['mentor'].isin([email]).any():
@@ -91,7 +87,6 @@ async def verify_user(message):
     nested_dict = interact.guild_pick(message)
 
     try:
-
         if target_email in nested_dict['users']:
             userInfo = nested_dict['users'][target_email]
         else:
