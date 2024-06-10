@@ -350,7 +350,7 @@ class GraduateServer(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         if interaction.user == discord.utils.get(interaction.guild.members,
                                                  name='blueneuron.net') or interaction.user == discord.utils.get(
-            interaction.guild.members, name='Zoltan'):
+            interaction.guild.members, name='zoltaniam'):
             await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
                                                                               'Graduating server. This may take a while!'),
                                                     ephemeral=True)
@@ -410,7 +410,7 @@ class GraduateServer(discord.ui.Button):
                                                                      'Deleted all pod channels and turned everyone into alumni.'))
         else:
             await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                              f'For security reasons, only Kevin can trigger a pod purge.'),
+                                                                              f'For security reasons, only Kevin or Konstantine can trigger a pod purge.'),
                                                     ephemeral=True)
 
 
