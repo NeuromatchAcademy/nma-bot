@@ -16,6 +16,8 @@ def guild_pick(obj):
         return db["Computational Neuroscience"]
     elif 'DL' in obj.guild.name:
         return db["Deep Learning"]
+    elif 'NeuroAI' in obj.guild.name:
+        return db["NeuroAI"]
     else:
         return 'Invalid Course'
 
