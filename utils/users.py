@@ -42,6 +42,10 @@ async def verify_user(message):
         print(f"{user} attempting to verify with {message.content}.")
 
         nested_dict = interact.guild_pick(message)
+        
+        # Check if user information exists
+        if target_email not in nested_dict['users']:
+            raise ValueError("User information not found for this course.")
 
         userInfo = nested_dict['users'][target_email]
         await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
@@ -93,6 +97,12 @@ async def verify_user(message):
 
         print(f"Verified user {user} with email {target_email}.")
         await logChan.send(embed=interact.send_embed('custom',"Verified User",f"{message.author} verified for megapod(s) {userInfo['megapods']} and pod(s) {userInfo['pods']}."))
+    # ValueError for missing user information
+    except ValueError as ve:
+        print(f"Verification failed for {message.author} with email {message.content}: {ve}")
+        await logChan.send(embed=interact.send_embed('custom', "Failed Verification", f"{message.author} tried to verify with email {message.content}. Reason: {ve}"))
+        await message.channel.send(f"Verification failed: {ve}")
+
     except Exception as error:
         print(f"Verification failed for {message.author} with email {message.content}")
         await logChan.send(embed=interact.send_embed('custom',"Failed Verification",f"{message.author} tried to verify with email {message.content}. Ran into this issue: {error}"))
