@@ -101,8 +101,6 @@ async def verify_user(message):
     except ValueError as ve:
         print(f"Verification failed for {message.author} with email {message.content}: {ve}")
         await logChan.send(embed=interact.send_embed('custom', "Failed Verification", f"{message.author} tried to verify with email {message.content}. Reason: {ve}"))
-        await message.channel.send(f"Verification failed: {ve}")
-
     except Exception as error:
         print(f"Verification failed for {message.author} with email {message.content}")
         await logChan.send(embed=interact.send_embed('custom',"Failed Verification",f"{message.author} tried to verify with email {message.content}. Ran into this issue: {error}"))
