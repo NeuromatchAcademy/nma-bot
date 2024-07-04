@@ -66,16 +66,16 @@ def get_pod_data_from_db(connection):
             pod_time_slot = row[3]
             lead_ta_fn = row[4]
             lead_ta_ln = row[5]
-            lead_ta_email = row[6]
+            lead_ta_email = row[6].lower()
             ta_fn = row[7]
             ta_ln = row[8]
-            ta_email = row[9]
+            ta_email = row[9].lower()
             project_ta_fn = row[10]
             project_ta_ln = row[11]
-            project_ta_email = row[12]
+            project_ta_email = row[12].lower()
             student_fn = row[13]
             student_ln = row[14]
-            student_email = row[15]
+            student_email = row[15].lower()
 
             # Verify all necessary data for names
             # TODO: verify the rest of the data
