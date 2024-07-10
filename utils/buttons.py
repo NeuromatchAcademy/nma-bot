@@ -256,19 +256,19 @@ class MergePods(discord.ui.Button):
                 if ta_role in eachMember.roles:
                     manage_perm = True
                     if old_mega != new_mega:
-                        await old_ta.set_permissions(eachMember, view_messages=False, send_messages=False)
-                        await new_ta.set_permissions(eachMember, view_messages=True, send_messages=True)
+                        await old_ta.set_permissions(eachMember, view_channel=False, send_messages=False)
+                        await new_ta.set_permissions(eachMember, view_channel=True, send_messages=True)
                 else:
                     manage_perm = False
 
-                await old_channel.set_permissions(eachMember, view_messages=False, send_messages=False,
+                await old_channel.set_permissions(eachMember, view_channel=False, send_messages=False,
                                                   manage_messages=False)
-                await new_channel.set_permissions(eachMember, view_messages=True, send_messages=True,
+                await new_channel.set_permissions(eachMember, view_channel=True, send_messages=True,
                                                   manage_messages=manage_perm)
 
                 if old_mega != new_mega:
-                    await old_mega.set_permissions(eachMember, view_messages=False, send_messages=False)
-                    await new_mega.set_permissions(eachMember, view_messages=True, send_messages=True)
+                    await old_mega.set_permissions(eachMember, view_channel=False, send_messages=False)
+                    await new_mega.set_permissions(eachMember, view_channel=True, send_messages=True)
         # TODO: maybe remove this message? forum channels do not have a .send method
         # await new_channel.send(embed=interact.send_embed('custom', 'Pod Merge Notice',
         #                                                  f'Pod {origin_pod} has been merged into {target_pod}.'))
