@@ -8,6 +8,17 @@
   "commitConvention": "angular",
   "contributors": [
     {
+      "login": "iamzoltan",
+      "name": "Zoltan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/21369773?v=4",
+      "profile": "https://github.com/iamzoltan",
+      "contributions": [
+        "code",
+        "test",
+        "infra"
+      ]
+    },
+    {
       "login": "RR-N",
       "name": "Kevin Rusch",
       "avatar_url": "https://avatars.githubusercontent.com/u/24724403?v=4",
