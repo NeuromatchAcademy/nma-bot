@@ -83,6 +83,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/iamzoltan"><img src="https://avatars.githubusercontent.com/u/21369773?v=4?s=100" width="100px;" alt="Zoltan"/><br /><sub><b>Zoltan</b></sub></a><br /><a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=iamzoltan" title="Code">💻</a> <a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=iamzoltan" title="Tests">⚠️</a> <a href="#infra-iamzoltan" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.blueneuron.net"><img src="https://avatars.githubusercontent.com/u/24724403?v=4?s=100" width="100px;" alt="Kevin Rusch"/><br /><sub><b>Kevin Rusch</b></sub></a><br /><a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=RR-N" title="Code">💻</a> <a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=RR-N" title="Tests">⚠️</a> <a href="#content-RR-N" title="Content">🖋</a></td>
     </tr>
   </tbody>
 </table>
