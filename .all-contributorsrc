@@ -1,0 +1,28 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "RR-N",
+      "name": "Kevin Rusch",
+      "avatar_url": "https://avatars.githubusercontent.com/u/24724403?v=4",
+      "profile": "http://www.blueneuron.net",
+      "contributions": [
+        "code",
+        "test",
+        "content"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "nma-bot",
+  "projectOwner": "NeuromatchAcademy"
+}
