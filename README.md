@@ -1,6 +1,6 @@
 # NMA Discord Bot
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 ## Description
 The NMA Discord Bot is designed to automate various administrative tasks and interactions within the Neuromatch Academy's Discord Server. Its primary features include server and channel setup, member role assignment, member verification, automated pod handling, and dynamic activity generation and handling.
@@ -82,9 +82,10 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="http://www.blueneuron.net"><img src="https://avatars.githubusercontent.com/u/24724403?v=4?s=100" width="100px;" alt="Kevin Rusch"/><br /><sub><b>Kevin Rusch</b></sub></a><br /><a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=RR-N" title="Code">💻</a> <a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=RR-N" title="Tests">⚠️</a> <a href="#content-RR-N" title="Content">🖋</a></td>                     
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/iamzoltan"><img src="https://avatars.githubusercontent.com/u/21369773?v=4?s=100" width="100px;" alt="Zoltan"/><br /><sub><b>Zoltan</b></sub></a><br /><a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=iamzoltan" title="Code">💻</a> <a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=iamzoltan" title="Tests">⚠️</a> <a href="#infra-iamzoltan" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/di1ara"><img src="https://avatars.githubusercontent.com/u/98195964?v=4?s=100" width="100px;" alt="di1ara"/><br /><sub><b>di1ara</b></sub></a><br /><a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=di1ara" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/iamzoltan"><img src="https://avatars.githubusercontent.com/u/21369773?v=4?s=100" width="100px;" alt="Zoltan"/><br /><sub><b>Zoltan</b></sub></a><br /><a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=iamzoltan" title="Code">💻</a> <a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=iamzoltan" title="Tests">⚠️</a> <a href="#infra-iamzoltan" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.blueneuron.net"><img src="https://avatars.githubusercontent.com/u/24724403?v=4?s=100" width="100px;" alt="Kevin Rusch"/><br /><sub><b>Kevin Rusch</b></sub></a><br /><a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=RR-N" title="Code">💻</a> <a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=RR-N" title="Tests">⚠️</a> <a href="#content-RR-N" title="Content">🖋</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/aslgb"><img src="https://avatars.githubusercontent.com/u/7450056?v=4?s=100" width="100px;" alt="aslgb"/><br /><sub><b>aslgb</b></sub></a><br /><a href="https://github.com/NeuromatchAcademy/nma-bot/commits?author=aslgb" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
