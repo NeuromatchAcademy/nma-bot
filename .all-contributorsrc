@@ -37,6 +37,15 @@
         "test",
         "content"
       ]
+    },
+    {
+      "login": "aslgb",
+      "name": "aslgb",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7450056?v=4",
+      "profile": "https://github.com/aslgb",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
