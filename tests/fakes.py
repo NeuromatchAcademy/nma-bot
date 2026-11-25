@@ -200,7 +200,7 @@ class FakeCategory(_Fake):
 class FakeEvent(_Fake):
     _kind = "Event"
 
-    def __init__(self, name, **kw):
+    def __init__(self, name=None, **kw):
         super().__init__(name)
         self.kwargs = kw
 
@@ -285,7 +285,7 @@ class FakeGuild(_Fake):
 
     async def create_scheduled_event(self, **kw):
         self._rec("create_scheduled_event", **kw)
-        ev = FakeEvent(kw.get("name"), **kw)
+        ev = FakeEvent(**kw)
         self.scheduled_events.append(ev)
         return ev
 
