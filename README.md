@@ -6,12 +6,12 @@
 The NMA Discord Bot is designed to automate various administrative tasks and interactions within the Neuromatch Academy's Discord Server. Its primary features include server and channel setup, member role assignment, member verification, automated pod handling, and dynamic activity generation and handling.
 
 ## Getting Started
-To use this bot, you need to have Python installed in your system. Python 3.8 or higher is recommended. Please also note that you **must** have a discord token for your bot to run. Instructions for how to obtain a token as well as how to invite your bot into a test server are available [here](https://www.writebots.com/discord-bot-token/).
+To use this bot, you need to have Python installed in your system. Python 3.13 is used (managed automatically by [uv](https://docs.astral.sh/uv/), version 0.13.6 or newer).
 
 ## Installation
 1. Clone the repository: `git clone https://github.com/NeuromatchAcademy/nma-bot`
 2. Navigate to the directory: `cd nma-bot`
-3. Install the necessary packages: `pip install -r requirements.txt`
+3. Install the necessary packages: `uv sync`
 
 ## Environmental Variables
 This bot uses environmental variables stored in a .env file. You need to create this file and store your bot token as follows:
