@@ -1,0 +1,31 @@
+{
+  "Activities": [
+    "StudyTogether",
+    "CodeTogether",
+    "HangTogether",
+    "WatchTogether"
+  ],
+  "Discussions": [
+    "SampleTopic"
+  ],
+  "Games": [
+    "GameDropdown"
+  ],
+  "Meta Commands": [
+    "CheckAuthority",
+    "CheckUserDetails",
+    "CheckPodDetails",
+    "CleanChannel"
+  ],
+  "Pod Commands": [
+    "AssignUser",
+    "RemoveUser",
+    "RepodUser",
+    "MergePods"
+  ],
+  "Server Commands": [
+    "InitializeServer",
+    "ForceDB",
+    "GraduateServer"
+  ]
+}
