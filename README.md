@@ -6,7 +6,7 @@
 The NMA Discord Bot is designed to automate various administrative tasks and interactions within the Neuromatch Academy's Discord Server. Its primary features include server and channel setup, member role assignment, member verification, automated pod handling, and dynamic activity generation and handling.
 
 ## Getting Started
-To use this bot, you need to have Python installed in your system. Python 3.13 is used (managed automatically by [uv](https://docs.astral.sh/uv/), version 0.13.6 or newer).
+To use this bot, you need to have Python installed in your system. Python 3.13.18 is used (managed automatically by [uv](https://docs.astral.sh/uv/), version 0.13.6 or newer).
 
 ## Installation
 1. Clone the repository: `git clone https://github.com/NeuromatchAcademy/nma-bot`
