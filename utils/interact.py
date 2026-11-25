@@ -1,13 +1,14 @@
 import json
 import discord
 from .constants import embed_dict
+from .paths import data_path
 
 
 def guild_pick(obj):
     # TODO: set this up in config
     # Is this being used?
 
-    with open('pods.json') as f:
+    with open(data_path('pods.json')) as f:
         db = json.load(f)
 
     if 'Climate' in obj.guild.name:

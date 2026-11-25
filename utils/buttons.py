@@ -2,6 +2,7 @@ import sys, os
 import discord
 import json
 from . import interact, users, db
+from .paths import data_path
 import re
 from .activities import create_activity_invite, get_activity_channel, get_activity_event
 
@@ -30,7 +31,7 @@ class CheckUserDetails(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         msg = await grab('Tag the user you would like to check.', interaction)
 
-        with open('discord-ids.json') as f:
+        with open(data_path('discord-ids.json')) as f:
             id_db = json.load(f)
 
         target_id = re.sub("[^0-9]", "", msg.content)
@@ -164,7 +165,7 @@ class RepodUser(discord.ui.Button):
                         await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice',
                                                                                  f'Removing {target_user} from {eachChannel}.'))
 
-            with open('config.json', 'r') as f:
+            with open(data_path('config.json'), 'r') as f:
                 roleKey = json.load(f)
 
             for eachPod in userInfo['pods']:

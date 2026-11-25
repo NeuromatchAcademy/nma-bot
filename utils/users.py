@@ -1,6 +1,7 @@
 import json
 import discord
 from . import interact
+from .paths import data_path
 
 
 #TODO: create loader funcs
@@ -8,12 +9,13 @@ from . import interact
 # with open('pods.json') as f:
 #     master_db = json.load(f)
 
-# with open('discord-ids.json') as f:
+# with open(data_path('discord-ids.json')) as f:
 #     id_db = json.load(f)
 
 # This might be ok since it does not dynamically change
-with open('config.json', 'r') as f:
-    roleKey = json.load(f)
+def load_role_key():
+    with open(data_path('config.json'), 'r') as f:
+        return json.load(f)
 
 
 async def mega_from_pod(obj, pod):
@@ -25,14 +27,15 @@ async def mega_from_pod(obj, pod):
 
 
 async def lookup_user(obj, id):
-    with open('discord-ids.json') as f:
+    with open(data_path('discord-ids.json')) as f:
         id_db = json.load(f)
     course_db = interact.guild_pick(obj)
     return course_db['users'][id_db[str(id)]]
 
 
 async def verify_user(message):
-    with open('discord-ids.json') as f:
+    roleKey = load_role_key()
+    with open(data_path('discord-ids.json')) as f:
         id_db = json.load(f)
     logChan = discord.utils.get(message.guild.channels, name="bot-log")
     try:
@@ -92,7 +95,7 @@ async def verify_user(message):
 
         id_db[user.id] = target_email
 
-        with open('discord-ids.json', 'w') as f:
+        with open(data_path('discord-ids.json'), 'w') as f:
             json.dump(id_db, f, ensure_ascii=False, indent=4)
 
         print(f"Verified user {user} with email {target_email}.")

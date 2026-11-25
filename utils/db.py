@@ -3,6 +3,7 @@ import json
 import asyncio
 import psycopg2
 from pathlib import Path
+from .paths import data_path
 from dotenv import load_dotenv
 from contextlib import contextmanager
 from discord.ext import tasks
@@ -143,9 +144,7 @@ def get_pod_data_from_db(connection):
 
 
 def save_data_to_json(data, filename):
-    current_dir = Path(__file__).resolve().parent
-    parent_dir = current_dir.parent
-    file_path = parent_dir / filename
+    file_path = data_path(filename)
     with open(file_path, 'w') as f:
         json.dump(data, f)
 
@@ -156,7 +155,7 @@ async def poll_db():
         try:
             new_data = get_pod_data_from_db(connection)
             print("Polled db")
-            with open('./pods.json', 'r') as f:
+            with open(data_path('pods.json'), 'r') as f:
                 old_data = json.load(f)
             if old_data != new_data:
                 print("Pod data has been changed")

@@ -291,8 +291,9 @@ async def on_voice_state_update(member, before, after):
             client.loop.create_task(delete_channel_after(before.channel))
 
 
-client.run(discordToken)
-activity = discord.Activity(
-    name="Studying brains...", type=discord.ActivityType.watching
-)
-client = discord.Client(activity=activity)
+if __name__ == "__main__":
+    client.run(discordToken)
+    activity = discord.Activity(
+        name="Studying brains...", type=discord.ActivityType.watching
+    )
+    client = discord.Client(activity=activity)
