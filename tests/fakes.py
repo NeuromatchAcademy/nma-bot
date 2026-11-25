@@ -16,6 +16,8 @@ def _label(v):
     if isinstance(v, discord.Embed):
         return {"title": v.title, "description": v.description,
                 "color": v.colour.value if v.colour else None}
+    if isinstance(v, discord.ui.View):
+        return f"View:{type(v).__name__}"
     if isinstance(v, discord.File):
         return {"file": v.filename}
     if isinstance(v, _Fake):
@@ -98,6 +100,9 @@ class FakeMessage(_Fake):
     async def delete(self):
         self._rec("delete")
 
+    async def pin(self):
+        self._rec("pin")
+
 
 class FakeChannel(_Fake):
     _kind = "Channel"
@@ -114,11 +119,14 @@ class FakeChannel(_Fake):
         self.parent = parent
         self.guild = guild
         self.history_messages = []
+        self.sent = []
 
     async def send(self, content=None, **kw):
         args = () if content is None else (content,)
         self._rec("send", *args, **kw)
-        return FakeMessage(content, channel=self)
+        msg = FakeMessage(content, channel=self)
+        self.sent.append(msg)
+        return msg
 
     async def set_permissions(self, target, **perms):
         self._rec("set_permissions", target, **perms)

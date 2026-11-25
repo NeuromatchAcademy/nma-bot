@@ -50,6 +50,25 @@ From there, you'd add `buttons.SampleButton` into the appropriate list in the `B
 - [Discord.py Support Server](https://discord.gg/r3sSKJJ)
 - [Discord.py FAQ](https://discordpy.readthedocs.io/en/stable/faq.html)
 
+## Testing
+
+The suite is a *characterization* suite: it pins what the bot does today so changes are deliberate.
+
+```bash
+uv sync --group dev
+uv run pytest                      # run everything (no network, DB or Discord token needed)
+uv run pytest --cov=utils --cov=nma_bot   # with coverage (CI enforces a floor)
+uv run pytest --update-snapshots   # accept intentional behaviour changes
+```
+
+- Discord objects are replaced by hand-written fakes in `tests/fakes.py`; data files are redirected
+  with `NMA_DATA_DIR` (see `utils/paths.py`).
+- Golden outputs live in `tests/snapshots/*.json`. A snapshot diff in a PR means behaviour changed:
+  review it, then re-run with `--update-snapshots` if it is intended.
+- Tests marked `known_bug` assert *currently broken* behaviour on purpose. When you fix one of those
+  bugs the test fails; update it to the new, correct behaviour and drop the marker.
+- CI (`.github/workflows/ci.yml`) runs ruff (informational) and pytest with coverage on every push/PR.
+
 ## Disclaimer
 This bot is designed to be used in Neuromatch Academy course servers and expects a certain server structure as a result. If you server is misconfigured, it will not work for you.
 

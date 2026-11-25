@@ -26,3 +26,10 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 markers = ["known_bug(reason): test pins currently-broken behaviour on purpose"]
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+
+[tool.ruff]
+extend-exclude = [".venv", ".superpowers"]
