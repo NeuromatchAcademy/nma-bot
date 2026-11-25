@@ -1,0 +1,145 @@
+{
+  "bot_log": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "Attempting to verify sam with info {'name': 'Sam Student', 'role': 'lead_ta', 'timeslot': '4', 'megapods': ['Alpha'], 'pods': ['Blue Rays']}.",
+          "title": "Verification DEBUG"
+        }
+      }
+    ],
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "sam verified for megapod(s) ['Alpha'] and pod(s) ['Blue Rays'].",
+          "title": "Verified User"
+        }
+      }
+    ]
+  ],
+  "general_thread": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "Sam Student has joined the pod.",
+          "title": "Pod Announcement"
+        }
+      }
+    ]
+  ],
+  "megapod_general": [
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "manage_messages": true,
+        "send_messages": true,
+        "view_channel": true
+      }
+    ],
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "lead_ta Sam Student has joined the megapod.",
+          "title": "Megapod Announcement"
+        }
+      }
+    ]
+  ],
+  "megapod_ta": [
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "manage_messages": false,
+        "send_messages": true,
+        "view_channel": true
+      }
+    ],
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "lead_ta Sam Student has joined the megapod.",
+          "title": "Megapod Announcement"
+        }
+      }
+    ]
+  ],
+  "nick": "Sam Student",
+  "pod": [
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "manage_messages": true,
+        "send_messages": true,
+        "view_channel": true
+      }
+    ]
+  ],
+  "user": [
+    [
+      "edit",
+      [],
+      {
+        "nick": "Sam Student"
+      }
+    ],
+    [
+      "add_roles",
+      [
+        "Role:Project TA"
+      ],
+      {}
+    ],
+    [
+      "add_roles",
+      [
+        "Role:Lead TA"
+      ],
+      {}
+    ],
+    [
+      "add_roles",
+      [
+        "Role:Teaching Assistant"
+      ],
+      {}
+    ],
+    [
+      "add_roles",
+      [
+        "Role:Approved User"
+      ],
+      {}
+    ],
+    [
+      "add_roles",
+      [
+        "Role:americas"
+      ],
+      {}
+    ]
+  ]
+}
