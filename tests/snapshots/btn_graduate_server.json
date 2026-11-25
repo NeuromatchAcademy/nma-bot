@@ -1,0 +1,89 @@
+{
+  "channel": [
+    {
+      "color": 16746496,
+      "description": "Deleted all pod channels and turned everyone into alumni.",
+      "title": "Administrative Notice"
+    }
+  ],
+  "log": [
+    {
+      "color": 16746496,
+      "description": "User zoltaniam triggered pod purge.",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Assigned alumnus role to stu.",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Assigned TA alumnus role to stu.",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Removed Approved User role from stu.",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Removed Teaching Assistant role from stu.",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Deleted pod alpha-general from megapod alpha.",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Deleted pod blue-rays from megapod alpha.",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Deleted megapod alpha.",
+      "title": "Administrative Notice"
+    }
+  ],
+  "remaining": [
+    "Administrative",
+    "bot-log",
+    "chat",
+    "command-center",
+    "social"
+  ],
+  "social_untouched": true,
+  "student": [
+    [
+      "add_roles",
+      [
+        "Role:Alumnus"
+      ],
+      {}
+    ],
+    [
+      "add_roles",
+      [
+        "Role:TA Alumnus"
+      ],
+      {}
+    ],
+    [
+      "remove_roles",
+      [
+        "Role:Approved User"
+      ],
+      {}
+    ],
+    [
+      "remove_roles",
+      [
+        "Role:Teaching Assistant"
+      ],
+      {}
+    ]
+  ]
+}

@@ -176,6 +176,7 @@ class FakeCategory(_Fake):
         super().__init__(name)
         self.type = discord.ChannelType.category
         self.guild = guild
+        self.category = None
         self.overwrites = {}
 
     @property
@@ -189,6 +190,7 @@ class FakeCategory(_Fake):
     async def delete(self, reason=None):
         self._rec("delete")
         self.guild.categories_list.remove(self)
+        self.guild.channels.remove(self)
 
     async def create_voice_channel(self, name, **kw):
         return await self.guild.create_voice_channel(name, category=self, **kw)
@@ -242,6 +244,7 @@ class FakeGuild(_Fake):
     def add_category(self, name):
         c = FakeCategory(name, guild=self)
         self.categories_list.append(c)
+        self.channels.append(c)  # like discord.py, guild.channels includes categories
         return c
 
     def _add(self, ch, category):

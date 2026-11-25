@@ -1,0 +1,39 @@
+{
+  "channel": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 16746496,
+          "description": "Removed sam from ['Shiny Corals', 'windy city'].",
+          "title": "Administrative Notice"
+        }
+      }
+    ]
+  ],
+  "shiny": [
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "send_messages": false,
+        "view_channel": false
+      }
+    ]
+  ],
+  "windy": [
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "send_messages": false,
+        "view_channel": false
+      }
+    ]
+  ]
+}
