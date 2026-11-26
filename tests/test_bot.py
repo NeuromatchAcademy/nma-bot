@@ -367,14 +367,6 @@ async def test_on_ready(w, bot, monkeypatch, snapshot, capsys):
     assert "Logged in as\nnmabot\n5" in capsys.readouterr().out
 
 
-async def test_setup_hook_starts_db_poll(bot, monkeypatch):
-    started = []
-    monkeypatch.setattr(type(bot.client), "EXTENSIONS", ())
-    monkeypatch.setattr(bot.db.poll_db, "start", lambda: started.append(1))
-    await bot.client.setup_hook()
-    assert started == [1]
-
-
 def test_bot_is_commands_bot_with_presence(bot):
     assert isinstance(bot.client, commands.Bot)
     assert bot.client.tree is bot.tree
@@ -388,7 +380,6 @@ async def test_setup_hook_loads_extensions(bot, monkeypatch):
     async def fake_load(name):
         loaded.append(name)
 
-    monkeypatch.setattr(bot.db.poll_db, "start", lambda: None)
     monkeypatch.setattr(bot.client, "load_extension", fake_load)
     monkeypatch.setattr(type(bot.client), "EXTENSIONS", ("cogs.a", "cogs.b"))
     await bot.client.setup_hook()
@@ -417,3 +408,7 @@ async def test_bot_own_message_not_verified(w, bot, monkeypatch):
 
 def test_start_activity_registered_on_tree(w, bot):
     assert bot.tree.get_command("start_activity") is not None
+
+
+async def test_default_extensions(bot):
+    assert bot.NmaBot.EXTENSIONS == ("cogs.verify", "cogs.admin_tools", "cogs.activities", "cogs.db_sync")

@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from utils import administrator, db, interact
+from utils import administrator, interact
 
 log = logging.getLogger(__name__)
 
@@ -21,12 +21,11 @@ discordToken = os.getenv("DISCORD_TOKEN")
 
 # Actual Discord bot.
 class NmaBot(commands.Bot):
-    EXTENSIONS: tuple[str, ...] = ("cogs.verify", "cogs.admin_tools", "cogs.activities")
+    EXTENSIONS: tuple[str, ...] = ("cogs.verify", "cogs.admin_tools", "cogs.activities", "cogs.db_sync")
 
     async def setup_hook(self):
         for extension in self.EXTENSIONS:
             await self.load_extension(extension)
-        db.poll_db.start()
 
     async def on_ready(self):
         await tree.sync()
