@@ -7,6 +7,7 @@ from pathlib import Path
 import discord
 import pandas as pd
 from discord import app_commands
+from discord.ext import commands
 from dotenv import load_dotenv
 
 from utils import activities, administrator, db, interact, users
@@ -73,9 +74,12 @@ async def start_activity(interaction: discord.Interaction, activity: app_command
 
 
 # Actual Discord bot.
-class nmaClient(discord.Client):
+class NmaBot(commands.Bot):
+    EXTENSIONS: tuple[str, ...] = ()
 
     async def setup_hook(self):
+        for extension in self.EXTENSIONS:
+            await self.load_extension(extension)
         db.poll_db.start()
 
     async def on_ready(self):
@@ -259,8 +263,9 @@ intents = discord.Intents(
     voice_states=True
 )
 
-client = nmaClient(intents=intents)
-tree = app_commands.CommandTree(client)
+activity = discord.Activity(name="Studying brains...", type=discord.ActivityType.watching)
+client = NmaBot(command_prefix=commands.when_mentioned, intents=intents, description=description, activity=activity)
+tree = client.tree
 tree.add_command(start_activity)
 
 
@@ -292,7 +297,3 @@ async def on_voice_state_update(member, before, after):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     client.run(discordToken)
-    activity = discord.Activity(
-        name="Studying brains...", type=discord.ActivityType.watching
-    )
-    client = discord.Client(activity=activity)

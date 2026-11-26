@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import discord
 import pytest
 from discord import app_commands
+from discord.ext import commands
 
 from tests.conftest import load_bot
 from tests.fakes import (
@@ -364,3 +365,23 @@ async def test_setup_hook_starts_db_poll(bot, monkeypatch):
     monkeypatch.setattr(bot.db.poll_db, "start", lambda: started.append(1))
     await bot.client.setup_hook()
     assert started == [1]
+
+
+def test_bot_is_commands_bot_with_presence(bot):
+    assert isinstance(bot.client, commands.Bot)
+    assert bot.client.tree is bot.tree
+    assert bot.client.activity.name == "Studying brains..."
+    assert bot.client.activity.type == discord.ActivityType.watching
+
+
+async def test_setup_hook_loads_extensions(bot, monkeypatch):
+    loaded = []
+
+    async def fake_load(name):
+        loaded.append(name)
+
+    monkeypatch.setattr(bot.db.poll_db, "start", lambda: None)
+    monkeypatch.setattr(bot.client, "load_extension", fake_load)
+    monkeypatch.setattr(type(bot.client), "EXTENSIONS", ("cogs.a", "cogs.b"))
+    await bot.client.setup_hook()
+    assert loaded == ["cogs.a", "cogs.b"]
