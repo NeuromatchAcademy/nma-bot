@@ -157,12 +157,12 @@ async def poll_db():
         try:
             new_data = get_pod_data_from_db(connection)
             print("Polled db")
-            with open(data_path('pods.json'), 'r') as f:
+            with open(data_path('pods.json'), 'r') as f:  # noqa: ASYNC230
                 old_data = json.load(f)
             if old_data != new_data:
                 print("Pod data has been changed")
                 save_data_to_json(new_data, 'pods.json')
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"Error occurred while getting data: {e}")
 
 

@@ -34,7 +34,7 @@ class CheckUserDetails(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         msg = await grab('Tag the user you would like to check.', interaction)
 
-        with open(data_path('discord-ids.json')) as f:
+        with open(data_path('discord-ids.json')) as f:  # noqa: ASYNC230
             id_db = json.load(f)
 
         target_id = re.sub("[^0-9]", "", msg.content)
@@ -140,7 +140,7 @@ class RepodUser(discord.ui.Button):
         target_user = await interaction.guild.fetch_member(int(user))
         try:
             userInfo = await users.lookup_user(interaction, user)
-        except Exception:
+        except Exception:  # noqa: BLE001
             userInfo = None
             await interaction.channel.send(
                 embed=interact.send_embed('custom', 'Repod Notice', f'{target_user} has not verified yet.'))
@@ -168,7 +168,7 @@ class RepodUser(discord.ui.Button):
                         await interaction.channel.send(embed=interact.send_embed('custom', 'Repod Notice',
                                                                                  f'Removing {target_user} from {eachChannel}.'))
 
-            with open(data_path('config.json'), 'r') as f:
+            with open(data_path('config.json'), 'r') as f:  # noqa: ASYNC230
                 roleKey = json.load(f)
 
             for eachPod in userInfo['pods']:
@@ -206,7 +206,7 @@ class RepodUser(discord.ui.Button):
             await interaction.channel.send(
                 embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
 
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001
             exc_type, _exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(f"Repod failed for {target_user} with userInfo {userInfo}")

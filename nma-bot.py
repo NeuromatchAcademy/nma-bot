@@ -202,7 +202,7 @@ class nmaClient(discord.Client):
                             df = pd.DataFrame(message_dict)
                             df.to_csv(f'{target_channel.name}-log.csv')
                             await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
-                        except Exception:
+                        except Exception:  # noqa: BLE001
                            exc_type, _exc_obj, exc_tb = sys.exc_info()
                            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                            await message.channel.send(embed=interact.send_embed('custom', "Error!",
@@ -238,7 +238,7 @@ class nmaClient(discord.Client):
                                     await eachMember.add_roles(time_role)
                                     await message.channel.send(embed=interact.send_embed('custom', "Time Check",
                                                                                          f"Checked {userInfo['name']}'s time."))
-                                except Exception:
+                                except Exception:  # noqa: BLE001
                                     exc_type, _exc_obj, exc_tb = sys.exc_info()
                                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                                     await message.channel.send(embed=interact.send_embed('custom', "Time Check",
