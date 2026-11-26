@@ -1,119 +1,111 @@
 import csv
 import io
 import logging
-import re
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from utils import auth, interact, users
 from utils.constants import TIME_ROLE_NAMES, TIMESLOT_ROLES
 from utils.members import describe_members
 
-from ._common import VERIFY_CHANNEL, is_dm, should_handle
-
 log = logging.getLogger(__name__)
 
-PREFIX = "--nma"
+IDENTITY_CHANNELS = ("lgbtq", "gender", "race")
+MAX_REPORTED_FAILURES = 20
 
 
 def _role(guild, name):
     return discord.utils.get(guild.roles, name=name)
 
 
+def _embed(title, text):
+    return interact.send_embed('custom', title, text)
+
+
 class AdminTools(commands.Cog):
-    """Text commands: `--nma identify|auth|podcheck|getposts|timefix`."""
+    """Slash commands: `/identify`, `/podcheck`, and (admins only) `/getposts` and `/timefix`."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        # name -> (handler, needs_admin, minimum number of words after the prefix)
-        self.handlers = {
-            'identify': (self.identify, False, 2),
-            'auth': (self.auth, False, 1),
-            'podcheck': (self.podcheck, False, 1),
-            'getposts': (self.getposts, True, 2),
-            'timefix': (self.timefix, True, 1),
-        }
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if not should_handle(self.bot, message) or is_dm(message):
+    @app_commands.command(description="Get access to the identity channels you choose")
+    @app_commands.guild_only()
+    @app_commands.describe(lgbtq="LGBTQ+ channel", gender="Gender channel", race="Race channel")
+    async def identify(self, interaction: discord.Interaction,
+                       lgbtq: bool = False, gender: bool = False, race: bool = False):
+        chosen = [name for name, wanted in zip(IDENTITY_CHANNELS, (lgbtq, gender, race)) if wanted]
+        if not chosen:
+            await interaction.response.send_message("Choose at least one channel.", ephemeral=True)
             return
-        if message.channel.name == VERIFY_CHANNEL:  # handled by the verify cog
-            return
-        words = message.content.split(' ')
-        if words[0] != PREFIX or len(words) < 2:
-            return
-        entry = self.handlers.get(words[1])
-        if entry is None:
-            return
-        handler, needs_admin, min_words = entry
-        is_admin = auth.is_admin(message.author)
-        if (needs_admin and not is_admin) or len(words) < min_words + 1:
-            return
-        await handler(message, words, 1 if is_admin else 0)
-
-    async def identify(self, message, words, admin):
-        wanted = [name for name in ("lgbtq", "gender", "race") if name in words[2]]
-        for name in wanted:
-            channel = discord.utils.get(message.guild.channels, name=name)
+        granted, missing = [], []
+        for name in chosen:
+            channel = discord.utils.get(interaction.guild.channels, name=name)
             if channel is None:
-                log.warning("identify: no #%s channel in %s", name, message.guild)
+                log.warning("identify: no #%s channel in %s", name, interaction.guild)
+                missing.append(name)
                 continue
-            await channel.set_permissions(message.author, view_channel=True, send_messages=True)
-        await message.delete()
+            await channel.set_permissions(interaction.user, view_channel=True, send_messages=True)
+            granted.append(name)
+        text = f"Access granted: {', '.join(granted) or 'none'}."
+        if missing:
+            text += f" Not available on this server: {', '.join(missing)}."
+        await interaction.response.send_message(text, ephemeral=True)
 
-    async def auth(self, message, words, admin):
-        await message.channel.send(f"{message.author} auth status: {admin}.")
-
-    async def podcheck(self, message, words, admin):
+    @app_commands.command(description="List the members of this pod")
+    @app_commands.guild_only()
+    async def podcheck(self, interaction: discord.Interaction):
         # In a thread, inspect the parent channel; elsewhere, the channel itself.
-        channel = getattr(message.channel, 'parent', None) or message.channel
+        channel = getattr(interaction.channel, 'parent', None) or interaction.channel
         members = ''
         if channel.type == discord.ChannelType.forum:
-            members = describe_members(message.guild, channel.overwrites)
+            members = describe_members(interaction.guild, channel.overwrites)
         elif channel.type == discord.ChannelType.text and '-general' in channel.name:
-            members = describe_members(message.guild, channel.members)
-        await message.channel.send(
-            embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
+            members = describe_members(interaction.guild, channel.members)
+        await interaction.response.send_message(
+            embed=_embed('Pod Breakdown', f'**Current Members:**\n{members}'))
 
-    async def getposts(self, message, words, admin):
-        await message.channel.send(embed=interact.send_embed(
-            'custom', 'Administrative Notice', 'Starting channel archival -- this might take a while!'))
-
+    @app_commands.command(description="Export a channel's history as a CSV file (admins only)")
+    @app_commands.guild_only()
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.describe(channel="Channel to archive")
+    async def getposts(self, interaction: discord.Interaction,
+                       channel: discord.TextChannel | discord.Thread | discord.VoiceChannel):
+        if not await auth.require_admin(interaction):
+            return
+        await interaction.response.defer(ephemeral=True, thinking=True)
         try:
-            if '#' in words[2]:
-                target_id = int(re.sub("[^0-9]", "", words[2]))
-                target_channel = discord.utils.get(message.guild.channels, id=target_id)
-            else:
-                target_channel = discord.utils.get(message.guild.channels, name=words[2])
-            if target_channel is None:
-                raise LookupError(f"no channel matches {words[2]!r}")
-
-            filename = f'{target_channel.name}-log.csv'
+            filename = f'{channel.name}-log.csv'
             buffer = io.StringIO(newline='')
             writer = csv.writer(buffer)
             writer.writerow(['Date', 'Author', 'Content'])
-            async for each in target_channel.history(limit=None):
+            async for each in channel.history(limit=None):
                 writer.writerow([each.created_at, each.author, each.content])
             data = io.BytesIO(buffer.getvalue().encode('utf-8'))
-            await message.channel.send(file=discord.File(data, filename=filename))
+            await interaction.followup.send(file=discord.File(data, filename=filename), ephemeral=True)
         except Exception as exc:
-            log.exception("Channel archival failed for %s", message.author)
-            await message.channel.send(embed=interact.send_embed(
-                'custom', "Error!",
-                f"{message.author}, channel archival failed ({type(exc).__name__}). See the bot logs."))
+            log.exception("Channel archival failed for %s", interaction.user)
+            await interaction.followup.send(embed=_embed(
+                "Error!", f"{interaction.user}, channel archival failed ({type(exc).__name__}). See the bot logs."),
+                ephemeral=True)
 
-    async def timefix(self, message, words, admin):
-        guild = message.guild
+    @app_commands.command(description="Re-sync time-zone roles from the portal data (admins only)")
+    @app_commands.guild_only()
+    @app_commands.default_permissions(administrator=True)
+    async def timefix(self, interaction: discord.Interaction):
+        if not await auth.require_admin(interaction):
+            return
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        guild = interaction.guild
         time_roles = {name: _role(guild, name) for name in TIME_ROLE_NAMES}
         approved = _role(guild, 'Approved User')
-        checked = 0
+        checked, failures = 0, []
         for member in guild.members:
             if approved not in member.roles:
                 continue
             try:
-                info = await users.lookup_user(message, member.id)
+                info = await users.lookup_user(interaction, member.id)
                 keep = time_roles[TIMESLOT_ROLES[info['timeslot']]]
                 for role in time_roles.values():
                     if role is not keep and role in member.roles:
@@ -123,10 +115,12 @@ class AdminTools(commands.Cog):
                 checked += 1
             except Exception as exc:
                 log.exception("Time check failed for %s", member)
-                await message.channel.send(embed=interact.send_embed(
-                    'custom', "Time Check", f"{member} ({member.id}) failed: {type(exc).__name__}. See the bot logs."))
-        await message.channel.send(embed=interact.send_embed(
-            'custom', "Time Check", f"Checked the time zone of {checked} member(s)."))
+                failures.append(f"{member} ({member.id}) failed: {type(exc).__name__}. See the bot logs.")
+        lines = [f"Checked the time zone of {checked} member(s)."]
+        lines += failures[:MAX_REPORTED_FAILURES]
+        if len(failures) > MAX_REPORTED_FAILURES:
+            lines.append(f"...and {len(failures) - MAX_REPORTED_FAILURES} more failure(s).")
+        await interaction.followup.send(embed=_embed("Time Check", "\n".join(lines)), ephemeral=True)
 
 
 async def setup(bot: commands.Bot):

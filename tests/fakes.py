@@ -316,6 +316,9 @@ class _Response:
     async def edit_message(self, *a, **kw):
         self.calls.append(("edit_message", a, kw))
 
+    async def defer(self, *a, **kw):
+        self.calls.append(("defer", a, kw))
+
 
 class _Followup:
     def __init__(self):

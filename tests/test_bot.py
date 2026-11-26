@@ -62,7 +62,7 @@ def embeds(chan):
     return [c[2]["embed"] for c in calls_summary(chan) if c[0] == "send" and "embed" in c[2]]
 
 
-# ------------------------------------------------------------------ on_message routing
+# ------------------------------------------------------------------ verify channel routing
 
 async def test_verify_channel_with_email_verifies_then_deletes(w, monkeypatch):
     verify = w.guild.add_text_channel("verify")
@@ -93,54 +93,78 @@ async def test_dm_is_ignored(w):
     assert dm.calls == []
 
 
-async def test_plain_chat_and_unknown_command_ignored(w):
-    await w.send("hello world")
-    await w.send("--nma bogus")
-    assert w.chan.calls == []
+# ------------------------------------------------------------------ admin slash commands
+
+def admin_cog(bot):
+    return bot.client.get_cog("AdminTools")
 
 
-@pytest.mark.parametrize("text", ["--nma", "--nma identify", "--nma getposts"])
-async def test_missing_subcommand_or_argument_is_ignored(w, text):
-    await w.send(text)
-    assert w.chan.calls == []
+def run(bot, name, inter, **kw):
+    cmd = getattr(admin_cog(bot), name)
+    return cmd.callback(admin_cog(bot), inter, **kw)
 
 
-async def test_own_messages_ignored(w, bot, monkeypatch):
-    me = FakeMember("bot", 99)
-    monkeypatch.setattr(bot.client._connection, "user", me, raising=False)
-    await w.send("--nma auth", author=me)
-    await w.send("--csrun --nma auth", author=me)
-    assert w.chan.calls == []
-    await w.send("--nma auth", author=w.admin)  # others still work
-    assert len(w.chan.calls) == 1
+def inter_for(w, user=None, channel=None):
+    return FakeInteraction(user=user or w.admin, guild=w.guild, channel=channel or w.chan)
 
 
-@pytest.mark.parametrize("who,status", [("admin", 1), ("plain", 0)])
-async def test_auth(w, who, status):
-    await w.send("--nma auth", author=getattr(w, who))
-    assert calls_summary(w.chan) == [["send", [f"{who} auth status: {status}."], {}]]
+def reply_embed(inter):
+    e = inter.response.calls[0][2]["embed"]
+    return {"title": e.title, "description": e.description, "color": e.colour.value}
 
 
-@pytest.mark.parametrize("cmd", ["init", "assign", "unassign", "merge", "swap"])
-async def test_removed_commands_are_ignored(w, cmd):
-    await w.send(f"--nma {cmd} x")
-    assert w.chan.calls == []
+def followup_embeds(inter):
+    return [kw["embed"] for _n, _a, kw in inter.followup.calls if "embed" in kw]
 
 
-@pytest.mark.parametrize("cmd", ["getposts", "timefix"])
-async def test_admin_commands_silently_ignored_for_non_admin(w, cmd):
-    await w.send(f"--nma {cmd} x", author=w.plain)
-    assert w.chan.calls == []
+def test_text_commands_are_gone(bot):
+    assert not hasattr(admin_cog(bot), "on_message")
+    names = {c.name for c in bot.tree.get_commands()}
+    assert {"identify", "podcheck", "getposts", "timefix", "start_activity"} <= names
+    assert "auth" not in names
 
 
-async def test_identify(w):
+@pytest.mark.parametrize("name", ["getposts", "timefix"])
+def test_admin_commands_are_hidden_from_non_administrators(bot, name):
+    cmd = bot.tree.get_command(name)
+    assert cmd.default_permissions.administrator is True
+    assert cmd.guild_only is True
+
+
+@pytest.mark.parametrize("name,kw", [("getposts", {"channel": None}), ("timefix", {})])
+async def test_admin_commands_deny_non_admins(w, bot, monkeypatch, name, kw):
+    monkeypatch.delenv("ADMIN_USER_IDS", raising=False)
+    inter = inter_for(w, user=w.plain)
+    await run(bot, name, inter, **kw)
+    (call_name, _args, kwargs), = inter.response.calls
+    assert call_name == "send_message" and kwargs["ephemeral"] is True
+    assert kwargs["embed"].title == "Administrative Notice"
+    assert inter.followup.calls == []
+
+
+async def test_identify(w, bot):
     chans = {n: w.guild.add_text_channel(n) for n in ("lgbtq", "gender", "race")}
-    msg = await w.send("--nma identify lgbtq,race", author=w.plain)
+    inter = inter_for(w, user=w.plain)
+    await run(bot, "identify", inter, lgbtq=True, gender=False, race=True)
     assert calls_summary(chans["lgbtq"]) == [["set_permissions", ["Member:plain"],
                                               {"view_channel": True, "send_messages": True}]]
     assert calls_summary(chans["race"]) == calls_summary(chans["lgbtq"])
     assert chans["gender"].calls == []
-    assert calls_summary(msg) == [["delete", [], {}]]
+    assert inter.response.calls == [("send_message", ("Access granted: lgbtq, race.",), {"ephemeral": True})]
+
+
+async def test_identify_requires_a_choice(w, bot):
+    inter = inter_for(w, user=w.plain)
+    await run(bot, "identify", inter)
+    assert inter.response.calls == [("send_message", ("Choose at least one channel.",), {"ephemeral": True})]
+
+
+async def test_identify_reports_missing_channels(w, bot):
+    w.guild.add_text_channel("race")
+    inter = inter_for(w, user=w.plain)
+    await run(bot, "identify", inter, gender=True, race=True)
+    assert inter.response.calls[0][1][0] == (
+        "Access granted: race. Not available on this server: gender.")
 
 
 def podcheck_members(w):
@@ -150,26 +174,36 @@ def podcheck_members(w):
     return [m for m in w.guild.members if m.id >= 10]
 
 
-async def test_podcheck_forum(w, snapshot):
+async def test_podcheck_forum(w, bot, snapshot):
     forum = w.guild.add_forum("blue-rays")
     forum.overwrites = {m: {} for m in podcheck_members(w)}
     thread = FakeChannel("General", type=discord.ChannelType.public_thread, parent=forum, guild=w.guild)
-    await w.send("--nma podcheck", channel=thread)
-    snapshot("podcheck_forum", embeds(thread))
+    inter = inter_for(w, channel=thread)
+    await run(bot, "podcheck", inter)
+    snapshot("podcheck_forum", [reply_embed(inter)])
 
 
-async def test_podcheck_megapod_general(w, snapshot):
+async def test_podcheck_megapod_general(w, bot, snapshot):
     general = w.guild.add_text_channel("alpha-general", members=podcheck_members(w))
     thread = FakeChannel("t", type=discord.ChannelType.public_thread, parent=general, guild=w.guild)
-    await w.send("--nma podcheck", channel=thread)
-    snapshot("podcheck_general", embeds(thread))
+    inter = inter_for(w, channel=thread)
+    await run(bot, "podcheck", inter)
+    snapshot("podcheck_general", [reply_embed(inter)])
 
 
-async def test_podcheck_other_parent_lists_nobody(w):
+async def test_podcheck_other_parent_lists_nobody(w, bot):
     parent = w.guild.add_text_channel("random")
     thread = FakeChannel("t", type=discord.ChannelType.public_thread, parent=parent, guild=w.guild)
-    await w.send("--nma podcheck", channel=thread)
-    assert embeds(thread)[0]["description"] == "**Current Members:**\n"
+    inter = inter_for(w, channel=thread)
+    await run(bot, "podcheck", inter)
+    assert reply_embed(inter)["description"] == "**Current Members:**\n"
+
+
+async def test_podcheck_works_in_a_plain_channel(w, bot):
+    general = w.guild.add_text_channel("alpha-general", members=podcheck_members(w))
+    inter = inter_for(w, channel=general)
+    await run(bot, "podcheck", inter)
+    assert "lead **(Lead TA)**" in reply_embed(inter)["description"]
 
 
 def archive_source(w, name="logs"):
@@ -184,58 +218,75 @@ def archive_source(w, name="logs"):
     return src
 
 
-@pytest.mark.parametrize("ref", ["logs", "<#{id}>"])
-async def test_getposts(w, ref, tmp_path_factory, monkeypatch):
+async def test_getposts(w, bot, tmp_path_factory, monkeypatch):
     cwd = tmp_path_factory.mktemp("cwd")
     monkeypatch.chdir(cwd)
-    src = archive_source(w)
-    await w.send("--nma getposts " + ref.format(id=src.id))
-    calls = calls_summary(w.chan)
-    assert calls[0][2]["embed"]["description"] == "Starting channel archival -- this might take a while!"
-    assert calls[1] == ["send", [], {"file": {"file": "logs-log.csv"}}]
-    sent = w.chan.calls[1][2]["file"]
-    assert sent.fp.read().decode().splitlines() == [
+    inter = inter_for(w)
+    await run(bot, "getposts", inter, channel=archive_source(w))
+    assert inter.response.calls == [("defer", (), {"ephemeral": True, "thinking": True})]
+    (_name, _args, kw), = inter.followup.calls
+    assert kw["ephemeral"] is True and kw["file"].filename == "logs-log.csv"
+    assert kw["file"].fp.read().decode().splitlines() == [
         "Date,Author,Content", "2030-01-02 03:04:05,plain,two", "2030-01-02 03:04:05,admin,one"]
     assert list(cwd.iterdir()) == []  # nothing left behind in the working directory
 
 
-async def test_getposts_failure_reports_error(w, tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    await w.send("--nma getposts missing")
-    err = embeds(w.chan)[1]
-    assert err["title"] == "Error!"
-    assert err["description"] == "admin, channel archival failed (LookupError). See the bot logs."
-    assert ".py" not in err["description"]  # no file names / line numbers
+async def test_getposts_failure_reports_error(w, bot):
+    class Broken:
+        name = "broken"
+
+        def history(self, limit=None):
+            raise RuntimeError("secret internals")
+
+    inter = inter_for(w)
+    await run(bot, "getposts", inter, channel=Broken())
+    (err,) = followup_embeds(inter)
+    assert err.title == "Error!"
+    assert err.description == "admin, channel archival failed (RuntimeError). See the bot logs."
+    assert "secret" not in err.description
 
 
-async def test_getposts_bad_channel_mention_reports_error(w):
-    await w.send("--nma getposts #nope")
-    assert "ValueError" in embeds(w.chan)[1]["description"]
-
-
-@pytest.mark.parametrize("slot,expected", [("1", "asia-pacific"), ("2", "asia-pacific"),
-                                           ("3", "europe-africa"), ("4", "americas"), ("5", "americas")])
-async def test_timefix_roles(w, slot, expected):
+def timefix_world(w, slot):
     sam = w.member("sam", 50, "Approved User", "europe-africa", "asia-pacific", "americas")
     (w.data_dir / "discord-ids.json").write_text(json.dumps({"50": "sam@x.org"}))
     (w.data_dir / "pods.json").write_text(json.dumps({COURSE: {"structure": {}, "users": {
         "sam@x.org": {"name": "Sam", "timeslot": slot, "role": "student", "pods": [], "megapods": []}}}}))
-    await w.send("--nma timefix")
+    return sam
+
+
+@pytest.mark.parametrize("slot,expected", [("1", "asia-pacific"), ("2", "asia-pacific"),
+                                           ("3", "europe-africa"), ("4", "americas"), ("5", "americas")])
+async def test_timefix_roles(w, bot, slot, expected):
+    sam = timefix_world(w, slot)
+    inter = inter_for(w)
+    await run(bot, "timefix", inter)
     tz = {"americas", "europe-africa", "asia-pacific"}
     assert {r.name for r in sam.roles} & tz == {expected}
-    assert embeds(w.chan)[-1] == {"title": "Time Check", "description": "Checked the time zone of 1 member(s).",
-                                  "color": 0x00ff2a}
+    (summary,) = followup_embeds(inter)
+    assert summary.title == "Time Check"
+    assert summary.description == "Checked the time zone of 1 member(s)."
 
 
-async def test_timefix_unknown_member_reports_and_continues(w):
+async def test_timefix_unknown_member_reports_and_continues(w, bot):
     w.member("ghost", 60, "Approved User")
     w.member("skipped", 61)  # lacks Approved User -> ignored
     (w.data_dir / "pods.json").write_text(json.dumps({COURSE: {"structure": {}, "users": {}}}))
-    await w.send("--nma timefix")
-    failure, summary = embeds(w.chan)
-    assert failure["title"] == "Time Check"
-    assert failure["description"] == "ghost (60) failed: KeyError. See the bot logs."
-    assert summary["description"] == "Checked the time zone of 0 member(s)."
+    inter = inter_for(w)
+    await run(bot, "timefix", inter)
+    (summary,) = followup_embeds(inter)
+    assert summary.description.splitlines() == [
+        "Checked the time zone of 0 member(s).",
+        "ghost (60) failed: KeyError. See the bot logs."]
+
+
+async def test_timefix_caps_reported_failures(w, bot):
+    for i in range(25):
+        w.member(f"ghost{i}", 100 + i, "Approved User")
+    (w.data_dir / "pods.json").write_text(json.dumps({COURSE: {"structure": {}, "users": {}}}))
+    inter = inter_for(w)
+    await run(bot, "timefix", inter)
+    lines = followup_embeds(inter)[0].description.splitlines()
+    assert len(lines) == 1 + 20 + 1 and lines[-1] == "...and 5 more failure(s)."
 
 
 # ------------------------------------------------------------------ slash command

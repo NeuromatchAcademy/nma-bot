@@ -54,7 +54,19 @@ async def setup(bot: commands.Bot):
 
 Then add `"cogs.hello"` to `NmaBot.EXTENSIONS` in `nma-bot.py`. Event handlers work the same way, with `@commands.Cog.listener()`.
 
-Admin actions live in the buttons described below. (The old `--nma init|assign|unassign|merge|swap` text commands were removed; they were non-functional.)
+Built-in slash commands (in `cogs/admin_tools.py` and `cogs/activities.py`):
+
+| Command | Who | What it does |
+|---|---|---|
+| `/identify` | anyone | Grants access to the chosen identity channels (`lgbtq`, `gender`, `race`). |
+| `/podcheck` | anyone | Lists the members of the current pod. |
+| `/start_activity` | anyone, in megapods | Starts a Discord activity in the megapod. |
+| `/getposts channel:` | admins | Exports a channel's history as a CSV file. |
+| `/timefix` | admins | Re-syncs time-zone roles from the portal data. |
+
+"Admin" means the `Organizers` role or an ID in `ADMIN_USER_IDS`. The admin commands are also hidden from non-administrators in Discord, but the permission check in the bot is what enforces it.
+
+The old `--nma ...` text commands are gone, and so is `--nma auth`: the **Check Authority** button reports your admin status. Admin actions live in the buttons described below.
 
 ### How to add a button.
 In `cogs/command_center.py`, the `on_ready` listener sends a message with a special view in the `activity-center` channel. This view is imported from `utils/administrator.py`, and if you look at the `BUTTON_MAPPING` dictionary in that file, you might notice that the dictionary's keys correspond to options in the #activity-center dropdown and the dictionary's values correspond to the buttons and dropdowns the bot loads if the appropriate option is picked in the dropdown. These are defined in `utils/buttons.py` as such:
