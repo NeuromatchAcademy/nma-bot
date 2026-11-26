@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 from contextlib import contextmanager
 from pathlib import Path
@@ -9,6 +10,8 @@ from discord.ext import tasks
 from dotenv import load_dotenv
 
 from .paths import data_path
+
+log = logging.getLogger(__name__)
 
 
 @contextmanager
@@ -37,6 +40,14 @@ def connect_to_db():
         connection.close()
 
 
+def _person(cols):
+    """(full name, lowercased email) from (first, last, email) columns, or None if unusable."""
+    first, last, email = cols
+    if not first or not email:
+        return None
+    return f"{first} {last or ''}".strip(), email.strip().lower()
+
+
 def get_pod_data_from_db(connection):
     with connection.cursor() as cursor:
         query = "SELECT c.name, mp.name, cp.name, cp.time_slot, \
@@ -63,92 +74,52 @@ def get_pod_data_from_db(connection):
         pod_data = {}
         pods_missing_data = []
         for row in results:
-            course_key = row[0]
-            megapod_key = row[1]
-            pod_key = row[2]
-            pod_time_slot = row[3]
-            lead_ta_fn = row[4]
-            lead_ta_ln = row[5]
-            lead_ta_email = row[6].lower()
-            ta_fn = row[7]
-            ta_ln = row[8]
-            ta_email = row[9].lower()
-            project_ta_fn = row[10]
-            project_ta_ln = row[11]
-            project_ta_email = row[12].lower()
-            student_fn = row[13]
-            student_ln = row[14]
-            student_email = row[15].lower()
+            course_key, megapod_key, pod_key, pod_time_slot = row[0], row[1], row[2], row[3]
+            # LEFT JOINs: any of these people may be absent (NULL columns).
+            people = [
+                ("student", _person(row[13:16])),
+                ("lead_ta", _person(row[4:7])),
+                ("ta", _person(row[7:10])),
+                ("project_ta", _person(row[10:13])),
+            ]
+            if any(person is None for _, person in people) and pod_key not in pods_missing_data:
+                pods_missing_data.append(pod_key)
 
-            # Verify all necessary data for names
-            # TODO: verify the rest of the data
-            try:
-                assert student_fn is not None
-                assert ta_fn is not None
-                assert project_ta_fn is not None
-                assert lead_ta_fn is not None
-            except AssertionError:
-                if pod_key not in pods_missing_data:
-                    pods_missing_data.append(pod_key)
+            course = pod_data.setdefault(course_key, {"structure": {}, "users": {}})
+            pods = course["structure"].setdefault(megapod_key, [])
+            if pod_key not in pods:
+                pods.append(pod_key)
 
-            if course_key not in pod_data:
-                pod_data[course_key] = {
-                    "structure": {},
-                    "users": {},
-                }
-            if megapod_key not in pod_data[course_key]["structure"]:
-                pod_data[course_key]["structure"][megapod_key] = []
-            if pod_key not in pod_data[course_key]["structure"][megapod_key]:
-                pod_data[course_key]["structure"][megapod_key].append(pod_key)
-            if student_email and student_email not in pod_data[course_key]["users"]:
-                pod_data[course_key]["users"][student_email] = {
-                    "name": student_fn + " " + student_ln,
-                    "role": "student",
+            # a person appearing in several roles keeps the first role seen
+            for role, person in people:
+                if person is None:
+                    continue
+                name, email = person
+                entry = course["users"].setdefault(email, {
+                    "name": name,
+                    "role": role,
                     "timeslot": pod_time_slot,
                     "megapods": [],
-                    "pods": []
-                }
-            if lead_ta_email and lead_ta_email not in pod_data[course_key]["users"]:
-                pod_data[course_key]["users"][lead_ta_email] = {
-                    "name": lead_ta_fn + " " + lead_ta_ln,
-                    "role": "lead_ta",
-                    "timeslot": pod_time_slot,
-                    "megapods": [],
-                    "pods": []
-                }
-            if ta_email and ta_email not in pod_data[course_key]["users"]:
-                pod_data[course_key]["users"][ta_email] = {
-                    "name": ta_fn + " " + ta_ln,
-                    "role": "ta",
-                    "timeslot": pod_time_slot,
-                    "megapods": [],
-                    "pods": []
-                }
-            if project_ta_email and project_ta_email not in pod_data[course_key]["users"]:
-                pod_data[course_key]["users"][project_ta_email] = {
-                    "name": project_ta_fn + " " + project_ta_ln,
-                    "role": "project_ta",
-                    "timeslot": pod_time_slot,
-                    "megapods": [],
-                    "pods": []
-                }
-            for email in [student_email, lead_ta_email, project_ta_email, ta_email]:
-                if email:
-                    if megapod_key not in pod_data[course_key]["users"][email]["megapods"]:
-                        pod_data[course_key]["users"][email]["megapods"].append(megapod_key)
-                    if pod_key not in pod_data[course_key]["users"][email]["pods"]:
-                        pod_data[course_key]["users"][email]["pods"].append(pod_key)
+                    "pods": [],
+                })
+                if megapod_key not in entry["megapods"]:
+                    entry["megapods"].append(megapod_key)
+                if pod_key not in entry["pods"]:
+                    entry["pods"].append(pod_key)
 
         for pod in pods_missing_data:
-            print(f"missing information for pod {pod}, skipping db entries")
+            log.warning("incomplete information for pod %s; missing people were left out", pod)
 
     return pod_data
 
 
 def save_data_to_json(data, filename):
+    """Write atomically so a crash mid-write cannot leave a corrupt file behind."""
     file_path = data_path(filename)
-    with open(file_path, 'w') as f:
+    tmp_path = file_path.with_name(file_path.name + ".tmp")
+    with open(tmp_path, 'w') as f:
         json.dump(data, f)
+    os.replace(tmp_path, file_path)
 
 
 def load_pods(path):
@@ -160,18 +131,23 @@ def load_pods(path):
         return {}
 
 
+def _fetch_pod_data():
+    with connect_to_db() as connection:
+        return get_pod_data_from_db(connection)
+
+
 @tasks.loop(seconds=60)
 async def poll_db():
     try:
-        with connect_to_db() as connection:
-            new_data = get_pod_data_from_db(connection)
-        print("Polled db")
-        old_data = load_pods(data_path('pods.json'))
+        # psycopg2 and file I/O block, so keep them off the event loop
+        new_data = await asyncio.to_thread(_fetch_pod_data)
+        log.debug("Polled db")
+        old_data = await asyncio.to_thread(load_pods, data_path('pods.json'))
         if old_data != new_data:
-            print("Pod data has been changed")
-            save_data_to_json(new_data, 'pods.json')
-    except Exception as e:  # noqa: BLE001
-        print(f"Error occurred while getting data: {e}")
+            log.info("Pod data has been changed")
+            await asyncio.to_thread(save_data_to_json, new_data, 'pods.json')
+    except Exception:
+        log.exception("Error occurred while getting data")
 
 
 async def main():

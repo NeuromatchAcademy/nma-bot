@@ -1,14 +1,16 @@
 import json
-import os
+import logging
 import re
-import sys
 
 import discord
 
 from . import auth, db, interact, users
 from .activities import create_activity_invite, get_activity_channel, get_activity_event
 from .constants import PROTECTED_CATEGORIES
+from .members import describe_members
 from .paths import data_path
+
+log = logging.getLogger(__name__)
 
 
 class CheckAuthority(discord.ui.Button):
@@ -16,8 +18,7 @@ class CheckAuthority(discord.ui.Button):
         super().__init__(label='Check Authority', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
-        role = discord.utils.get(interaction.user.roles, name="Organizers")
-        if role is not None and role.name == 'Organizers':
+        if auth.is_admin(interaction.user):
             outcome = 'You do possess administrative powers.'
         else:
             outcome = 'You do not possess administrative powers.'
@@ -29,6 +30,8 @@ class CheckUserDetails(discord.ui.Button):
         super().__init__(label='Check User Details', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
+        if not await auth.require_admin(interaction):
+            return
         msg = await grab('Tag the user you would like to check.', interaction)
 
         with open(data_path('discord-ids.json')) as f:  # noqa: ASYNC230
@@ -47,25 +50,18 @@ class CheckPodDetails(discord.ui.Button):
         super().__init__(label='Check Pod Details', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
+        if not await auth.require_admin(interaction):
+            return
         msg = await grab('Paste the name of the pod you want to check.', interaction)
-        if ' ' in msg.content:
-            target_pod = msg.content.replace(' ', '-')
-        else:
-            target_pod = msg.content
+        target_pod = msg.content.strip().replace(' ', '-')
         channel = discord.utils.get(interaction.guild.channels, name=target_pod)
-        members = ''
-        for member in channel.overwrites:
-            if isinstance(member, discord.Member) and (
-                    discord.utils.get(interaction.user.roles,
-                                     name="Organizers") not in member.roles and discord.utils.get(
-                    interaction.user.roles, name="Staffers") not in member.roles):
-                if discord.utils.get(interaction.user.roles, name="Lead TA") in member.roles:
-                    members = f'{members}{member.name} **(Lead TA)**\n'
-                elif discord.utils.get(interaction.user.roles, name="Teaching Assistant") in member.roles:
-                    members = f'{members}{member.name} **(TA)**\n'
-                else:
-                    members = f'{members}{member.name}\n'
-        await interaction.channel.send(embed=interact.send_embed('custom', 'Pod Breakdown', f'**Members:**\n{members}'))
+        if channel is None:
+            await interaction.channel.send(embed=interact.send_embed(
+                'custom', 'Pod Breakdown', f'No pod channel named `{target_pod}`.'))
+        else:
+            members = describe_members(interaction.guild, channel.overwrites)
+            await interaction.channel.send(
+                embed=interact.send_embed('custom', 'Pod Breakdown', f'**Members:**\n{members}'))
         await msg.delete()
 
 
@@ -150,9 +146,9 @@ class RepodUser(discord.ui.Button):
         try:
             userInfo = await users.lookup_user(interaction, user)
         except Exception:  # noqa: BLE001
-            userInfo = None
             await interaction.channel.send(
                 embed=interact.send_embed('custom', 'Repod Notice', f'{target_user} has not verified yet.'))
+            return
 
         try:
             await interaction.channel.send(
@@ -211,12 +207,11 @@ class RepodUser(discord.ui.Button):
             await interaction.channel.send(
                 embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
 
-        except Exception as error:  # noqa: BLE001
-            exc_type, _exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(f"Repod failed for {target_user} with userInfo {userInfo}")
-            await interaction.channel.send(embed=interact.send_embed('custom', "Failed Repodding",
-                                                                     f"Could not repod {target_user}.\nRan into this issue: {error}\nuserInfo printout: {userInfo}, {fname, exc_type, exc_tb.tb_lineno}"))
+        except Exception as error:
+            log.exception("Repod failed for %s", target_user)
+            await interaction.channel.send(embed=interact.send_embed(
+                'custom', "Failed Repodding",
+                f"Could not repod {target_user} ({type(error).__name__}). See the bot logs."))
 
 
 class MergePods(discord.ui.Button):
@@ -328,9 +323,10 @@ class InitializeServer(discord.ui.Button):
                 )
 
             for eachPod in nested_dict['structure'][eachMega]:
-                this_pod = discord.utils.get(interaction.guild.forums, name=eachPod.lower())
+                pod_name = eachPod.replace(' ', '-')
+                this_pod = next((f for f in interaction.guild.forums if f.name.lower() == pod_name.lower()), None)
                 if this_pod is None:
-                    this_pod = await interaction.guild.create_forum(f"{eachPod.replace(' ', '-')}", category=this_cat)
+                    this_pod = await interaction.guild.create_forum(pod_name, category=this_cat)
                     await this_pod.set_permissions(interaction.guild.default_role, view_channel=False,
                                                    send_messages=False)
                     await this_pod.create_thread(name='Off-Topic',
@@ -353,7 +349,7 @@ class InitializeServer(discord.ui.Button):
                 'Server initialization complete.'
             )
         )
-        print('Server initialization complete.')
+        log.info('Server initialization complete.')
 
 
 class GraduateServer(discord.ui.Button):
@@ -386,6 +382,8 @@ class GraduateServer(discord.ui.Button):
         for eachType in channel_types:
             for eachObj in eachType:
                 if eachObj.type != discord.ChannelType.category:
+                    if eachObj.category is None:  # not part of any megapod: leave alone
+                        continue
                     if eachObj.category.name.lower() not in PROTECTED_CATEGORIES:
                         if eachObj.type != discord.ChannelType.forum:
                             for eachMember in eachObj.members:

@@ -110,13 +110,34 @@ async def test_check_pod_details_labels(w, snapshot):
     snapshot("btn_check_pod_details", embeds(w.cc))
 
 
-async def test_check_pod_details_labels_depend_on_invoker_roles(w):
-    # quirk: role lookups use the *invoker's* roles, so an invoker lacking Lead TA sees no labels
+async def test_check_pod_details_labels_use_member_roles_not_invoker_roles(w):
     pod_forum_with_members(w)
-    w.user.roles = [w.role("Organizers"), w.role("Staffers")]
     w.say("blue-rays")
     await press(buttons.CheckPodDetails, w)
-    assert embeds(w.cc)[0]["description"] == "**Members:**\nlead\nta\nstu\n"
+    assert embeds(w.cc)[0]["description"] == "**Members:**\nlead **(Lead TA)**\nta **(TA)**\nstu\n"
+
+
+async def test_check_pod_details_unknown_pod(w):
+    w.say("nope")
+    await press(buttons.CheckPodDetails, w)
+    assert "No pod channel named `nope`" in embeds(w.cc)[0]["description"]
+
+
+async def test_info_buttons_deny_non_admins(w, monkeypatch):
+    monkeypatch.delenv("ADMIN_USER_IDS", raising=False)
+    w.inter.user = w.member("plain", 50, "Approved User")
+    for cls in (buttons.CheckUserDetails, buttons.CheckPodDetails):
+        w.inter.response.calls.clear()
+        await press(cls, w)
+        (name, _args, kw), = w.inter.response.calls
+        assert name == "send_message" and kw["ephemeral"] is True
+
+
+async def test_check_authority_recognises_super_admins(w, monkeypatch):
+    monkeypatch.setenv("ADMIN_USER_IDS", "1")
+    w.user.roles = []
+    await press(buttons.CheckAuthority, w)
+    assert "do possess" in w.inter.response.calls[0][1][0]
 
 
 async def test_clean_channel_wipes_history_and_reposts_menu(w):
@@ -182,8 +203,7 @@ async def test_repod_user_unverified(w):
     w.member("sam", 77)
     w.say("<@77>")
     await press(buttons.RepodUser, w)
-    titles = [e["title"] for e in embeds(w.cc)]
-    assert titles == ["Repod Notice", "Repod Notice", "Failed Repodding"]
+    assert [e["title"] for e in embeds(w.cc)] == ["Repod Notice"]  # stops: nothing to repod
     assert "has not verified yet" in embeds(w.cc)[0]["description"]
 
 
@@ -206,14 +226,12 @@ async def test_merge_pods_across_megapods(w, snapshot):
                                       beta_gen=w.beta_gen, beta_ta=w.beta_ta, channel=w.cc))
 
 
-@pytest.mark.known_bug("mega_from_pod never matches capitalised pod names, so megapod perms are skipped")
-async def test_merge_pods_capitalised_names_skip_megapod_changes(w):
+async def test_merge_pods_capitalised_names_also_move_megapod_perms(w):
     merge_world(w, ["Shiny Corals", "Blue Rays"])
     w.say("Shiny Corals, Blue Rays")
     await press(buttons.MergePods, w)
     for chan in (w.alpha_gen, w.alpha_ta, w.beta_gen, w.beta_ta):
-        assert chan.calls == []
-    assert len(w.old.calls) == 2 and len(w.new.calls) == 2  # pod-level perms still moved
+        assert chan.calls != []
 
 
 # ---------------------------------------------------------------- server commands
@@ -235,12 +253,11 @@ async def test_initialize_server_skips_existing_megapod(w):
     assert w.guild.forums[0].category is cat
 
 
-@pytest.mark.known_bug("forum lookup uses lowercase-with-space name, created name is hyphenated: re-running duplicates pods")
-async def test_initialize_server_twice_duplicates_multiword_forums(w):
+async def test_initialize_server_twice_does_not_duplicate_multiword_forums(w):
     set_pods(w, {"Alpha": ["Blue Rays"]})
     await press(buttons.InitializeServer, w)
     await press(buttons.InitializeServer, w)
-    assert [f.name for f in w.guild.forums] == ["Blue-Rays", "Blue-Rays"]
+    assert [f.name for f in w.guild.forums] == ["Blue-Rays"]
 
 
 def graduate_world(w, monkeypatch, authorised=True):
@@ -267,12 +284,12 @@ async def test_graduate_server_unauthorised(w, monkeypatch):
     assert w.gen.calls == []
 
 
-@pytest.mark.known_bug("a channel without a category crashes the purge with AttributeError")
-async def test_graduate_server_categoryless_channel_crashes(w, monkeypatch):
+async def test_graduate_server_leaves_categoryless_channels_alone(w, monkeypatch):
     graduate_world(w, monkeypatch)
     w.log.category = None
-    with pytest.raises(AttributeError):
-        await press(buttons.GraduateServer, w)
+    await press(buttons.GraduateServer, w)
+    assert w.log in w.guild.channels
+    assert w.gen not in w.guild.channels  # megapod channels are still purged
 
 
 async def test_graduate_server_authorised(w, snapshot, monkeypatch):

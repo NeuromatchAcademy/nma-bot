@@ -108,7 +108,7 @@ async def test_own_messages_ignored(w, bot, monkeypatch):
     me = FakeMember("bot", 99)
     monkeypatch.setattr(bot.client._connection, "user", me, raising=False)
     await w.send("--nma auth", author=me)
-    await w.send("--csrun --nma auth", author=me)  # passes the gate but is not a command
+    await w.send("--csrun --nma auth", author=me)
     assert w.chan.calls == []
     await w.send("--nma auth", author=w.admin)  # others still work
     assert len(w.chan.calls) == 1
@@ -189,11 +189,13 @@ async def test_getposts(w, ref, tmp_path_factory, monkeypatch):
     monkeypatch.chdir(cwd)
     src = archive_source(w)
     await w.send("--nma getposts " + ref.format(id=src.id))
-    assert (cwd / "logs-log.csv").read_text().splitlines() == [
-        ",Date,Author,Content", "0,2030-01-02 03:04:05,plain,two", "1,2030-01-02 03:04:05,admin,one"]
     calls = calls_summary(w.chan)
     assert calls[0][2]["embed"]["description"] == "Starting channel archival -- this might take a while!"
     assert calls[1] == ["send", [], {"file": {"file": "logs-log.csv"}}]
+    sent = w.chan.calls[1][2]["file"]
+    assert sent.fp.read().decode().splitlines() == [
+        "Date,Author,Content", "2030-01-02 03:04:05,plain,two", "2030-01-02 03:04:05,admin,one"]
+    assert list(cwd.iterdir()) == []  # nothing left behind in the working directory
 
 
 async def test_getposts_failure_reports_error(w, tmp_path, monkeypatch):
@@ -201,8 +203,13 @@ async def test_getposts_failure_reports_error(w, tmp_path, monkeypatch):
     await w.send("--nma getposts missing")
     err = embeds(w.chan)[1]
     assert err["title"] == "Error!"
-    assert err["description"] == "admin, channel archival failed (AttributeError). See the bot logs."
+    assert err["description"] == "admin, channel archival failed (LookupError). See the bot logs."
     assert ".py" not in err["description"]  # no file names / line numbers
+
+
+async def test_getposts_bad_channel_mention_reports_error(w):
+    await w.send("--nma getposts #nope")
+    assert "ValueError" in embeds(w.chan)[1]["description"]
 
 
 @pytest.mark.parametrize("slot,expected", [("1", "asia-pacific"), ("2", "asia-pacific"),
@@ -215,7 +222,8 @@ async def test_timefix_roles(w, slot, expected):
     await w.send("--nma timefix")
     tz = {"americas", "europe-africa", "asia-pacific"}
     assert {r.name for r in sam.roles} & tz == {expected}
-    assert embeds(w.chan)[-1] == {"title": "Time Check", "description": "Checked Sam's time.", "color": 0x00ff2a}
+    assert embeds(w.chan)[-1] == {"title": "Time Check", "description": "Checked the time zone of 1 member(s).",
+                                  "color": 0x00ff2a}
 
 
 async def test_timefix_unknown_member_reports_and_continues(w):
@@ -223,9 +231,10 @@ async def test_timefix_unknown_member_reports_and_continues(w):
     w.member("skipped", 61)  # lacks Approved User -> ignored
     (w.data_dir / "pods.json").write_text(json.dumps({COURSE: {"structure": {}, "users": {}}}))
     await w.send("--nma timefix")
-    (e,) = embeds(w.chan)
-    assert e["title"] == "Time Check"
-    assert e["description"] == "ghost (60) failed: KeyError. See the bot logs."
+    failure, summary = embeds(w.chan)
+    assert failure["title"] == "Time Check"
+    assert failure["description"] == "ghost (60) failed: KeyError. See the bot logs."
+    assert summary["description"] == "Checked the time zone of 0 member(s)."
 
 
 # ------------------------------------------------------------------ slash command

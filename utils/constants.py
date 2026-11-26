@@ -131,3 +131,13 @@ embed_dict = {
         'color': 0x00ff2a
     }
 }
+
+# Portal time slot -> Discord time-zone role. Shared by verification and `--nma timefix`.
+TIMESLOT_ROLES = {
+    '1': 'asia-pacific',
+    '2': 'asia-pacific',
+    '3': 'europe-africa',
+    '4': 'americas',
+    '5': 'americas',
+}
+TIME_ROLE_NAMES = tuple(dict.fromkeys(TIMESLOT_ROLES.values()))

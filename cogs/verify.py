@@ -1,10 +1,13 @@
+import re
+
 from discord.ext import commands
 
 from utils import users
 
-from ._common import is_dm, should_handle
+from ._common import VERIFY_CHANNEL, is_dm, should_handle
 
-VERIFY_CHANNEL = "verify"
+# Deliberately loose: anything shaped like a@b; mentions and chatter are not treated as emails.
+EMAIL_RE = re.compile(r'[^@\s<>]+@[^@\s<>]+')
 
 
 class Verify(commands.Cog):
@@ -19,7 +22,8 @@ class Verify(commands.Cog):
             return
         if message.channel.name != VERIFY_CHANNEL:
             return
-        if '@' in message.content:  # The user sent an email...
+        content = message.content.strip()
+        if EMAIL_RE.fullmatch(content):  # The user sent an email...
             await users.verify_user(message)  # ...attempt verification...
         await message.delete()  # ...and always delete the message.
 

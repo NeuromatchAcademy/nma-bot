@@ -1,12 +1,18 @@
+import asyncio
 import json
 import logging
+import os
 
 import discord
 
 from . import interact
+from .constants import TIMESLOT_ROLES
 from .paths import data_path
 
 log = logging.getLogger(__name__)
+
+# Serialises read-modify-write of discord-ids.json so concurrent verifications don't lose entries.
+_ids_lock = asyncio.Lock()
 
 #TODO: create loader funcs
 # Load portal data.
@@ -24,8 +30,9 @@ def load_role_key():
 
 async def mega_from_pod(obj, pod):
     course_db = interact.guild_pick(obj)
+    wanted = pod.replace('-', ' ').lower()
     for key, values in course_db['structure'].items():
-        if pod in values or pod.replace('-', ' ') in values:
+        if any(v.replace('-', ' ').lower() == wanted for v in values):
             return key
     return 'Pod not found'
 
@@ -39,11 +46,9 @@ async def lookup_user(obj, id):
 
 async def verify_user(message):
     roleKey = load_role_key()
-    with open(data_path('discord-ids.json')) as f:  # noqa: ASYNC230
-        id_db = json.load(f)
     logChan = discord.utils.get(message.guild.channels, name="bot-log")
     try:
-        target_email = message.content.lower()
+        target_email = message.content.strip().lower()
         user = message.author
 
         log.info("%s attempting to verify with %s", user, message.content)
@@ -55,6 +60,11 @@ async def verify_user(message):
             raise ValueError("User information not found for this course.")
 
         userInfo = nested_dict['users'][target_email]
+        # Validate before any side effects so a bad record doesn't leave a half-verified user.
+        time_role_name = TIMESLOT_ROLES.get(userInfo['timeslot'])
+        if time_role_name is None:
+            raise ValueError(f"Unknown time slot {userInfo['timeslot']!r}.")
+
         # bot-log is visible to staff only, so the full details are useful there.
         await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
                                                      f"Attempting to verify {message.author} with info {userInfo}."))
@@ -90,18 +100,9 @@ async def verify_user(message):
             if userInfo['role'] != 'student':
                 await megapod_ta.send(embed=interact.send_embed('custom', "Megapod Announcement",f"{userInfo['role']} {userInfo['name']} has joined the megapod."))
 
-        if userInfo['timeslot'] in ['4', '5']:
-            time_role = discord.utils.get(message.guild.roles, name='americas')
-        elif userInfo['timeslot'] in ['3']:
-            time_role = discord.utils.get(message.guild.roles, name='europe-africa')
-        elif userInfo['timeslot'] in ['1', '2']:
-            time_role = discord.utils.get(message.guild.roles, name='asia-pacific')
-        await user.add_roles(time_role)
+        await user.add_roles(discord.utils.get(message.guild.roles, name=time_role_name))
 
-        id_db[user.id] = target_email
-
-        with open(data_path('discord-ids.json'), 'w') as f:  # noqa: ASYNC230
-            json.dump(id_db, f, ensure_ascii=False, indent=4)
+        await _remember_user(user.id, target_email)
 
         log.info("Verified user %s with email %s", user, target_email)
         await logChan.send(embed=interact.send_embed('custom',"Verified User",f"{message.author} verified for megapod(s) {userInfo['megapods']} and pod(s) {userInfo['pods']}."))
@@ -112,3 +113,19 @@ async def verify_user(message):
     except Exception as error:
         log.exception("Verification failed for %s with email %s", message.author, message.content)
         await logChan.send(embed=interact.send_embed('custom',"Failed Verification",f"{message.author} tried to verify with email {message.content}. Ran into this issue: {error}"))
+
+
+async def _remember_user(discord_id, email):
+    """Record discord id -> email, re-reading the file under a lock to avoid lost updates."""
+    path = data_path('discord-ids.json')
+    async with _ids_lock:
+        try:
+            with open(path) as f:  # noqa: ASYNC230
+                id_db = json.load(f)
+        except FileNotFoundError:
+            id_db = {}
+        id_db[str(discord_id)] = email
+        tmp = path.with_name(path.name + '.tmp')
+        with open(tmp, 'w') as f:  # noqa: ASYNC230
+            json.dump(id_db, f, ensure_ascii=False, indent=4)
+        os.replace(tmp, path)

@@ -1,9 +1,11 @@
 import discord
 
+VERIFY_CHANNEL = "verify"
+
 
 def should_handle(bot, message: discord.Message) -> bool:
-    """Ignore the bot's own messages, except those deliberately prefixed with `--csrun `."""
-    return message.author != bot.user or message.content.startswith("--csrun ")
+    """Ignore the bot's own messages."""
+    return message.author != bot.user
 
 
 def is_dm(message: discord.Message) -> bool:
