@@ -59,3 +59,24 @@ def load_bot():
     sys.modules["nma_bot"] = mod
     spec.loader.exec_module(mod)
     return mod
+
+
+# cogs that start background work on load; tests load them explicitly with patches
+SKIP_EXTENSIONS = {"cogs.db_sync"}
+
+
+async def ensure_extensions(bot_module):
+    """Load every extension the bot would load in setup_hook (idempotent across tests)."""
+    client = bot_module.client
+    for name in client.EXTENSIONS:
+        if name in SKIP_EXTENSIONS:
+            continue
+        if name not in client.extensions:
+            await client.load_extension(name)
+
+
+async def dispatch_message(bot_module, message):
+    """Deliver a message to every cog on_message listener (the bot has no prefix commands)."""
+    client = bot_module.client
+    for listener in list(client.extra_events.get("on_message", [])):
+        await listener(message)

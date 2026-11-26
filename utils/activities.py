@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -7,6 +8,12 @@ import discord
 from dotenv import load_dotenv
 
 from .constants import activity_index
+
+log = logging.getLogger(__name__)
+
+
+class InviteError(RuntimeError):
+    """Discord refused to create the activity invite."""
 
 # Auth
 current_dir = Path(__file__).resolve().parent
@@ -34,11 +41,11 @@ async def create_activity_invite(activity, channel_id: int):
     async with aiohttp.ClientSession() as session, session.post(url, headers=headers, json=body) as resp:
         if resp.status == 200:
             invite = await resp.json()
-            print(f'Invite created: https://discord.gg/{invite["code"]}')
+            log.info('Invite created: https://discord.gg/%s', invite["code"])
             return invite["code"]
-        else:
-            e = await resp.json()
-            print(f'Error: {e}')
+        error = await resp.json()
+        log.error('Could not create invite for %s (HTTP %s): %s', activity, resp.status, error)
+        raise InviteError(f'HTTP {resp.status}')
 
 
 async def get_activity_channel(
@@ -60,15 +67,15 @@ async def get_activity_channel(
     act_channel = discord.utils.get(interaction.guild.channels, name=tmp_title)
 
     if act_channel is None:
-        print("Making play channel.")
+        log.info("Making play channel.")
         act_channel = await interaction.guild.create_voice_channel(name=tmp_title, category=act_cat)
-        print(f"Made {act_channel}")
+        log.info("Made %s", act_channel)
         return act_channel
     elif len(act_channel.members) < activity_index[activity]['max'] or activity_index[activity]['max'] == 0:
-        print("Play channel already exists!")
+        log.info("Play channel already exists!")
         return act_channel
     elif len(act_channel.members) >= activity_index[activity]['max']:
-        print("Expanding play channels!")
+        log.info("Expanding play channels!")
         act_channel = await get_activity_channel(interaction, activity, title, count + 1)
         return act_channel
 

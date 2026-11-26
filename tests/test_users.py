@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 import pytest
@@ -93,12 +94,9 @@ async def test_email_is_lowercased(world):
     assert json.loads((world.data_dir / "discord-ids.json").read_text()) == {"77": "sam@x.org"}
 
 
-async def test_email_with_whitespace_not_found(world):
-    await users.verify_user(msg(world, " sam@x.org"))
-    last = calls_summary(world.log)[-1][2]["embed"]
-    assert last["title"] == "Failed Verification"
-    assert "Reason: User information not found for this course." in last["description"]
-    assert world.user.calls == []
+async def test_email_surrounding_whitespace_is_ignored(world):
+    await users.verify_user(msg(world, " Sam@X.org \n"))
+    assert world.user.nick == "Sam Student"
 
 
 async def test_nickname_truncated_to_30(world):
@@ -117,13 +115,13 @@ async def test_timeslot_role(world, slot, role_name):
     assert len([r for r in world.user.roles if r.name in ("americas", "europe-africa", "asia-pacific")]) == 1
 
 
-async def test_bad_timeslot_fails_after_partial_side_effects(world):
+async def test_bad_timeslot_fails_before_any_side_effect(world):
     world.set_users({"sam@x.org": user_entry("student", timeslot="9")})
     await users.verify_user(msg(world))
     embed = calls_summary(world.log)[-1][2]["embed"]
     assert embed["title"] == "Failed Verification"
-    assert "time_role" in embed["description"]  # UnboundLocalError text (bot-log is staff-only)
-    assert "Approved User" in [r.name for r in world.user.roles]  # roles already granted
+    assert "Unknown time slot '9'" in embed["description"]
+    assert world.user.calls == []  # nothing granted
     assert json.loads((world.data_dir / "discord-ids.json").read_text()) == {}  # never recorded
 
 
@@ -135,10 +133,15 @@ async def test_missing_pod_channel_reports_failure(world):
     assert "Ran into this issue:" in embed["description"]
 
 
-async def test_missing_ids_file_raises_before_try(world):
+async def test_missing_ids_file_is_created(world):
     (world.data_dir / "discord-ids.json").unlink()
-    with pytest.raises(FileNotFoundError):
-        await users.verify_user(msg(world))
+    await users.verify_user(msg(world))
+    assert json.loads((world.data_dir / "discord-ids.json").read_text()) == {"77": "sam@x.org"}
+
+
+async def test_concurrent_verifications_do_not_lose_entries(world):
+    await asyncio.gather(*(users._remember_user(i, f"u{i}@x.org") for i in range(20)))
+    assert len(json.loads((world.data_dir / "discord-ids.json").read_text())) == 20
 
 
 async def test_lookup_user(world):
@@ -155,9 +158,8 @@ async def test_mega_from_pod(world):
     assert await users.mega_from_pod(msg(world), "Nope") == "Pod not found"
 
 
-@pytest.mark.known_bug("lowercased pod names (as MergePods passes them) never match 'Blue Rays'")
-async def test_mega_from_pod_lowercase_not_found(world):
-    assert await users.mega_from_pod(msg(world), "blue-rays") == "Pod not found"
+async def test_mega_from_pod_is_case_insensitive(world):
+    assert await users.mega_from_pod(msg(world), "blue-rays") == "Alpha"
 
 
 async def test_verification_debug_embed_posted_to_staff_log(world):

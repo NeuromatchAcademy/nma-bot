@@ -18,4 +18,4 @@ jobs:
       - name: Lint
         run: uv run ruff check .
       - name: Tests
-        run: uv run pytest --cov=utils --cov=nma_bot --cov-report=term-missing
+        run: uv run pytest --cov=utils --cov=cogs --cov=nma_bot --cov-report=term-missing

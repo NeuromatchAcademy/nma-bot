@@ -45,7 +45,8 @@ def patch_http(monkeypatch, status, body):
     return seen
 
 
-async def test_invite_success(monkeypatch, capsys):
+async def test_invite_success(monkeypatch, caplog):
+    caplog.set_level("INFO")
     seen = patch_http(monkeypatch, 200, {"code": "abc"})
     assert await activities.create_activity_invite("Poker Night", 42) == "abc"
     assert seen["url"] == "https://discord.com/api/v9/channels/42/invites"
@@ -53,13 +54,14 @@ async def test_invite_success(monkeypatch, capsys):
                             "target_application_id": activity_index["Poker Night"]["id"]}
     assert seen["headers"] == {"authorization": f"Bot {activities.discordToken}",
                                "content-type": "application/json"}
-    assert "Invite created: https://discord.gg/abc" in capsys.readouterr().out
+    assert "Invite created: https://discord.gg/abc" in caplog.text
 
 
-async def test_invite_failure_returns_none(monkeypatch, capsys):
+async def test_invite_failure_raises(monkeypatch, caplog):
     patch_http(monkeypatch, 403, {"message": "nope"})
-    assert await activities.create_activity_invite("Poker Night", 42) is None
-    assert "Error: {'message': 'nope'}" in capsys.readouterr().out
+    with pytest.raises(activities.InviteError):
+        await activities.create_activity_invite("Poker Night", 42)
+    assert "'message': 'nope'" in caplog.text
 
 
 async def test_invite_unknown_activity():

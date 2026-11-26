@@ -1,3 +1,10 @@
+# Categories that are not megapods: pod/megapod commands and the purge leave their channels alone.
+PROTECTED_CATEGORIES = (
+    'observer track', 'alumni', 'administrative', 'teaching assistants', 'content help',
+    'projects', 'information', 'lobby', 'professional development', 'social', 'contest',
+    'diversity', 'python precourse', 'earth expo',
+)
+
 activity_index = {
     'Watch Together': {
         'max': 0,
@@ -125,56 +132,12 @@ embed_dict = {
     }
 }
 
-# NOTE: might not need this
-# game_dict = {
-#             'Checkers':{
-#                 'max': 0,
-#                 'id': 832013003968348200
-#             },
-#             'Minigolf':{
-#                 'max': 0,
-#                 'id': 945737671223947305
-#             },
-#             'Know What I Meme':{
-#                 'max': 9,
-#                 'id': 950505761862189096
-#             },
-#             'Chess':{
-#                 'max': 0,
-#                 'id': 832012774040141894
-#             },
-#             'Gartic Phone':{
-#                 'max': 16,
-#                 'id': 1007373802981822582
-#             },
-#             'Bobble League':{
-#                 'max': 8,
-#                 'id': 947957217959759964
-#             },
-#             'Land.io':{
-#                 'max': 0,
-#                 'id': 903769130790969345
-#             },
-#             'Sketch Heads':{
-#                 'max': 16,
-#                 'id': 902271654783242291
-#             },
-#             'Blazing 8s':{
-#                 'max': 8,
-#                 'id': 832025144389533716
-#             },
-#             'SpellCast':{
-#                 'max': 100,
-#                 'id': 852509694341283871
-#             },
-#             'Scrabble':{
-#                 'max': 8,
-#                 'id': 879863686565621790
-#             },
-#             'Poker':{
-#                 'max': 25,
-#                 'id': 755827207812677713
-#             }
-#         }
-
-
+# Portal time slot -> Discord time-zone role. Shared by verification and `--nma timefix`.
+TIMESLOT_ROLES = {
+    '1': 'asia-pacific',
+    '2': 'asia-pacific',
+    '3': 'europe-africa',
+    '4': 'americas',
+    '5': 'americas',
+}
+TIME_ROLE_NAMES = tuple(dict.fromkeys(TIMESLOT_ROLES.values()))

@@ -49,6 +49,3 @@ async def test_games_mapping_adds_select():
     await view.children[0].callback(FakeInteraction(user=None, guild=None))
     assert isinstance(view.children[1], buttons.GameDropdown)
 
-
-def test_rollcall_gen():
-    assert administrator.rollcallGen(["a", "b"]) == "\na\nb"

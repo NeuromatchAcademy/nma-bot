@@ -25,21 +25,51 @@ Admin buttons are available to members with the `Organizers` role or whose ID is
 ## Contest Instructions
 If you're forking this repository to participate in the NMA bot contest, here's some guidance to help you navigate the code:
 
+### Project layout
+- `nma-bot.py`: entry point. Defines `NmaBot` and lists the cogs to load in `NmaBot.EXTENSIONS`.
+- `cogs/`: one discord.py [cog](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html) per feature (`verify`, `members`, `admin_tools`, `activities`, `db_sync`, `command_center`).
+- `utils/`: shared logic (database, permissions, embeds, buttons, constants).
+
 ### How to add a command.
-User-facing commands are Discord slash commands registered on the bot's `CommandTree` (see `start_activity` in `nma-bot.py`, added with `tree.add_command(...)`). A sample command:
+User-facing commands are Discord slash commands. Put them in a cog under `cogs/`, for example `cogs/hello.py`:
 
 ```python
-@app_commands.command(description="Say hello")
-async def hello(interaction: discord.Interaction):
-    await interaction.response.send_message(f"Hello, {interaction.user}!", ephemeral=True)
+import discord
+from discord import app_commands
+from discord.ext import commands
 
-tree.add_command(hello)
+
+class Hello(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
+    @app_commands.command(description="Say hello")
+    async def hello(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f"Hello, {interaction.user}!", ephemeral=True)
+
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Hello(bot))
 ```
 
-Admin actions live in the buttons described below. (The old `--nma init|assign|unassign|merge|swap` text commands were removed; they were non-functional.)
+Then add `"cogs.hello"` to `NmaBot.EXTENSIONS` in `nma-bot.py`. Event handlers work the same way, with `@commands.Cog.listener()`.
+
+Built-in slash commands (in `cogs/members.py`, `cogs/admin_tools.py` and `cogs/activities.py`):
+
+| Command | Who | What it does |
+|---|---|---|
+| `/identify` | anyone | Grants access to the chosen identity channels (`lgbtq`, `gender`, `race`). |
+| `/podcheck` | anyone | Lists the members of the current pod. |
+| `/start_activity` | anyone, in megapods | Starts a Discord activity in the megapod. |
+| `/getposts channel:` | admins | Exports a channel's history as a CSV file. |
+| `/timefix` | admins | Re-syncs time-zone roles from the portal data. |
+
+"Admin" means the `Organizers` role or an ID in `ADMIN_USER_IDS`. The admin commands are also hidden from non-administrators in Discord, but the permission check in the bot is what enforces it.
+
+The old `--nma ...` text commands are gone, and so is `--nma auth`: the **Check Authority** button reports your admin status. Admin actions live in the buttons described below.
 
 ### How to add a button.
-In `nma-bot.py`, under the `on_ready` function, you can see that we send a message with a special view in the `activity-center` channel. This view is imported from `utils/administrator.py`, and if you look at the `BUTTON_MAPPING` dictionary in that file, you might notice that the dictionary's keys correspond to options in the #activity-center dropdown and the dictionary's values correspond to the buttons and dropdowns the bot loads if the appropriate option is picked in the dropdown. These are defined in `utils/buttons.py` as such:
+In `cogs/command_center.py`, the `on_ready` listener sends a message with a special view in the `activity-center` channel. This view is imported from `utils/administrator.py`, and if you look at the `BUTTON_MAPPING` dictionary in that file, you might notice that the dictionary's keys correspond to options in the #activity-center dropdown and the dictionary's values correspond to the buttons and dropdowns the bot loads if the appropriate option is picked in the dropdown. These are defined in `utils/buttons.py` as such:
 
 ```python
 class SampleButton(discord.ui.Button):
@@ -65,7 +95,7 @@ The suite is a *characterization* suite: it pins what the bot does today so chan
 ```bash
 uv sync --group dev
 uv run pytest                      # run everything (no network, DB or Discord token needed)
-uv run pytest --cov=utils --cov=nma_bot   # with coverage (CI enforces a floor)
+uv run pytest --cov=utils --cov=cogs --cov=nma_bot   # with coverage (CI enforces a floor)
 uv run pytest --update-snapshots   # accept intentional behaviour changes
 ```
 

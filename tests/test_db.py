@@ -1,4 +1,5 @@
 import json
+import logging
 from contextlib import contextmanager
 
 import pytest
@@ -84,50 +85,51 @@ def test_empty_result():
     assert db.get_pod_data_from_db(FakeConnection([])) == {}
 
 
-@pytest.mark.known_bug("NULL TA email crashes with AttributeError (.lower() on None)")
-def test_null_ta_email_raises():
-    with pytest.raises(AttributeError):
-        db.get_pod_data_from_db(FakeConnection([row(ta=(None, None, None))]))
+def test_null_ta_is_left_out_not_fatal(caplog):
+    out = db.get_pod_data_from_db(FakeConnection([row(ta=(None, None, None))]))
+    users = out["CN"]["users"]
+    assert set(users) == {"sam@x.org", "lead@x.org", "pta@x.org"}
+    assert "incomplete information for pod Blue Rays" in caplog.text
 
 
-def test_missing_name_prints_but_still_builds(capsys):
-    # student without email+name: assertion trips, pod reported, but nothing is actually skipped
+def test_student_without_name_or_email_is_left_out(caplog):
     out = db.get_pod_data_from_db(FakeConnection([row(student=(None, None, ""))]))
-    assert "missing information for pod Blue Rays, skipping db entries" in capsys.readouterr().out
+    assert "incomplete information for pod Blue Rays" in caplog.text
     assert "Blue Rays" in out["CN"]["structure"]["Alpha"]
+    assert "lead@x.org" in out["CN"]["users"]
 
 
-@pytest.mark.known_bug("student with email but no first name -> TypeError")
-def test_student_without_first_name_raises():
-    with pytest.raises(TypeError):
-        db.get_pod_data_from_db(FakeConnection([row(student=(None, "X", "x@x.org"))]))
+def test_student_without_first_name_is_left_out():
+    out = db.get_pod_data_from_db(FakeConnection([row(student=(None, "X", "x@x.org"))]))
+    assert "x@x.org" not in out["CN"]["users"]
 
 
-async def test_poll_db_writes_when_changed(data_dir, monkeypatch, capsys):
+async def test_poll_db_writes_when_changed(data_dir, monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
     patch_connect(monkeypatch, [row()])
     (data_dir / "pods.json").write_text("{}")
     await db.poll_db.coro()
     written = json.loads((data_dir / "pods.json").read_text())
     assert "CN" in written
-    out = capsys.readouterr().out
-    assert "Polled db" in out and "Pod data has been changed" in out
+    assert "Pod data has been changed" in caplog.text
 
 
-async def test_poll_db_no_write_when_unchanged(data_dir, monkeypatch, capsys):
+async def test_poll_db_no_write_when_unchanged(data_dir, monkeypatch, caplog):
     rows = [row()]
     (data_dir / "pods.json").write_text(json.dumps(db.get_pod_data_from_db(FakeConnection(rows))))
     before = (data_dir / "pods.json").stat().st_mtime_ns
     patch_connect(monkeypatch, rows)
     await db.poll_db.coro()
     assert (data_dir / "pods.json").stat().st_mtime_ns == before
-    assert "Pod data has been changed" not in capsys.readouterr().out
+    assert "Pod data has been changed" not in caplog.text
 
 
-async def test_poll_db_first_run_creates_file(data_dir, monkeypatch, capsys):
+async def test_poll_db_first_run_creates_file(data_dir, monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
     patch_connect(monkeypatch, [row()])
     await db.poll_db.coro()
     assert "CN" in json.loads((data_dir / "pods.json").read_text())
-    assert "Pod data has been changed" in capsys.readouterr().out
+    assert "Pod data has been changed" in caplog.text
 
 
 @pytest.mark.parametrize("content", ["", "not json", "[1, 2"])
@@ -138,20 +140,21 @@ async def test_poll_db_recovers_from_corrupt_pods_json(data_dir, monkeypatch, co
     assert "CN" in json.loads((data_dir / "pods.json").read_text())
 
 
-async def test_poll_db_survives_connection_failure(data_dir, monkeypatch, capsys):
+async def test_poll_db_survives_connection_failure(data_dir, monkeypatch, caplog):
     def boom():
         raise RuntimeError("db down")
 
     monkeypatch.setattr(db, "connect_to_db", boom)
     await db.poll_db.coro()
-    assert "Error occurred while getting data: db down" in capsys.readouterr().out
+    assert "Error occurred while getting data" in caplog.text and "db down" in caplog.text
     assert not (data_dir / "pods.json").exists()
 
 
-async def test_poll_db_swallows_query_errors(data_dir, monkeypatch, capsys):
-    patch_connect(monkeypatch, [row(ta=(None, None, None))])
+async def test_poll_db_swallows_query_errors(data_dir, monkeypatch, caplog):
+    patch_connect(monkeypatch, [row()])
+    monkeypatch.setattr(db, "get_pod_data_from_db", lambda c: 1 / 0)
     await db.poll_db.coro()
-    assert "Error occurred while getting data" in capsys.readouterr().out
+    assert "Error occurred while getting data" in caplog.text
 
 
 def test_save_data_to_json(data_dir):

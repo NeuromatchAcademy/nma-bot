@@ -50,3 +50,11 @@ def test_send_embed_modes(snapshot):
     out["custom_admin"] = interact.send_embed("custom", "Administrative Notice", "x").to_dict()
     out["custom_defaults"] = interact.send_embed("custom").to_dict()
     snapshot("send_embed", out)
+
+
+def test_guild_pick_matches_whole_words_only(pods):
+    assert interact.guild_pick(obj("CNN Fans")) == "Invalid Course"
+
+
+def test_guild_pick_allows_digits_next_to_course_code(pods):
+    assert interact.guild_pick(obj("NMA2024CN")) == {"id": "cn"}
