@@ -55,7 +55,9 @@ async def verify_user(message):
             raise ValueError("User information not found for this course.")
 
         userInfo = nested_dict['users'][target_email]
-        log.debug("Verifying %s with info %s", message.author, userInfo)
+        # bot-log is visible to staff only, so the full details are useful there.
+        await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
+                                                     f"Attempting to verify {message.author} with info {userInfo}."))
 
         if len(userInfo["name"]) > 30:
             await user.edit(nick=userInfo["name"][0:30]) # Change user's nickname to full real name.
@@ -107,6 +109,6 @@ async def verify_user(message):
     except ValueError as ve:
         log.warning("Verification failed for %s with email %s: %s", message.author, message.content, ve)
         await logChan.send(embed=interact.send_embed('custom', "Failed Verification", f"{message.author} tried to verify with email {message.content}. Reason: {ve}"))
-    except Exception:
+    except Exception as error:
         log.exception("Verification failed for %s with email %s", message.author, message.content)
-        await logChan.send(embed=interact.send_embed('custom',"Failed Verification",f"{message.author} tried to verify with email {message.content}. Ran into an unexpected error; see the bot logs."))
+        await logChan.send(embed=interact.send_embed('custom',"Failed Verification",f"{message.author} tried to verify with email {message.content}. Ran into this issue: {error}"))

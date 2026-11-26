@@ -73,3 +73,7 @@
 - [ ] Tests: verification debug embed no longer contains `userInfo`; failure embed shows a generic reason for unexpected exceptions (still shows the `ValueError` text for "not found") and the real exception goes to `logging`; `getposts`/`timefix` error embeds contain no file/line info.
 - [ ] Implement: add `log = logging.getLogger(__name__)` in `users.py` and `nma-bot.py`; remove the "Verification DEBUG" embed (log at debug level instead); replace `error`/traceback strings with generic text plus `log.exception`. Call `logging.basicConfig(level=INFO)` in `__main__`.
 - [ ] Commit `fix: log errors instead of posting internals and PII to Discord`.
+
+> **Revision (Task 5):** `bot-log` is staff-only, so the "Verification DEBUG" embed and the detailed
+> "Ran into this issue: {error}" failure text were restored there. Errors are still also written to
+> `logging`. Only the invoking-channel messages for `getposts`/`timefix` stay generic.

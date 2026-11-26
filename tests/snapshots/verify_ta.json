@@ -6,6 +6,17 @@
       {
         "embed": {
           "color": 65322,
+          "description": "Attempting to verify sam with info {'name': 'Sam Student', 'role': 'ta', 'timeslot': '4', 'megapods': ['Alpha'], 'pods': ['Blue Rays']}.",
+          "title": "Verification DEBUG"
+        }
+      }
+    ],
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
           "description": "sam verified for megapod(s) ['Alpha'] and pod(s) ['Blue Rays'].",
           "title": "Verified User"
         }
