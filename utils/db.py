@@ -66,7 +66,8 @@ def get_pod_data_from_db(connection):
             u ON u.id=sa.user_id LEFT JOIN users_user \
             ulta ON ulta.id=ta.user_id LEFT JOIN users_user \
             uta ON uta.id=ta2.user_id LEFT JOIN users_user \
-            upta ON upta.id=ta3.user_id WHERE c.is_active IS true;"
+            upta ON upta.id=ta3.user_id WHERE c.is_active IS true \
+            ORDER BY c.name, mp.name, cp.name, u.email;"
         cursor.execute(query)
         results = cursor.fetchall()
         # column_names = [desc[0] for desc in cursor.description[13:]]
@@ -131,6 +132,30 @@ def load_pods(path):
         return {}
 
 
+def describe_changes(old, new):
+    """Short, PII-free summary of how two pod-data dicts differ (for the logs)."""
+    parts = []
+    for course in sorted(set(old) | set(new)):
+        if course not in old or course not in new:
+            parts.append(f"{course}: course {'added' if course in new else 'removed'}")
+            continue
+        old_users, new_users = old[course]["users"], new[course]["users"]
+        added = len(new_users.keys() - old_users.keys())
+        removed = len(old_users.keys() - new_users.keys())
+        changed = {field: 0 for field in ("name", "role", "timeslot", "megapods", "pods")}
+        for email in old_users.keys() & new_users.keys():
+            for field in changed:
+                if old_users[email].get(field) != new_users[email].get(field):
+                    changed[field] += 1
+        fields = ", ".join(f"{n} {f}" for f, n in changed.items() if n)
+        if added or removed or fields:
+            parts.append(f"{course}: {added} users added, {removed} removed"
+                         + (f", changed: {fields}" if fields else ""))
+        if old[course]["structure"] != new[course]["structure"]:
+            parts.append(f"{course}: pod structure changed")
+    return "; ".join(parts) or "no differences found"
+
+
 def _fetch_pod_data():
     with connect_to_db() as connection:
         return get_pod_data_from_db(connection)
@@ -144,7 +169,7 @@ async def poll_db():
         log.debug("Polled db")
         old_data = await asyncio.to_thread(load_pods, data_path('pods.json'))
         if old_data != new_data:
-            log.info("Pod data has been changed")
+            log.info("Pod data has been changed (%s)", describe_changes(old_data, new_data))
             await asyncio.to_thread(save_data_to_json, new_data, 'pods.json')
     except Exception:
         log.exception("Error occurred while getting data")
