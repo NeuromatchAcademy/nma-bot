@@ -17,6 +17,7 @@ class NmaBot(commands.Bot):
     # Every feature lives in a cog; add new ones here (see README, "How to add a command").
     EXTENSIONS: tuple[str, ...] = (
         "cogs.verify",
+        "cogs.members",
         "cogs.admin_tools",
         "cogs.activities",
         "cogs.db_sync",

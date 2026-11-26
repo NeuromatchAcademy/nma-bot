@@ -27,7 +27,7 @@ If you're forking this repository to participate in the NMA bot contest, here's 
 
 ### Project layout
 - `nma-bot.py`: entry point. Defines `NmaBot` and lists the cogs to load in `NmaBot.EXTENSIONS`.
-- `cogs/`: one discord.py [cog](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html) per feature (`verify`, `admin_tools`, `activities`, `db_sync`, `command_center`).
+- `cogs/`: one discord.py [cog](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html) per feature (`verify`, `members`, `admin_tools`, `activities`, `db_sync`, `command_center`).
 - `utils/`: shared logic (database, permissions, embeds, buttons, constants).
 
 ### How to add a command.
@@ -54,7 +54,7 @@ async def setup(bot: commands.Bot):
 
 Then add `"cogs.hello"` to `NmaBot.EXTENSIONS` in `nma-bot.py`. Event handlers work the same way, with `@commands.Cog.listener()`.
 
-Built-in slash commands (in `cogs/admin_tools.py` and `cogs/activities.py`):
+Built-in slash commands (in `cogs/members.py`, `cogs/admin_tools.py` and `cogs/activities.py`):
 
 | Command | Who | What it does |
 |---|---|---|

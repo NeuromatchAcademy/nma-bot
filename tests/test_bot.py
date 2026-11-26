@@ -99,9 +99,13 @@ def admin_cog(bot):
     return bot.client.get_cog("AdminTools")
 
 
+def members_cog(bot):
+    return bot.client.get_cog("Members")
+
+
 def run(bot, name, inter, **kw):
-    cmd = getattr(admin_cog(bot), name)
-    return cmd.callback(admin_cog(bot), inter, **kw)
+    cog_ = members_cog(bot) if name in ("identify", "podcheck") else admin_cog(bot)
+    return getattr(cog_, name).callback(cog_, inter, **kw)
 
 
 def inter_for(w, user=None, channel=None):
@@ -118,7 +122,7 @@ def followup_embeds(inter):
 
 
 def test_text_commands_are_gone(bot):
-    assert not hasattr(admin_cog(bot), "on_message")
+    assert not hasattr(admin_cog(bot), "on_message") and not hasattr(members_cog(bot), "on_message")
     names = {c.name for c in bot.tree.get_commands()}
     assert {"identify", "podcheck", "getposts", "timefix", "start_activity"} <= names
     assert "auth" not in names
@@ -536,7 +540,7 @@ def test_start_activity_registered_on_tree(w, bot):
 
 
 async def test_default_extensions(bot):
-    assert bot.NmaBot.EXTENSIONS == ("cogs.verify", "cogs.admin_tools", "cogs.activities", "cogs.db_sync",
+    assert bot.NmaBot.EXTENSIONS == ("cogs.verify", "cogs.members", "cogs.admin_tools", "cogs.activities", "cogs.db_sync",
                                      "cogs.command_center")
 
 
