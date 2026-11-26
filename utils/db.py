@@ -151,19 +151,27 @@ def save_data_to_json(data, filename):
         json.dump(data, f)
 
 
+def load_pods(path):
+    """Return the stored pod data, or {} if the file is missing or unreadable."""
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
 @tasks.loop(seconds=60)
 async def poll_db():
-    with connect_to_db() as connection:
-        try:
+    try:
+        with connect_to_db() as connection:
             new_data = get_pod_data_from_db(connection)
-            print("Polled db")
-            with open(data_path('pods.json'), 'r') as f:  # noqa: ASYNC230
-                old_data = json.load(f)
-            if old_data != new_data:
-                print("Pod data has been changed")
-                save_data_to_json(new_data, 'pods.json')
-        except Exception as e:  # noqa: BLE001
-            print(f"Error occurred while getting data: {e}")
+        print("Polled db")
+        old_data = load_pods(data_path('pods.json'))
+        if old_data != new_data:
+            print("Pod data has been changed")
+            save_data_to_json(new_data, 'pods.json')
+    except Exception as e:  # noqa: BLE001
+        print(f"Error occurred while getting data: {e}")
 
 
 @poll_db.before_loop
