@@ -1,9 +1,15 @@
 import json
 
-import discord
 import pytest
 
-from tests.fakes import FakeChannel, FakeGuild, FakeMember, FakeMessage, FakeRole, calls_summary
+from tests.fakes import (
+    FakeChannel,
+    FakeGuild,
+    FakeMember,
+    FakeMessage,
+    FakeRole,
+    calls_summary,
+)
 from utils import users
 
 ROLE_NAMES = ["Project TA", "Teaching Assistant", "Lead TA", "Approved User",

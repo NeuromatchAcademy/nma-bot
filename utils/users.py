@@ -1,8 +1,9 @@
 import json
+
 import discord
+
 from . import interact
 from .paths import data_path
-
 
 #TODO: create loader funcs
 # Load portal data.

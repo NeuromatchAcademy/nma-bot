@@ -142,7 +142,7 @@ def test_save_data_to_json(data_dir):
 
 
 def test_connect_to_db_uses_env_and_closes(monkeypatch):
-    for k, v in dict(PG_HOST="h", PG_PORT="5432", PG_DATABASE="d", PG_USER="u", PG_PASSWORD="p").items():
+    for k, v in {"PG_HOST": "h", "PG_PORT": "5432", "PG_DATABASE": "d", "PG_USER": "u", "PG_PASSWORD": "p"}.items():
         monkeypatch.setenv(k, v)
     seen = {}
     conn = FakeConnection([])
@@ -155,4 +155,4 @@ def test_connect_to_db_uses_env_and_closes(monkeypatch):
     with db.connect_to_db() as c:
         assert c is conn and not conn.closed
     assert conn.closed
-    assert seen == dict(host="h", port="5432", dbname="d", user="u", password="p")
+    assert seen == {"host": "h", "port": "5432", "dbname": "d", "user": "u", "password": "p"}

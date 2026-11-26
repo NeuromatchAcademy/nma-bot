@@ -5,7 +5,6 @@ Every fake records mutating calls in `.calls` as (method, args, kwargs);
 `isinstance(fake, discord.Member)` etc. work via the `__class__` property.
 """
 import itertools
-from types import SimpleNamespace
 
 import discord
 

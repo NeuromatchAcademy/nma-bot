@@ -1,5 +1,7 @@
 import discord
-from . import interact, buttons
+
+from . import buttons
+
 
 class CommandDropdownView(discord.ui.View):
     def __init__(self):

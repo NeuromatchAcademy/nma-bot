@@ -1,10 +1,13 @@
-import sys, os
-import discord
 import json
-from . import interact, users, db
-from .paths import data_path
+import os
 import re
+import sys
+
+import discord
+
+from . import db, interact, users
 from .activities import create_activity_invite, get_activity_channel, get_activity_event
+from .paths import data_path
 
 # Load portal data.
 # with open('pods.json') as f:
@@ -55,16 +58,16 @@ class CheckPodDetails(discord.ui.Button):
         channel = discord.utils.get(interaction.guild.channels, name=target_pod)
         members = ''
         for member in channel.overwrites:
-            if isinstance(member, discord.Member):
-                if discord.utils.get(interaction.user.roles,
+            if isinstance(member, discord.Member) and (
+                    discord.utils.get(interaction.user.roles,
                                      name="Organizers") not in member.roles and discord.utils.get(
-                    interaction.user.roles, name="Staffers") not in member.roles:
-                    if discord.utils.get(interaction.user.roles, name="Lead TA") in member.roles:
-                        members = f'{members}{member.name} **(Lead TA)**\n'
-                    elif discord.utils.get(interaction.user.roles, name="Teaching Assistant") in member.roles:
-                        members = f'{members}{member.name} **(TA)**\n'
-                    else:
-                        members = f'{members}{member.name}\n'
+                    interaction.user.roles, name="Staffers") not in member.roles):
+                if discord.utils.get(interaction.user.roles, name="Lead TA") in member.roles:
+                    members = f'{members}{member.name} **(Lead TA)**\n'
+                elif discord.utils.get(interaction.user.roles, name="Teaching Assistant") in member.roles:
+                    members = f'{members}{member.name} **(TA)**\n'
+                else:
+                    members = f'{members}{member.name}\n'
         await interaction.channel.send(embed=interact.send_embed('custom', 'Pod Breakdown', f'**Members:**\n{members}'))
         await msg.delete()
 
@@ -74,7 +77,7 @@ class CleanChannel(discord.ui.Button):
         super().__init__(label='Clean Channel', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
-        exit()
+        sys.exit()
 
 
 class AssignUser(discord.ui.Button):
@@ -137,7 +140,7 @@ class RepodUser(discord.ui.Button):
         target_user = await interaction.guild.fetch_member(int(user))
         try:
             userInfo = await users.lookup_user(interaction, user)
-        except:
+        except Exception:
             userInfo = None
             await interaction.channel.send(
                 embed=interact.send_embed('custom', 'Repod Notice', f'{target_user} has not verified yet.'))
@@ -204,7 +207,7 @@ class RepodUser(discord.ui.Button):
                 embed=interact.send_embed('custom', 'Repod Notice', f'Repodded {target_user}.'))
 
         except Exception as error:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, _exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(f"Repod failed for {target_user} with userInfo {userInfo}")
             await interaction.channel.send(embed=interact.send_embed('custom', "Failed Repodding",
@@ -402,16 +405,15 @@ class GraduateServer(discord.ui.Button):
                             await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
                                                                              f'Deleted pod {eachObj.name} from megapod {eachObj.category.name}.'))
                             await eachObj.delete()
-                    elif eachObj.type == discord.ChannelType.category:
-                        if len(eachObj.channels) == 0:
-                            await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                             f'Deleted megapod {eachObj.name}.'))
-                            await eachObj.delete()
+                    elif eachObj.type == discord.ChannelType.category and (len(eachObj.channels) == 0):
+                        await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                         f'Deleted megapod {eachObj.name}.'))
+                        await eachObj.delete()
             await interaction.channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
                                                                      'Deleted all pod channels and turned everyone into alumni.'))
         else:
             await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                              f'For security reasons, only Kevin or Konstantine can trigger a pod purge.'),
+                                                                              'For security reasons, only Kevin or Konstantine can trigger a pod purge.'),
                                                     ephemeral=True)
 
 

@@ -33,3 +33,12 @@ show_missing = true
 
 [tool.ruff]
 extend-exclude = [".venv", ".superpowers"]
+
+[tool.ruff.lint]
+ignore = [
+    "BLE001",   # the bot deliberately catches Exception and reports it to Discord
+    "ASYNC230", # small JSON data files are read synchronously by design
+]
+
+[tool.ruff.lint.per-file-ignores]
+"utils/__init__.py" = ["F401"]  # re-exports submodules on purpose

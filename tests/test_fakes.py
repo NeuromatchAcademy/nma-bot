@@ -1,7 +1,13 @@
 import discord
 
-from tests.fakes import (FakeChannel, FakeGuild, FakeInteraction, FakeMember, FakeRole,
-                         calls_summary)
+from tests.fakes import (
+    FakeChannel,
+    FakeGuild,
+    FakeInteraction,
+    FakeMember,
+    FakeRole,
+    calls_summary,
+)
 
 
 async def test_utils_get_and_recording():

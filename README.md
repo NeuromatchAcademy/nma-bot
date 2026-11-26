@@ -67,7 +67,7 @@ uv run pytest --update-snapshots   # accept intentional behaviour changes
   review it, then re-run with `--update-snapshots` if it is intended.
 - Tests marked `known_bug` assert *currently broken* behaviour on purpose. When you fix one of those
   bugs the test fails; update it to the new, correct behaviour and drop the marker.
-- CI (`.github/workflows/ci.yml`) runs ruff (informational) and pytest with coverage on every push/PR.
+- CI (`.github/workflows/ci.yml`) runs ruff and pytest with coverage on every push/PR.
 
 ## Disclaimer
 This bot is designed to be used in Neuromatch Academy course servers and expects a certain server structure as a result. If you server is misconfigured, it will not work for you.

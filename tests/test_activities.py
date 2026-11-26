@@ -116,15 +116,15 @@ async def test_channel_unknown_activity_when_existing():
 
 
 async def test_event_created_when_none(monkeypatch):
-    now = datetime.datetime(2030, 1, 1, tzinfo=datetime.timezone.utc)
+    now = datetime.datetime(2030, 1, 1, tzinfo=datetime.UTC)
     monkeypatch.setattr(discord.utils, "utcnow", lambda: now)
     guild, cat, inter = setup_social()
     vc = guild.add_voice_channel("v", cat)
     ev = await activities.get_activity_event(inter, "Study Session", vc)
     kw = guild.calls[0][2]
-    assert kw == dict(name="Study Session", start_time=now + datetime.timedelta(seconds=60),
-                      entity_type=discord.EntityType.voice, channel=vc,
-                      privacy_level=discord.PrivacyLevel.guild_only, reason="u started Study Session.")
+    assert kw == {"name": "Study Session", "start_time": now + datetime.timedelta(seconds=60),
+                  "entity_type": discord.EntityType.voice, "channel": vc,
+                  "privacy_level": discord.PrivacyLevel.guild_only, "reason": "u started Study Session."}
     assert ev is guild.scheduled_events[0]
 
 
@@ -136,7 +136,7 @@ async def test_event_created_when_name_missing():
 
 
 async def test_event_reused_when_exists():
-    guild, cat, inter = setup_social()
+    guild, _cat, inter = setup_social()
     existing = FakeEvent("Hang Out")
     guild.scheduled_events.append(existing)
     assert await activities.get_activity_event(inter, "Hang Out", None) is existing

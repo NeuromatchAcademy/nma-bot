@@ -1,12 +1,14 @@
-import os
-import json
 import asyncio
-import psycopg2
-from pathlib import Path
-from .paths import data_path
-from dotenv import load_dotenv
+import json
+import os
 from contextlib import contextmanager
+from pathlib import Path
+
+import psycopg2
 from discord.ext import tasks
+from dotenv import load_dotenv
+
+from .paths import data_path
 
 
 @contextmanager

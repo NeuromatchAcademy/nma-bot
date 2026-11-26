@@ -15,8 +15,7 @@ jobs:
           enable-cache: true
       - name: Install dependencies
         run: uv sync --group dev --locked
-      - name: Lint (informational for now)
+      - name: Lint
         run: uv run ruff check .
-        continue-on-error: true
       - name: Tests
         run: uv run pytest --cov=utils --cov=nma_bot --cov-report=term-missing

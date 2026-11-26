@@ -1,4 +1,3 @@
-import discord
 
 from tests.fakes import FakeInteraction
 from utils import administrator, buttons

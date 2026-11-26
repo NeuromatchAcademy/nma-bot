@@ -3,8 +3,14 @@ import json
 import discord
 import pytest
 
-from tests.fakes import (FakeChannel, FakeGuild, FakeInteraction, FakeMember, FakeRole,
-                         calls_summary)
+from tests.fakes import (
+    FakeChannel,
+    FakeGuild,
+    FakeInteraction,
+    FakeMember,
+    FakeRole,
+    calls_summary,
+)
 from utils import buttons
 
 COURSE = "Computational Neuroscience"
@@ -248,7 +254,7 @@ def graduate_world(w, authorised=True):
 async def test_graduate_server_unauthorised(w):
     graduate_world(w, authorised=False)
     await press(buttons.GraduateServer, w)
-    (name, args, kw), = w.inter.response.calls
+    (name, _args, kw), = w.inter.response.calls
     assert name == "send_message" and kw["ephemeral"] is True
     assert "only Kevin or Konstantine" in kw["embed"].description
     assert w.gen.calls == []

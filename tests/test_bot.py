@@ -7,8 +7,16 @@ import pytest
 from discord import app_commands
 
 from tests.conftest import load_bot
-from tests.fakes import (FakeChannel, FakeDM, FakeGuild, FakeInteraction, FakeMember, FakeMessage,
-                         FakeRole, calls_summary)
+from tests.fakes import (
+    FakeChannel,
+    FakeDM,
+    FakeGuild,
+    FakeInteraction,
+    FakeMember,
+    FakeMessage,
+    FakeRole,
+    calls_summary,
+)
 
 COURSE = "Computational Neuroscience"
 ROLE_NAMES = ["Organizers", "Staffers", "Robots", "Lead TA", "Teaching Assistant", "Approved User",
@@ -260,7 +268,7 @@ async def test_start_activity_reuses_games_channel(w, bot, monkeypatch):
         return "inv"
 
     monkeypatch.setattr(bot.activities, "create_activity_invite", fake_invite)
-    _, gen, inter, games = await start(w, megapod_games=True)
+    _, _gen, inter, games = await start(w, megapod_games=True)
     await bot.start_activity.callback(inter, choice())
     assert games.calls == [] and w.guild.calls == []
 
@@ -282,7 +290,7 @@ def voice_event(w, cat_name="social", name="Study", members=()):
 async def test_voice_state_update_schedules_deletion(w, bot, monkeypatch, cat, name, members, scheduled):
     tasks = []
     monkeypatch.setattr(bot.client, "loop", SimpleNamespace(create_task=lambda c: (tasks.append(c), c.close())), raising=False)
-    before, vc = voice_event(w, cat, name, members)
+    before, _vc = voice_event(w, cat, name, members)
     await bot.on_voice_state_update(w.plain, before, SimpleNamespace(channel=None))
     assert bool(tasks) is scheduled
 
@@ -323,7 +331,7 @@ async def test_delete_channel_after_user_deleted(w, bot, monkeypatch, capsys):
         w.guild.channels.remove(vc)
 
     monkeypatch.setattr(bot.asyncio, "sleep", fake_sleep)
-    log = w.guild.add_text_channel("bot-log")
+    w.guild.add_text_channel("bot-log")
     _, vc = voice_event(w)
     await bot.delete_channel_after(vc)
     assert vc.calls == [] and "User deleted channel Study" in capsys.readouterr().out

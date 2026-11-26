@@ -1,13 +1,15 @@
-import os
-import sys
-import discord
-from discord import app_commands
 import asyncio
+import os
 import re
-from dotenv import load_dotenv
+import sys
 from pathlib import Path
-from utils import administrator, users, interact, db, activities
+
+import discord
 import pandas as pd
+from discord import app_commands
+from dotenv import load_dotenv
+
+from utils import activities, administrator, db, interact, users
 
 # Auth
 current_dir = Path(__file__).resolve().parent
@@ -150,34 +152,34 @@ class nmaClient(discord.Client):
                         members = ''
                         if channel.type == discord.ChannelType.forum:
                             for member in channel.overwrites:
-                                if isinstance(member, discord.Member):
-                                    if discord.utils.get(message.guild.roles,
+                                if isinstance(member, discord.Member) and (
+                                        discord.utils.get(message.guild.roles,
                                                          name="Organizers") not in member.roles and discord.utils.get(
                                             message.guild.roles,
                                             name="Staffers") not in member.roles and discord.utils.get(
-                                            message.guild.roles, name="Robots") not in member.roles:
-                                        if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
-                                            members = f'{members}{member.name} **(Lead TA)**\n'
-                                        elif discord.utils.get(message.guild.roles,
-                                                               name="Teaching Assistant") in member.roles:
-                                            members = f'{members}{member.name} **(TA)**\n'
-                                        else:
-                                            members = f'{members}{member.name}\n'
+                                            message.guild.roles, name="Robots") not in member.roles):
+                                    if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
+                                        members = f'{members}{member.name} **(Lead TA)**\n'
+                                    elif discord.utils.get(message.guild.roles,
+                                                           name="Teaching Assistant") in member.roles:
+                                        members = f'{members}{member.name} **(TA)**\n'
+                                    else:
+                                        members = f'{members}{member.name}\n'
                         elif channel.type == discord.ChannelType.text and '-general' in channel.name:
                             for member in channel.members:
-                                if isinstance(member, discord.Member):
-                                    if discord.utils.get(message.guild.roles,
+                                if isinstance(member, discord.Member) and (
+                                        discord.utils.get(message.guild.roles,
                                                          name="Organizers") not in member.roles and discord.utils.get(
                                             message.guild.roles,
                                             name="Staffers") not in member.roles and discord.utils.get(
-                                            message.guild.roles, name="Robots") not in member.roles:
-                                        if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
-                                            members = f'{members}{member.name} **(Lead TA)**\n'
-                                        elif discord.utils.get(message.guild.roles,
-                                                               name="Teaching Assistant") in member.roles:
-                                            members = f'{members}{member.name} **(TA)**\n'
-                                        else:
-                                            members = f'{members}{member.name}\n'
+                                            message.guild.roles, name="Robots") not in member.roles):
+                                    if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
+                                        members = f'{members}{member.name} **(Lead TA)**\n'
+                                    elif discord.utils.get(message.guild.roles,
+                                                           name="Teaching Assistant") in member.roles:
+                                        members = f'{members}{member.name} **(TA)**\n'
+                                    else:
+                                        members = f'{members}{member.name}\n'
                         await message.channel.send(
                             embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
                     elif msg_cmd[1] == 'getposts' and admin == 1:
@@ -200,8 +202,8 @@ class nmaClient(discord.Client):
                             df = pd.DataFrame(message_dict)
                             df.to_csv(f'{target_channel.name}-log.csv')
                             await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
-                        except Exception as error:
-                           exc_type, exc_obj, exc_tb = sys.exc_info()
+                        except Exception:
+                           exc_type, _exc_obj, exc_tb = sys.exc_info()
                            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                            await message.channel.send(embed=interact.send_embed('custom', "Error!",
                                                                                 f"{message.author}, channel archival failed because:\n{fname, exc_type, exc_tb.tb_lineno}"))
@@ -236,8 +238,8 @@ class nmaClient(discord.Client):
                                     await eachMember.add_roles(time_role)
                                     await message.channel.send(embed=interact.send_embed('custom', "Time Check",
                                                                                          f"Checked {userInfo['name']}'s time."))
-                                except Exception as error:
-                                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                                except Exception:
+                                    exc_type, _exc_obj, exc_tb = sys.exc_info()
                                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                                     await message.channel.send(embed=interact.send_embed('custom', "Time Check",
                                                                                          f"{eachMember}, {fname, exc_type, exc_tb.tb_lineno},\n{eachMember.id}"))

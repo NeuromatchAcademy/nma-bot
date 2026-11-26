@@ -1,5 +1,7 @@
 import json
+
 import discord
+
 from .constants import embed_dict
 from .paths import data_path
 
@@ -27,7 +29,7 @@ def send_embed(mode, title='None', message='None'):
     if mode != 'custom':
         embed = discord.Embed(title=embed_dict[mode]['title'], description=embed_dict[mode]['description'], color=embed_dict[mode]['color'])
 
-        if 'field' in embed_dict[mode].keys():
+        if 'field' in embed_dict[mode]:
             embed.add_field(name=embed_dict[mode]['field']['name'], value=embed_dict[mode]['field']['value'], inline=False)
 
     else:
