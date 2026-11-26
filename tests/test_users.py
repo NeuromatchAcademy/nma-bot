@@ -66,13 +66,14 @@ def summary(w):
 
 
 @pytest.mark.parametrize("role", ["student", "ta", "lead_ta", "project_ta"])
-async def test_verify_happy_path(world, snapshot, role, capsys):
+async def test_verify_happy_path(world, snapshot, role, caplog):
+    caplog.set_level("INFO")
     world.set_users({"sam@x.org": user_entry(role)})
     await users.verify_user(msg(world))
     snapshot(f"verify_{role}", summary(world))
     ids = json.loads((world.data_dir / "discord-ids.json").read_text())
     assert ids == {"77": "sam@x.org"}  # int key becomes str on dump
-    assert "Verified user sam with email sam@x.org." in capsys.readouterr().out
+    assert "Verified user sam with email sam@x.org" in caplog.text
 
 
 async def test_student_gets_no_ta_chat_announcement(world):
@@ -121,7 +122,7 @@ async def test_bad_timeslot_fails_after_partial_side_effects(world):
     await users.verify_user(msg(world))
     embed = calls_summary(world.log)[-1][2]["embed"]
     assert embed["title"] == "Failed Verification"
-    assert "time_role" in embed["description"]  # UnboundLocalError text
+    assert "time_role" not in embed["description"]  # internals stay in the logs
     assert "Approved User" in [r.name for r in world.user.roles]  # roles already granted
     assert json.loads((world.data_dir / "discord-ids.json").read_text()) == {}  # never recorded
 
@@ -131,7 +132,7 @@ async def test_missing_pod_channel_reports_failure(world):
     await users.verify_user(msg(world))
     embed = calls_summary(world.log)[-1][2]["embed"]
     assert embed["title"] == "Failed Verification"
-    assert "Ran into this issue:" in embed["description"]
+    assert embed["description"].endswith("Ran into an unexpected error; see the bot logs.")
 
 
 async def test_missing_ids_file_raises_before_try(world):
@@ -157,3 +158,15 @@ async def test_mega_from_pod(world):
 @pytest.mark.known_bug("lowercased pod names (as MergePods passes them) never match 'Blue Rays'")
 async def test_mega_from_pod_lowercase_not_found(world):
     assert await users.mega_from_pod(msg(world), "blue-rays") == "Pod not found"
+
+
+async def test_verification_does_not_post_user_info_to_log_channel(world):
+    await users.verify_user(msg(world))
+    titles = [c[2]["embed"]["title"] for c in calls_summary(world.log) if c[0] == "send"]
+    assert "Verification DEBUG" not in titles
+
+
+async def test_unexpected_error_is_logged_with_traceback(world, caplog):
+    world.guild.channels.remove(world.pod)
+    await users.verify_user(msg(world))
+    assert any(r.exc_info for r in caplog.records)

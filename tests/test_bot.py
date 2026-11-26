@@ -196,8 +196,9 @@ async def test_getposts_failure_reports_error(w, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     await w.send("--nma getposts missing")
     err = embeds(w.chan)[1]
-    assert err["title"] == "Error!" and "AttributeError" in err["description"]
-    assert "admin, channel archival failed because" in err["description"]
+    assert err["title"] == "Error!"
+    assert err["description"] == "admin, channel archival failed (AttributeError). See the bot logs."
+    assert ".py" not in err["description"]  # no file names / line numbers
 
 
 @pytest.mark.parametrize("slot,expected", [("1", "asia-pacific"), ("2", "asia-pacific"),
@@ -219,7 +220,8 @@ async def test_timefix_unknown_member_reports_and_continues(w):
     (w.data_dir / "pods.json").write_text(json.dumps({COURSE: {"structure": {}, "users": {}}}))
     await w.send("--nma timefix")
     (e,) = embeds(w.chan)
-    assert e["title"] == "Time Check" and e["description"].startswith("ghost, (") and "KeyError" in e["description"]
+    assert e["title"] == "Time Check"
+    assert e["description"] == "ghost (60) failed: KeyError. See the bot logs."
 
 
 # ------------------------------------------------------------------ slash command
