@@ -70,8 +70,7 @@ async def ensure_extensions(bot_module):
 
 
 async def dispatch_message(bot_module, message):
-    """Deliver a message to the bot's own on_message and to every cog listener, like discord.py does."""
+    """Deliver a message to every cog on_message listener (the bot has no prefix commands)."""
     client = bot_module.client
-    await client.on_message(message)
     for listener in list(client.extra_events.get("on_message", [])):
         await listener(message)

@@ -65,7 +65,7 @@ The suite is a *characterization* suite: it pins what the bot does today so chan
 ```bash
 uv sync --group dev
 uv run pytest                      # run everything (no network, DB or Discord token needed)
-uv run pytest --cov=utils --cov=nma_bot   # with coverage (CI enforces a floor)
+uv run pytest --cov=utils --cov=cogs --cov=nma_bot   # with coverage (CI enforces a floor)
 uv run pytest --update-snapshots   # accept intentional behaviour changes
 ```
 

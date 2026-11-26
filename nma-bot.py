@@ -1,16 +1,14 @@
 import asyncio
 import logging
 import os
-import re
 from pathlib import Path
 
 import discord
-import pandas as pd
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from utils import activities, administrator, db, interact, users
+from utils import activities, administrator, db, interact
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +73,7 @@ async def start_activity(interaction: discord.Interaction, activity: app_command
 
 # Actual Discord bot.
 class NmaBot(commands.Bot):
-    EXTENSIONS: tuple[str, ...] = ("cogs.verify",)
+    EXTENSIONS: tuple[str, ...] = ("cogs.verify", "cogs.admin_tools")
 
     async def setup_hook(self):
         for extension in self.EXTENSIONS:
@@ -111,141 +109,6 @@ class NmaBot(commands.Bot):
         print(self.user.name)
         print(self.user.id)
         print("==============")
-
-    async def on_message(self, message):
-
-        if message.author != self.user or message.content.startswith("--csrun "):
-
-            if isinstance(message.channel, discord.DMChannel):  # DMs are ignored.
-                return
-            if message.channel.name == 'verify':  # Handled by cogs.verify.
-                return
-            else:  # If the user is not verifying...
-                msg_cmd = message.content.split(' ')  # ...Split the message.
-
-                if msg_cmd[0] == '--nma' and len(msg_cmd) > 1:  # Checking for a command.
-
-                    role = discord.utils.get(message.author.roles, name="Organizers")
-                    if role is not None and role.name == 'Organizers':
-                        admin = 1
-                    else:
-                        admin = 0
-
-                    if msg_cmd[1] == 'identify' and len(msg_cmd) > 2:
-                        id_channels = []
-                        if 'lgbtq' in msg_cmd[2]:
-                            id_channels += [discord.utils.get(message.guild.channels, name="lgbtq")]
-                        if 'gender' in msg_cmd[2]:
-                            id_channels += [discord.utils.get(message.guild.channels, name="gender")]
-                        if 'race' in msg_cmd[2]:
-                            id_channels += [discord.utils.get(message.guild.channels, name="race")]
-
-                        for eachChan in id_channels:
-                            await eachChan.set_permissions(message.author, view_channel=True, send_messages=True)
-
-                        await message.delete()
-                    elif msg_cmd[1] == 'auth':
-                        await message.channel.send(f"{message.author} auth status: {admin}.")
-                    elif msg_cmd[1] == 'podcheck':
-                        channel = message.channel.parent
-                        members = ''
-                        if channel.type == discord.ChannelType.forum:
-                            for member in channel.overwrites:
-                                if isinstance(member, discord.Member) and (
-                                        discord.utils.get(message.guild.roles,
-                                                         name="Organizers") not in member.roles and discord.utils.get(
-                                            message.guild.roles,
-                                            name="Staffers") not in member.roles and discord.utils.get(
-                                            message.guild.roles, name="Robots") not in member.roles):
-                                    if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
-                                        members = f'{members}{member.name} **(Lead TA)**\n'
-                                    elif discord.utils.get(message.guild.roles,
-                                                           name="Teaching Assistant") in member.roles:
-                                        members = f'{members}{member.name} **(TA)**\n'
-                                    else:
-                                        members = f'{members}{member.name}\n'
-                        elif channel.type == discord.ChannelType.text and '-general' in channel.name:
-                            for member in channel.members:
-                                if isinstance(member, discord.Member) and (
-                                        discord.utils.get(message.guild.roles,
-                                                         name="Organizers") not in member.roles and discord.utils.get(
-                                            message.guild.roles,
-                                            name="Staffers") not in member.roles and discord.utils.get(
-                                            message.guild.roles, name="Robots") not in member.roles):
-                                    if discord.utils.get(message.guild.roles, name="Lead TA") in member.roles:
-                                        members = f'{members}{member.name} **(Lead TA)**\n'
-                                    elif discord.utils.get(message.guild.roles,
-                                                           name="Teaching Assistant") in member.roles:
-                                        members = f'{members}{member.name} **(TA)**\n'
-                                    else:
-                                        members = f'{members}{member.name}\n'
-                        await message.channel.send(
-                            embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
-                    elif msg_cmd[1] == 'getposts' and admin == 1 and len(msg_cmd) > 2:
-                        if '#' in msg_cmd[2]:
-                            target_channel = re.sub("[^0-9]", "", msg_cmd[2])
-                            target_channel = discord.utils.get(message.guild.channels, id=int(target_channel))
-                        else:
-                            target_channel = discord.utils.get(message.guild.channels, name=msg_cmd[2])
-
-                        await message.channel.send(embed=interact.send_embed('custom','Administrative Notice','Starting channel archival -- this might take a while!'))
-
-                        try:
-                            message_dict = []
-                            async for eachMessage in target_channel.history(limit=None):
-                                message_dict.append({
-                                    'Date': eachMessage.created_at,
-                                    'Author': eachMessage.author,
-                                    'Content': eachMessage.content
-                                })
-                            df = pd.DataFrame(message_dict)
-                            df.to_csv(f'{target_channel.name}-log.csv')
-                            await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
-                        except Exception as exc:
-                            log.exception("Channel archival failed for %s", message.author)
-                            await message.channel.send(embed=interact.send_embed('custom', "Error!",
-                                                                                 f"{message.author}, channel archival failed ({type(exc).__name__}). See the bot logs."))
-
-                    elif msg_cmd[1] == 'timefix' and admin == 1:
-                        america_role = discord.utils.get(message.guild.roles, name='americas')
-                        eurafrica_role = discord.utils.get(message.guild.roles, name='europe-africa')
-                        asia_role = discord.utils.get(message.guild.roles, name='asia-pacific')
-                        current_role = discord.utils.get(message.guild.roles, name='Approved User')
-
-                        for eachMember in message.guild.members:
-                            if current_role in eachMember.roles:
-                                try:
-                                    userInfo = await users.lookup_user(message, eachMember.id)
-
-                                    # Define the mappings
-                                    role_mappings = {
-                                        '4': ([eurafrica_role, asia_role], america_role),
-                                        '5': ([eurafrica_role, asia_role], america_role),
-                                        '3': ([america_role, asia_role], eurafrica_role),
-                                        '1': ([eurafrica_role, america_role], asia_role),
-                                        '2': ([eurafrica_role, america_role], asia_role),
-                                    }
-
-                                    roles_to_remove, time_role = role_mappings[userInfo['timeslot']]
-
-                                    # Remove the roles
-                                    for eachRole in roles_to_remove:
-                                        if eachRole in eachMember.roles:
-                                            await eachMember.remove_roles(eachRole)
-
-                                    await eachMember.add_roles(time_role)
-                                    await message.channel.send(embed=interact.send_embed('custom', "Time Check",
-                                                                                         f"Checked {userInfo['name']}'s time."))
-                                except Exception as exc:
-                                    log.exception("Time check failed for %s", eachMember)
-                                    await message.channel.send(embed=interact.send_embed('custom', "Time Check",
-                                                                                         f"{eachMember} ({eachMember.id}) failed: {type(exc).__name__}. See the bot logs."))
-
-        # elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
-        #    await asyncio.sleep(60)
-        #    await message.delete()
-        else:
-            return
 
 
 description = "The official NMA Discord Bot."

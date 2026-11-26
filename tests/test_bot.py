@@ -18,6 +18,7 @@ from tests.fakes import (
     FakeRole,
     calls_summary,
 )
+from utils import users
 
 COURSE = "Computational Neuroscience"
 ROLE_NAMES = ["Organizers", "Staffers", "Robots", "Lead TA", "Teaching Assistant", "Approved User",
@@ -68,7 +69,7 @@ async def test_verify_channel_with_email_verifies_then_deletes(w, monkeypatch):
     async def fake_verify(m):
         seen.append(m)
 
-    monkeypatch.setattr(w.bot.users, "verify_user", fake_verify)
+    monkeypatch.setattr(users, "verify_user", fake_verify)
     msg = await w.send("me@x.org", author=w.plain, channel=verify)
     assert seen == [msg] and calls_summary(msg) == [["delete", [], {}]]
 
@@ -79,7 +80,7 @@ async def test_verify_channel_without_at_just_deletes(w, monkeypatch):
     async def boom(m):
         raise AssertionError("must not verify")
 
-    monkeypatch.setattr(w.bot.users, "verify_user", boom)
+    monkeypatch.setattr(users, "verify_user", boom)
     msg = await w.send("hello", author=w.plain, channel=verify)
     assert calls_summary(msg) == [["delete", [], {}]]
 
@@ -395,7 +396,7 @@ async def test_verify_channel_never_runs_commands(w, monkeypatch):
     async def fake_verify(m):
         pass
 
-    monkeypatch.setattr(w.bot.users, "verify_user", fake_verify)
+    monkeypatch.setattr(users, "verify_user", fake_verify)
     msg = await w.send("--nma auth me@x.org", author=w.admin, channel=verify)
     assert calls_summary(msg) == [["delete", [], {}]]
     assert verify.calls == []  # no "auth status" reply
