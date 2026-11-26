@@ -8,6 +8,7 @@ from tests.fakes import (
     FakeGuild,
     FakeInteraction,
     FakeMember,
+    FakeMessage,
     FakeRole,
     calls_summary,
 )
@@ -118,10 +119,15 @@ async def test_check_pod_details_labels_depend_on_invoker_roles(w):
     assert embeds(w.cc)[0]["description"] == "**Members:**\nlead\nta\nstu\n"
 
 
-@pytest.mark.known_bug("CleanChannel calls exit()")
-async def test_clean_channel_exits(w):
-    with pytest.raises(SystemExit):
-        await press(buttons.CleanChannel, w)
+async def test_clean_channel_wipes_history_and_reposts_menu(w):
+    old = [FakeMessage(f"m{i}", channel=w.cc) for i in range(3)]
+    w.cc.history_messages = list(old)
+    await press(buttons.CleanChannel, w)
+    assert all(calls_summary(m) == [["delete", [], {}]] for m in old)
+    sends = [c for c in w.cc.calls if c[0] == "send"]
+    assert len(sends) == 1
+    assert sends[0][2]["embed"].title == "Administrative Interface"
+    assert type(sends[0][2]["view"]).__name__ == "CommandDropdownView"
 
 
 # ---------------------------------------------------------------- pod commands

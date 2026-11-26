@@ -110,17 +110,17 @@ class nmaClient(discord.Client):
 
         if message.author != self.user or message.content.startswith("--csrun "):
 
+            if isinstance(message.channel, discord.DMChannel):  # DMs are ignored.
+                return
             if message.channel.name == 'verify' and '@' in message.content:  # If the user sent an email in #verify...
                 await users.verify_user(message)  # ...Attempt verification.
                 await message.delete()  # ...Then delete the message.
             elif message.channel.name == 'verify':
                 await message.delete()  # ...Then delete the message.
-            elif isinstance(message.channel, discord.DMChannel):  # If the user is DMing the bot...
-                await interact.send_embed(message, 'dm')  # ...Send a special message.
-            else:  # If the user is neither verifying nor DMing...
+            else:  # If the user is not verifying...
                 msg_cmd = message.content.split(' ')  # ...Split the message.
 
-                if msg_cmd[0] == '--nma':  # Checking for a command.
+                if msg_cmd[0] == '--nma' and len(msg_cmd) > 1:  # Checking for a command.
 
                     role = discord.utils.get(message.author.roles, name="Organizers")
                     if role is not None and role.name == 'Organizers':
@@ -128,11 +128,7 @@ class nmaClient(discord.Client):
                     else:
                         admin = 0
 
-                    if msg_cmd[1] == 'init' and admin == 1:  # Initialize server's pod channels.
-                        await administrator.initialize_server(message.guild)
-                    elif msg_cmd[1] in ['assign', 'unassign', 'merge', 'swap'] and admin == 1:
-                        await administrator.pod_change(message, msg_cmd[1])
-                    elif msg_cmd[1] == 'identify':
+                    if msg_cmd[1] == 'identify' and len(msg_cmd) > 2:
                         id_channels = []
                         if 'lgbtq' in msg_cmd[2]:
                             id_channels += [discord.utils.get(message.guild.channels, name="lgbtq")]
@@ -182,7 +178,7 @@ class nmaClient(discord.Client):
                                         members = f'{members}{member.name}\n'
                         await message.channel.send(
                             embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
-                    elif msg_cmd[1] == 'getposts' and admin == 1:
+                    elif msg_cmd[1] == 'getposts' and admin == 1 and len(msg_cmd) > 2:
                         if '#' in msg_cmd[2]:
                             target_channel = re.sub("[^0-9]", "", msg_cmd[2])
                             target_channel = discord.utils.get(message.guild.channels, id=int(target_channel))
