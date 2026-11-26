@@ -9,17 +9,19 @@ from dotenv import load_dotenv
 log = logging.getLogger(__name__)
 
 # Auth
-current_dir = Path(__file__).resolve().parent
-# parent_dir = current_dir.parent
-env_file_path = current_dir / ".env"
-load_dotenv(dotenv_path=env_file_path)
-
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 discordToken = os.getenv("DISCORD_TOKEN")
 
 
-# Actual Discord bot.
 class NmaBot(commands.Bot):
-    EXTENSIONS: tuple[str, ...] = ("cogs.verify", "cogs.admin_tools", "cogs.activities", "cogs.db_sync", "cogs.command_center")
+    # Every feature lives in a cog; add new ones here (see README, "How to add a command").
+    EXTENSIONS: tuple[str, ...] = (
+        "cogs.verify",
+        "cogs.admin_tools",
+        "cogs.activities",
+        "cogs.db_sync",
+        "cogs.command_center",
+    )
 
     async def setup_hook(self):
         for extension in self.EXTENSIONS:
@@ -41,7 +43,6 @@ intents = discord.Intents(
 activity = discord.Activity(name="Studying brains...", type=discord.ActivityType.watching)
 client = NmaBot(command_prefix=commands.when_mentioned, intents=intents, description=description, activity=activity)
 tree = client.tree
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")

@@ -10,10 +10,6 @@ from .activities import create_activity_invite, get_activity_channel, get_activi
 from .constants import PROTECTED_CATEGORIES
 from .paths import data_path
 
-# Load portal data.
-# with open('pods.json') as f:
-#     master_db = json.load(f)
-
 
 class CheckAuthority(discord.ui.Button):
     def __init__(self, par):

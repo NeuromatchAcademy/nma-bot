@@ -25,21 +25,39 @@ Admin buttons are available to members with the `Organizers` role or whose ID is
 ## Contest Instructions
 If you're forking this repository to participate in the NMA bot contest, here's some guidance to help you navigate the code:
 
+### Project layout
+- `nma-bot.py`: entry point. Defines `NmaBot` and lists the cogs to load in `NmaBot.EXTENSIONS`.
+- `cogs/`: one discord.py [cog](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html) per feature (`verify`, `admin_tools`, `activities`, `db_sync`, `command_center`).
+- `utils/`: shared logic (database, permissions, embeds, buttons, constants).
+
 ### How to add a command.
-User-facing commands are Discord slash commands registered on the bot's `CommandTree` (see `start_activity` in `nma-bot.py`, added with `tree.add_command(...)`). A sample command:
+User-facing commands are Discord slash commands. Put them in a cog under `cogs/`, for example `cogs/hello.py`:
 
 ```python
-@app_commands.command(description="Say hello")
-async def hello(interaction: discord.Interaction):
-    await interaction.response.send_message(f"Hello, {interaction.user}!", ephemeral=True)
+import discord
+from discord import app_commands
+from discord.ext import commands
 
-tree.add_command(hello)
+
+class Hello(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
+    @app_commands.command(description="Say hello")
+    async def hello(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f"Hello, {interaction.user}!", ephemeral=True)
+
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Hello(bot))
 ```
+
+Then add `"cogs.hello"` to `NmaBot.EXTENSIONS` in `nma-bot.py`. Event handlers work the same way, with `@commands.Cog.listener()`.
 
 Admin actions live in the buttons described below. (The old `--nma init|assign|unassign|merge|swap` text commands were removed; they were non-functional.)
 
 ### How to add a button.
-In `nma-bot.py`, under the `on_ready` function, you can see that we send a message with a special view in the `activity-center` channel. This view is imported from `utils/administrator.py`, and if you look at the `BUTTON_MAPPING` dictionary in that file, you might notice that the dictionary's keys correspond to options in the #activity-center dropdown and the dictionary's values correspond to the buttons and dropdowns the bot loads if the appropriate option is picked in the dropdown. These are defined in `utils/buttons.py` as such:
+In `cogs/command_center.py`, the `on_ready` listener sends a message with a special view in the `activity-center` channel. This view is imported from `utils/administrator.py`, and if you look at the `BUTTON_MAPPING` dictionary in that file, you might notice that the dictionary's keys correspond to options in the #activity-center dropdown and the dictionary's values correspond to the buttons and dropdowns the bot loads if the appropriate option is picked in the dropdown. These are defined in `utils/buttons.py` as such:
 
 ```python
 class SampleButton(discord.ui.Button):
