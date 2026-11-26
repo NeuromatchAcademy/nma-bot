@@ -82,11 +82,10 @@ async def test_verify_channel_without_at_just_deletes(w, monkeypatch):
     assert calls_summary(msg) == [["delete", [], {}]]
 
 
-@pytest.mark.known_bug("DM branch awaits interact.send_embed(message, 'dm') with wrong args -> KeyError")
-async def test_dm_branch_raises(w):
+async def test_dm_is_ignored(w):
     dm = FakeDM()
-    with pytest.raises(KeyError):
-        await w.send("hi", author=w.plain, channel=dm)
+    await w.send("hi", author=w.plain, channel=dm)
+    assert dm.calls == []
 
 
 async def test_plain_chat_and_unknown_command_ignored(w):
@@ -95,10 +94,10 @@ async def test_plain_chat_and_unknown_command_ignored(w):
     assert w.chan.calls == []
 
 
-@pytest.mark.known_bug("bare '--nma' raises IndexError")
-async def test_bare_nma_raises(w):
-    with pytest.raises(IndexError):
-        await w.send("--nma")
+@pytest.mark.parametrize("text", ["--nma", "--nma identify", "--nma getposts"])
+async def test_missing_subcommand_or_argument_is_ignored(w, text):
+    await w.send(text)
+    assert w.chan.calls == []
 
 
 async def test_own_messages_ignored(w, bot, monkeypatch):
@@ -118,13 +117,12 @@ async def test_auth(w, who, status):
 
 
 @pytest.mark.parametrize("cmd", ["init", "assign", "unassign", "merge", "swap"])
-@pytest.mark.known_bug("administrator.initialize_server / pod_change do not exist")
-async def test_admin_commands_broken_for_admin(w, cmd):
-    with pytest.raises(AttributeError):
-        await w.send(f"--nma {cmd} x")
+async def test_removed_commands_are_ignored(w, cmd):
+    await w.send(f"--nma {cmd} x")
+    assert w.chan.calls == []
 
 
-@pytest.mark.parametrize("cmd", ["init", "assign", "unassign", "merge", "swap", "getposts", "timefix"])
+@pytest.mark.parametrize("cmd", ["getposts", "timefix"])
 async def test_admin_commands_silently_ignored_for_non_admin(w, cmd):
     await w.send(f"--nma {cmd} x", author=w.plain)
     assert w.chan.calls == []
@@ -198,8 +196,9 @@ async def test_getposts_failure_reports_error(w, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     await w.send("--nma getposts missing")
     err = embeds(w.chan)[1]
-    assert err["title"] == "Error!" and "AttributeError" in err["description"]
-    assert "admin, channel archival failed because" in err["description"]
+    assert err["title"] == "Error!"
+    assert err["description"] == "admin, channel archival failed (AttributeError). See the bot logs."
+    assert ".py" not in err["description"]  # no file names / line numbers
 
 
 @pytest.mark.parametrize("slot,expected", [("1", "asia-pacific"), ("2", "asia-pacific"),
@@ -221,7 +220,8 @@ async def test_timefix_unknown_member_reports_and_continues(w):
     (w.data_dir / "pods.json").write_text(json.dumps({COURSE: {"structure": {}, "users": {}}}))
     await w.send("--nma timefix")
     (e,) = embeds(w.chan)
-    assert e["title"] == "Time Check" and e["description"].startswith("ghost, (") and "KeyError" in e["description"]
+    assert e["title"] == "Time Check"
+    assert e["description"] == "ghost (60) failed: KeyError. See the bot logs."
 
 
 # ------------------------------------------------------------------ slash command

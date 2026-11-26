@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.13.18, uv, pytest, pytest-asyncio, pytest-cov, ruff, discord.py 2.x.
 
-**Spec:** docs/superpowers/specs/2026-testing-framework-design.md
+**Spec:** docs/specs/2026-testing-framework-design.md
 
 ## Global Constraints
 

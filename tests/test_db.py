@@ -123,11 +123,29 @@ async def test_poll_db_no_write_when_unchanged(data_dir, monkeypatch, capsys):
     assert "Pod data has been changed" not in capsys.readouterr().out
 
 
-async def test_poll_db_first_run_never_creates_file(data_dir, monkeypatch, capsys):
+async def test_poll_db_first_run_creates_file(data_dir, monkeypatch, capsys):
     patch_connect(monkeypatch, [row()])
     await db.poll_db.coro()
+    assert "CN" in json.loads((data_dir / "pods.json").read_text())
+    assert "Pod data has been changed" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("content", ["", "not json", "[1, 2"])
+async def test_poll_db_recovers_from_corrupt_pods_json(data_dir, monkeypatch, content):
+    patch_connect(monkeypatch, [row()])
+    (data_dir / "pods.json").write_text(content)
+    await db.poll_db.coro()
+    assert "CN" in json.loads((data_dir / "pods.json").read_text())
+
+
+async def test_poll_db_survives_connection_failure(data_dir, monkeypatch, capsys):
+    def boom():
+        raise RuntimeError("db down")
+
+    monkeypatch.setattr(db, "connect_to_db", boom)
+    await db.poll_db.coro()
+    assert "Error occurred while getting data: db down" in capsys.readouterr().out
     assert not (data_dir / "pods.json").exists()
-    assert "Error occurred while getting data" in capsys.readouterr().out
 
 
 async def test_poll_db_swallows_query_errors(data_dir, monkeypatch, capsys):

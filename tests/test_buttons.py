@@ -8,6 +8,7 @@ from tests.fakes import (
     FakeGuild,
     FakeInteraction,
     FakeMember,
+    FakeMessage,
     FakeRole,
     calls_summary,
 )
@@ -118,10 +119,15 @@ async def test_check_pod_details_labels_depend_on_invoker_roles(w):
     assert embeds(w.cc)[0]["description"] == "**Members:**\nlead\nta\nstu\n"
 
 
-@pytest.mark.known_bug("CleanChannel calls exit()")
-async def test_clean_channel_exits(w):
-    with pytest.raises(SystemExit):
-        await press(buttons.CleanChannel, w)
+async def test_clean_channel_wipes_history_and_reposts_menu(w):
+    old = [FakeMessage(f"m{i}", channel=w.cc) for i in range(3)]
+    w.cc.history_messages = list(old)
+    await press(buttons.CleanChannel, w)
+    assert all(calls_summary(m) == [["delete", [], {}]] for m in old)
+    sends = [c for c in w.cc.calls if c[0] == "send"]
+    assert len(sends) == 1
+    assert sends[0][2]["embed"].title == "Administrative Interface"
+    assert type(sends[0][2]["view"]).__name__ == "CommandDropdownView"
 
 
 # ---------------------------------------------------------------- pod commands
@@ -237,9 +243,10 @@ async def test_initialize_server_twice_duplicates_multiword_forums(w):
     assert [f.name for f in w.guild.forums] == ["Blue-Rays", "Blue-Rays"]
 
 
-def graduate_world(w, authorised=True):
-    if authorised:
-        w.inter.user = w.member("zoltaniam", 2)
+def graduate_world(w, monkeypatch, authorised=True):
+    # Organizers alone are not enough to graduate a server; the invoker's ID must be in ADMIN_USER_IDS
+    w.inter.user = w.member("zoltaniam", 2, "Organizers")
+    monkeypatch.setenv("ADMIN_USER_IDS", "2" if authorised else "999")
     stu = w.member("stu", 30, "Approved User", "Teaching Assistant")
     admin_cat = w.guild.add_category("Administrative")
     w.log.category = w.cc.category = admin_cat
@@ -251,31 +258,44 @@ def graduate_world(w, authorised=True):
     w.stu = stu
 
 
-async def test_graduate_server_unauthorised(w):
-    graduate_world(w, authorised=False)
+async def test_graduate_server_unauthorised(w, monkeypatch):
+    graduate_world(w, monkeypatch, authorised=False)
     await press(buttons.GraduateServer, w)
     (name, _args, kw), = w.inter.response.calls
     assert name == "send_message" and kw["ephemeral"] is True
-    assert "only Kevin or Konstantine" in kw["embed"].description
+    assert "authorised administrators" in kw["embed"].description
     assert w.gen.calls == []
 
 
 @pytest.mark.known_bug("a channel without a category crashes the purge with AttributeError")
-async def test_graduate_server_categoryless_channel_crashes(w):
-    graduate_world(w)
+async def test_graduate_server_categoryless_channel_crashes(w, monkeypatch):
+    graduate_world(w, monkeypatch)
     w.log.category = None
     with pytest.raises(AttributeError):
         await press(buttons.GraduateServer, w)
 
 
-async def test_graduate_server_authorised(w, snapshot):
-    graduate_world(w)
+async def test_graduate_server_authorised(w, snapshot, monkeypatch):
+    graduate_world(w, monkeypatch)
     await press(buttons.GraduateServer, w)
     snapshot("btn_graduate_server", {
         "student": calls_summary(w.stu), "log": embeds(w.log), "channel": embeds(w.cc),
         "remaining": sorted(c.name for c in w.guild.channels),
         "social_untouched": w.chat.calls == []})
     assert len(embeds(w.cc)) == 1
+
+
+@pytest.mark.parametrize("cls", [
+    buttons.CleanChannel, buttons.AssignUser, buttons.RemoveUser, buttons.RepodUser,
+    buttons.MergePods, buttons.InitializeServer, buttons.ForceDB, buttons.GraduateServer])
+async def test_admin_buttons_deny_non_admins(w, monkeypatch, cls):
+    monkeypatch.delenv("ADMIN_USER_IDS", raising=False)
+    w.inter.user = w.member("plain", 50, "Approved User")
+    await press(cls, w)
+    (name, _args, kw), = w.inter.response.calls
+    assert name == "send_message" and kw["ephemeral"] is True
+    assert kw["embed"].title == "Administrative Notice"
+    assert w.guild.calls == [] and w.cc.calls == [] and w.log.calls == []
 
 
 async def test_force_db(w, monkeypatch):

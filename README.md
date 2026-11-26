@@ -17,18 +17,26 @@ To use this bot, you need to have Python installed in your system. Python 3.13.1
 This bot uses environmental variables stored in a .env file. You need to create this file and store your bot token as follows:
 ```env
 DISCORD_TOKEN=<Your Bot Token>
+ADMIN_USER_IDS=<comma-separated Discord user IDs>   # optional
 ```
+Admin buttons are available to members with the `Organizers` role or whose ID is in `ADMIN_USER_IDS`.
+**Graduate Server** (destructive) requires the user's ID to be in `ADMIN_USER_IDS`; the role alone is not enough.
 
 ## Contest Instructions
 If you're forking this repository to participate in the NMA bot contest, here's some guidance to help you navigate the code:
 
 ### How to add a command.
-In `nma-bot.py`, under the `on_message` function, you can see that we split incoming messages based on spaces and if the first string in the list is `'--nma'`, we assume that what follows is a command. From there, all you have to do is add an `elif msg_cmd[1] == 'yourcommand'` add add your code underneath. A sample command might thus look like this:
+User-facing commands are Discord slash commands registered on the bot's `CommandTree` (see `start_activity` in `nma-bot.py`, added with `tree.add_command(...)`). A sample command:
 
 ```python
-elif msg_cmd[1] == 'samplecommand':
-    await message.channel.send(f"Sample command response, {message.author}!")
+@app_commands.command(description="Say hello")
+async def hello(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Hello, {interaction.user}!", ephemeral=True)
+
+tree.add_command(hello)
 ```
+
+Admin actions live in the buttons described below. (The old `--nma init|assign|unassign|merge|swap` text commands were removed; they were non-functional.)
 
 ### How to add a button.
 In `nma-bot.py`, under the `on_ready` function, you can see that we send a message with a special view in the `activity-center` channel. This view is imported from `utils/administrator.py`, and if you look at the `BUTTON_MAPPING` dictionary in that file, you might notice that the dictionary's keys correspond to options in the #activity-center dropdown and the dictionary's values correspond to the buttons and dropdowns the bot loads if the appropriate option is picked in the dropdown. These are defined in `utils/buttons.py` as such:

@@ -1,7 +1,7 @@
 import asyncio
+import logging
 import os
 import re
-import sys
 from pathlib import Path
 
 import discord
@@ -10,6 +10,8 @@ from discord import app_commands
 from dotenv import load_dotenv
 
 from utils import activities, administrator, db, interact, users
+
+log = logging.getLogger(__name__)
 
 # Auth
 current_dir = Path(__file__).resolve().parent
@@ -110,17 +112,17 @@ class nmaClient(discord.Client):
 
         if message.author != self.user or message.content.startswith("--csrun "):
 
+            if isinstance(message.channel, discord.DMChannel):  # DMs are ignored.
+                return
             if message.channel.name == 'verify' and '@' in message.content:  # If the user sent an email in #verify...
                 await users.verify_user(message)  # ...Attempt verification.
                 await message.delete()  # ...Then delete the message.
             elif message.channel.name == 'verify':
                 await message.delete()  # ...Then delete the message.
-            elif isinstance(message.channel, discord.DMChannel):  # If the user is DMing the bot...
-                await interact.send_embed(message, 'dm')  # ...Send a special message.
-            else:  # If the user is neither verifying nor DMing...
+            else:  # If the user is not verifying...
                 msg_cmd = message.content.split(' ')  # ...Split the message.
 
-                if msg_cmd[0] == '--nma':  # Checking for a command.
+                if msg_cmd[0] == '--nma' and len(msg_cmd) > 1:  # Checking for a command.
 
                     role = discord.utils.get(message.author.roles, name="Organizers")
                     if role is not None and role.name == 'Organizers':
@@ -128,11 +130,7 @@ class nmaClient(discord.Client):
                     else:
                         admin = 0
 
-                    if msg_cmd[1] == 'init' and admin == 1:  # Initialize server's pod channels.
-                        await administrator.initialize_server(message.guild)
-                    elif msg_cmd[1] in ['assign', 'unassign', 'merge', 'swap'] and admin == 1:
-                        await administrator.pod_change(message, msg_cmd[1])
-                    elif msg_cmd[1] == 'identify':
+                    if msg_cmd[1] == 'identify' and len(msg_cmd) > 2:
                         id_channels = []
                         if 'lgbtq' in msg_cmd[2]:
                             id_channels += [discord.utils.get(message.guild.channels, name="lgbtq")]
@@ -182,7 +180,7 @@ class nmaClient(discord.Client):
                                         members = f'{members}{member.name}\n'
                         await message.channel.send(
                             embed=interact.send_embed('custom', 'Pod Breakdown', f'**Current Members:**\n{members}'))
-                    elif msg_cmd[1] == 'getposts' and admin == 1:
+                    elif msg_cmd[1] == 'getposts' and admin == 1 and len(msg_cmd) > 2:
                         if '#' in msg_cmd[2]:
                             target_channel = re.sub("[^0-9]", "", msg_cmd[2])
                             target_channel = discord.utils.get(message.guild.channels, id=int(target_channel))
@@ -202,11 +200,10 @@ class nmaClient(discord.Client):
                             df = pd.DataFrame(message_dict)
                             df.to_csv(f'{target_channel.name}-log.csv')
                             await message.channel.send(file=discord.File(f'{target_channel.name}-log.csv'))
-                        except Exception:  # noqa: BLE001
-                           exc_type, _exc_obj, exc_tb = sys.exc_info()
-                           fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                           await message.channel.send(embed=interact.send_embed('custom', "Error!",
-                                                                                f"{message.author}, channel archival failed because:\n{fname, exc_type, exc_tb.tb_lineno}"))
+                        except Exception as exc:
+                            log.exception("Channel archival failed for %s", message.author)
+                            await message.channel.send(embed=interact.send_embed('custom', "Error!",
+                                                                                 f"{message.author}, channel archival failed ({type(exc).__name__}). See the bot logs."))
 
                     elif msg_cmd[1] == 'timefix' and admin == 1:
                         america_role = discord.utils.get(message.guild.roles, name='americas')
@@ -238,11 +235,10 @@ class nmaClient(discord.Client):
                                     await eachMember.add_roles(time_role)
                                     await message.channel.send(embed=interact.send_embed('custom', "Time Check",
                                                                                          f"Checked {userInfo['name']}'s time."))
-                                except Exception:  # noqa: BLE001
-                                    exc_type, _exc_obj, exc_tb = sys.exc_info()
-                                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                                except Exception as exc:
+                                    log.exception("Time check failed for %s", eachMember)
                                     await message.channel.send(embed=interact.send_embed('custom', "Time Check",
-                                                                                         f"{eachMember}, {fname, exc_type, exc_tb.tb_lineno},\n{eachMember.id}"))
+                                                                                         f"{eachMember} ({eachMember.id}) failed: {type(exc).__name__}. See the bot logs."))
 
         # elif message.author == self.user and message.channel.name != 'bot-log' and message.pinned == False:
         #    await asyncio.sleep(60)
@@ -294,6 +290,7 @@ async def on_voice_state_update(member, before, after):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     client.run(discordToken)
     activity = discord.Activity(
         name="Studying brains...", type=discord.ActivityType.watching

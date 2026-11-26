@@ -5,7 +5,7 @@ import sys
 
 import discord
 
-from . import db, interact, users
+from . import auth, db, interact, users
 from .activities import create_activity_invite, get_activity_channel, get_activity_event
 from .paths import data_path
 
@@ -77,7 +77,14 @@ class CleanChannel(discord.ui.Button):
         super().__init__(label='Clean Channel', style=discord.ButtonStyle.grey)
 
     async def callback(self, interaction: discord.Interaction):
-        sys.exit()
+        if not await auth.require_admin(interaction):
+            return
+        # local import: administrator imports this module
+        from .administrator import CommandDropdownView
+
+        async for message in interaction.channel.history(limit=200):
+            await message.delete()
+        await interaction.channel.send(embed=interact.send_embed('master'), view=CommandDropdownView())
 
 
 class AssignUser(discord.ui.Button):
@@ -85,6 +92,8 @@ class AssignUser(discord.ui.Button):
         super().__init__(label='Assign User to Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
+        if not await auth.require_admin(interaction):
+            return
         msg = await grab(
             'Tag the user you want to assign, followed by any pods to which you want to assign them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays',
             interaction)
@@ -110,6 +119,8 @@ class RemoveUser(discord.ui.Button):
         super().__init__(label='Remove User from Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
+        if not await auth.require_admin(interaction):
+            return
         msg = await grab(
             'Tag the user you want to remove, followed by any pods from which you want to remove them. (e.g. @blueneuron.net, shiny corals, windy city, blue rays',
             interaction)
@@ -135,6 +146,8 @@ class RepodUser(discord.ui.Button):
         super().__init__(label='Repod User', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
+        if not await auth.require_admin(interaction):
+            return
         user = await grab('Tag the user you want to repod.', interaction)
         user = re.sub("[^0-9]", "", user.content)
         target_user = await interaction.guild.fetch_member(int(user))
@@ -219,6 +232,8 @@ class MergePods(discord.ui.Button):
         super().__init__(label='Merge Pods', style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
+        if not await auth.require_admin(interaction):
+            return
 
         msg = await grab(
             'Paste the name of the pod you want to merge from followed by the one you want to merge into. (e.g. shiny corals, blues clues)\n**Note that the first pod mentioned will be deleted.**',
@@ -285,6 +300,8 @@ class InitializeServer(discord.ui.Button):
         super().__init__(label='Initialize Server', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
+        if not await auth.require_admin(interaction):
+            return
         await interaction.response.send_message(
             embed=interact.send_embed('custom', 'Administrative Notice', 'Initializing server. This may take a while!'),
             ephemeral=True)
@@ -352,69 +369,64 @@ class GraduateServer(discord.ui.Button):
         super().__init__(label='Graduate Server', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
-        if interaction.user == discord.utils.get(interaction.guild.members,
-                                                 name='blueneuron.net') or interaction.user == discord.utils.get(
-            interaction.guild.members, name='zoltaniam'):
-            await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                              'Graduating server. This may take a while!'),
-                                                    ephemeral=True)
-            log_channel = discord.utils.get(interaction.guild.channels, name='bot-log')
-            await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                             f'User {interaction.user} triggered pod purge.'))
+        if not await auth.require_admin(interaction, super_admin=True):
+            return
+        await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                          'Graduating server. This may take a while!'),
+                                                ephemeral=True)
+        log_channel = discord.utils.get(interaction.guild.channels, name='bot-log')
+        await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                         f'User {interaction.user} triggered pod purge.'))
 
-            alumnus_role = discord.utils.get(interaction.guild.roles, name='Alumnus')
-            ta_alumnus_role = discord.utils.get(interaction.guild.roles, name='TA Alumnus')
+        alumnus_role = discord.utils.get(interaction.guild.roles, name='Alumnus')
+        ta_alumnus_role = discord.utils.get(interaction.guild.roles, name='TA Alumnus')
 
-            student_role = discord.utils.get(interaction.guild.roles, name='Approved User')
-            ta_role = discord.utils.get(interaction.guild.roles, name='Teaching Assistant')
-            lead_ta_role = discord.utils.get(interaction.guild.roles, name='Lead TA')
-            project_ta_role = discord.utils.get(interaction.guild.roles, name='Project TA')
-            grad_roles = [student_role, ta_role, lead_ta_role, project_ta_role]
-            ta_roles = [ta_role, lead_ta_role, project_ta_role]
+        student_role = discord.utils.get(interaction.guild.roles, name='Approved User')
+        ta_role = discord.utils.get(interaction.guild.roles, name='Teaching Assistant')
+        lead_ta_role = discord.utils.get(interaction.guild.roles, name='Lead TA')
+        project_ta_role = discord.utils.get(interaction.guild.roles, name='Project TA')
+        grad_roles = [student_role, ta_role, lead_ta_role, project_ta_role]
+        ta_roles = [ta_role, lead_ta_role, project_ta_role]
 
-            channel_types = [interaction.guild.text_channels, interaction.guild.forums,
-                             interaction.guild.voice_channels, interaction.guild.categories]
+        channel_types = [interaction.guild.text_channels, interaction.guild.forums,
+                         interaction.guild.voice_channels, interaction.guild.categories]
 
-            for eachType in channel_types:
-                for eachObj in eachType:
-                    if eachObj.type != discord.ChannelType.category:
-                        if eachObj.category.name.lower() not in ['observer track', 'alumni', 'administrative',
-                                                                 'teaching assistants', 'content help',
-                                                                 'projects', 'information', 'lobby',
-                                                                 'professional development', 'social', 'contest',
-                                                                 'diversity', 'python precourse', 'earth expo']:
-                            if eachObj.type != discord.ChannelType.forum:
-                                for eachMember in eachObj.members:
-                                    if alumnus_role not in eachMember.roles:
-                                        await eachMember.add_roles(alumnus_role)
+        for eachType in channel_types:
+            for eachObj in eachType:
+                if eachObj.type != discord.ChannelType.category:
+                    if eachObj.category.name.lower() not in ['observer track', 'alumni', 'administrative',
+                                                             'teaching assistants', 'content help',
+                                                             'projects', 'information', 'lobby',
+                                                             'professional development', 'social', 'contest',
+                                                             'diversity', 'python precourse', 'earth expo']:
+                        if eachObj.type != discord.ChannelType.forum:
+                            for eachMember in eachObj.members:
+                                if alumnus_role not in eachMember.roles:
+                                    await eachMember.add_roles(alumnus_role)
+                                    await log_channel.send(
+                                        embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                  f'Assigned alumnus role to {eachMember}.'))
+                                if any(role in eachMember.roles for role in ta_roles):
+                                    await eachMember.add_roles(ta_alumnus_role)
+                                    await log_channel.send(
+                                        embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                  f'Assigned TA alumnus role to {eachMember}.'))
+                                for eachRole in grad_roles:
+                                    if eachRole in eachMember.roles:
+                                        await eachMember.remove_roles(eachRole)
                                         await log_channel.send(
                                             embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                      f'Assigned alumnus role to {eachMember}.'))
-                                    if any(role in eachMember.roles for role in ta_roles):
-                                        await eachMember.add_roles(ta_alumnus_role)
-                                        await log_channel.send(
-                                            embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                      f'Assigned TA alumnus role to {eachMember}.'))
-                                    for eachRole in grad_roles:
-                                        if eachRole in eachMember.roles:
-                                            await eachMember.remove_roles(eachRole)
-                                            await log_channel.send(
-                                                embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                          f'Removed {eachRole} role from {eachMember}.'))
+                                                                      f'Removed {eachRole} role from {eachMember}.'))
 
-                            await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                             f'Deleted pod {eachObj.name} from megapod {eachObj.category.name}.'))
-                            await eachObj.delete()
-                    elif eachObj.type == discord.ChannelType.category and (len(eachObj.channels) == 0):
                         await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                         f'Deleted megapod {eachObj.name}.'))
+                                                                         f'Deleted pod {eachObj.name} from megapod {eachObj.category.name}.'))
                         await eachObj.delete()
-            await interaction.channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                     'Deleted all pod channels and turned everyone into alumni.'))
-        else:
-            await interaction.response.send_message(embed=interact.send_embed('custom', 'Administrative Notice',
-                                                                              'For security reasons, only Kevin or Konstantine can trigger a pod purge.'),
-                                                    ephemeral=True)
+                elif eachObj.type == discord.ChannelType.category and (len(eachObj.channels) == 0):
+                    await log_channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                     f'Deleted megapod {eachObj.name}.'))
+                    await eachObj.delete()
+        await interaction.channel.send(embed=interact.send_embed('custom', 'Administrative Notice',
+                                                                 'Deleted all pod channels and turned everyone into alumni.'))
 
 
 class ForceDB(discord.ui.Button):
@@ -422,6 +434,8 @@ class ForceDB(discord.ui.Button):
         super().__init__(label='Force Database Update', style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
+        if not await auth.require_admin(interaction):
+            return
         await db.poll_db()
         # with open('pods.json', 'r') as f:
         #     master_db = json.load(f)

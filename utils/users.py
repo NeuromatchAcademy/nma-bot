@@ -1,9 +1,12 @@
 import json
+import logging
 
 import discord
 
 from . import interact
 from .paths import data_path
+
+log = logging.getLogger(__name__)
 
 #TODO: create loader funcs
 # Load portal data.
@@ -43,7 +46,7 @@ async def verify_user(message):
         target_email = message.content.lower()
         user = message.author
 
-        print(f"{user} attempting to verify with {message.content}.")
+        log.info("%s attempting to verify with %s", user, message.content)
 
         nested_dict = interact.guild_pick(message)
         
@@ -52,6 +55,7 @@ async def verify_user(message):
             raise ValueError("User information not found for this course.")
 
         userInfo = nested_dict['users'][target_email]
+        # bot-log is visible to staff only, so the full details are useful there.
         await logChan.send(embed=interact.send_embed('custom', "Verification DEBUG",
                                                      f"Attempting to verify {message.author} with info {userInfo}."))
 
@@ -99,12 +103,12 @@ async def verify_user(message):
         with open(data_path('discord-ids.json'), 'w') as f:  # noqa: ASYNC230
             json.dump(id_db, f, ensure_ascii=False, indent=4)
 
-        print(f"Verified user {user} with email {target_email}.")
+        log.info("Verified user %s with email %s", user, target_email)
         await logChan.send(embed=interact.send_embed('custom',"Verified User",f"{message.author} verified for megapod(s) {userInfo['megapods']} and pod(s) {userInfo['pods']}."))
     # ValueError for missing user information
     except ValueError as ve:
-        print(f"Verification failed for {message.author} with email {message.content}: {ve}")
+        log.warning("Verification failed for %s with email %s: %s", message.author, message.content, ve)
         await logChan.send(embed=interact.send_embed('custom', "Failed Verification", f"{message.author} tried to verify with email {message.content}. Reason: {ve}"))
-    except Exception as error:  # noqa: BLE001
-        print(f"Verification failed for {message.author} with email {message.content}")
+    except Exception as error:
+        log.exception("Verification failed for %s with email %s", message.author, message.content)
         await logChan.send(embed=interact.send_embed('custom',"Failed Verification",f"{message.author} tried to verify with email {message.content}. Ran into this issue: {error}"))
