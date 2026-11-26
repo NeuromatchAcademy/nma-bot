@@ -7,6 +7,7 @@ import discord
 
 from . import auth, db, interact, users
 from .activities import create_activity_invite, get_activity_channel, get_activity_event
+from .constants import PROTECTED_CATEGORIES
 from .paths import data_path
 
 # Load portal data.
@@ -166,11 +167,7 @@ class RepodUser(discord.ui.Button):
                     pass
                 elif not hasattr(eachChannel.category, 'name'):
                     continue
-                elif eachChannel.category.name.lower() not in ['observer track', 'alumni', 'administrative',
-                                                               'teaching assistants', 'content help',
-                                                               'projects', 'information', 'lobby',
-                                                               'professional development', 'social', 'contest',
-                                                               'diversity', 'python precourse', 'earth expo']:
+                elif eachChannel.category.name.lower() not in PROTECTED_CATEGORIES:
                     if eachChannel.type == discord.ChannelType.forum:
                         if target_user in eachChannel.overwrites:
                             await eachChannel.set_permissions(target_user, view_channel=False, send_messages=False)
@@ -394,11 +391,7 @@ class GraduateServer(discord.ui.Button):
         for eachType in channel_types:
             for eachObj in eachType:
                 if eachObj.type != discord.ChannelType.category:
-                    if eachObj.category.name.lower() not in ['observer track', 'alumni', 'administrative',
-                                                             'teaching assistants', 'content help',
-                                                             'projects', 'information', 'lobby',
-                                                             'professional development', 'social', 'contest',
-                                                             'diversity', 'python precourse', 'earth expo']:
+                    if eachObj.category.name.lower() not in PROTECTED_CATEGORIES:
                         if eachObj.type != discord.ChannelType.forum:
                             for eachMember in eachObj.members:
                                 if alumnus_role not in eachMember.roles:

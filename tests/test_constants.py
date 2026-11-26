@@ -1,6 +1,6 @@
 import json
 
-from tests.conftest import ROOT, load_bot
+from tests.conftest import ROOT
 from utils import buttons
 from utils.constants import activity_index, embed_dict
 
@@ -29,8 +29,8 @@ def test_game_dropdown_options_exist_in_activity_index():
 
 
 def test_slash_command_choices_exist_in_activity_index(snapshot):
-    bot = load_bot()
-    choices = bot.start_activity.parameters[0].choices
+    from cogs.activities import Activities
+    choices = Activities.start_activity.parameters[0].choices
     snapshot("start_activity_choices", [[c.name, c.value] for c in choices])
     assert all(c.value in activity_index for c in choices)
 

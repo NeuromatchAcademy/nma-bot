@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import json
 from types import SimpleNamespace
@@ -18,7 +19,7 @@ from tests.fakes import (
     FakeRole,
     calls_summary,
 )
-from utils import users
+from utils import activities, users
 
 COURSE = "Computational Neuroscience"
 ROLE_NAMES = ["Organizers", "Staffers", "Robots", "Lead TA", "Teaching Assistant", "Approved User",
@@ -229,6 +230,10 @@ async def test_timefix_unknown_member_reports_and_continues(w):
 
 # ------------------------------------------------------------------ slash command
 
+def cog(bot):
+    return bot.client.get_cog("Activities")
+
+
 def choice(value="Scrabble"):
     return app_commands.Choice(name="x", value=value)
 
@@ -245,7 +250,7 @@ async def start(w, category="alpha", create_cat=True, megapod_games=False):
 
 async def test_start_activity_outside_megapod(w, bot):
     _, _, inter, _ = await start(w, category="Social")
-    await bot.start_activity.callback(inter, choice())
+    await cog(bot).start_activity.callback(cog(bot), inter, choice())
     assert inter.response.calls == [("send_message", ("You can only use this in megapod channels, admin!",),
                                      {"ephemeral": True})]
 
@@ -254,9 +259,9 @@ async def test_start_activity_creates_games_channel(w, bot, monkeypatch):
     async def fake_invite(game, channel_id):
         return "inv"
 
-    monkeypatch.setattr(bot.activities, "create_activity_invite", fake_invite)
+    monkeypatch.setattr(activities, "create_activity_invite", fake_invite)
     cat, gen, inter, _ = await start(w)
-    await bot.start_activity.callback(inter, choice())
+    await cog(bot).start_activity.callback(cog(bot), inter, choice())
     games = discord.utils.get(w.guild.voice_channels, name="megapod-games")
     assert games.category is cat
     assert calls_summary(games) == [
@@ -270,9 +275,9 @@ async def test_start_activity_reuses_games_channel(w, bot, monkeypatch):
     async def fake_invite(game, channel_id):
         return "inv"
 
-    monkeypatch.setattr(bot.activities, "create_activity_invite", fake_invite)
+    monkeypatch.setattr(activities, "create_activity_invite", fake_invite)
     _, _gen, inter, games = await start(w, megapod_games=True)
-    await bot.start_activity.callback(inter, choice())
+    await cog(bot).start_activity.callback(cog(bot), inter, choice())
     assert games.calls == [] and w.guild.calls == []
 
 
@@ -294,12 +299,12 @@ async def test_voice_state_update_schedules_deletion(w, bot, monkeypatch, cat, n
     tasks = []
     monkeypatch.setattr(bot.client, "loop", SimpleNamespace(create_task=lambda c: (tasks.append(c), c.close())), raising=False)
     before, _vc = voice_event(w, cat, name, members)
-    await bot.on_voice_state_update(w.plain, before, SimpleNamespace(channel=None))
+    await cog(bot).on_voice_state_update(w.plain, before, SimpleNamespace(channel=None))
     assert bool(tasks) is scheduled
 
 
 async def test_voice_state_update_without_before_channel(w, bot):
-    await bot.on_voice_state_update(w.plain, SimpleNamespace(channel=None), SimpleNamespace(channel=None))
+    await cog(bot).on_voice_state_update(w.plain, SimpleNamespace(channel=None), SimpleNamespace(channel=None))
 
 
 async def test_delete_channel_after_deletes_empty(w, bot, monkeypatch):
@@ -308,10 +313,10 @@ async def test_delete_channel_after_deletes_empty(w, bot, monkeypatch):
     async def fake_sleep(s):
         slept.append(s)
 
-    monkeypatch.setattr(bot.asyncio, "sleep", fake_sleep)
+    monkeypatch.setattr(asyncio, "sleep", fake_sleep)
     log = w.guild.add_text_channel("bot-log")
     _, vc = voice_event(w)
-    await bot.delete_channel_after(vc)
+    await cog(bot).delete_channel_after(vc)
     assert slept == [300]
     assert [e["description"] for e in embeds(log)] == [
         "Voice Channel Study is empty, deleting after 5 minutes...", "Deleting channel Study"]
@@ -322,10 +327,10 @@ async def test_delete_channel_after_skips_when_repopulated(w, bot, monkeypatch):
     async def fake_sleep(s):
         vc.members.append(w.plain)
 
-    monkeypatch.setattr(bot.asyncio, "sleep", fake_sleep)
+    monkeypatch.setattr(asyncio, "sleep", fake_sleep)
     log = w.guild.add_text_channel("bot-log")
     _, vc = voice_event(w)
-    await bot.delete_channel_after(vc)
+    await cog(bot).delete_channel_after(vc)
     assert vc.calls == [] and len(embeds(log)) == 1
 
 
@@ -333,10 +338,10 @@ async def test_delete_channel_after_user_deleted(w, bot, monkeypatch, capsys):
     async def fake_sleep(s):
         w.guild.channels.remove(vc)
 
-    monkeypatch.setattr(bot.asyncio, "sleep", fake_sleep)
+    monkeypatch.setattr(asyncio, "sleep", fake_sleep)
     w.guild.add_text_channel("bot-log")
     _, vc = voice_event(w)
-    await bot.delete_channel_after(vc)
+    await cog(bot).delete_channel_after(vc)
     assert vc.calls == [] and "User deleted channel Study" in capsys.readouterr().out
 
 
@@ -408,3 +413,7 @@ async def test_bot_own_message_not_verified(w, bot, monkeypatch):
     monkeypatch.setattr(bot.client._connection, "user", me, raising=False)
     msg = await w.send("me@x.org", author=me, channel=verify)
     assert msg.calls == []
+
+
+def test_start_activity_registered_on_tree(w, bot):
+    assert bot.tree.get_command("start_activity") is not None

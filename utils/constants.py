@@ -1,3 +1,10 @@
+# Categories that are not megapods: pod/megapod commands and the purge leave their channels alone.
+PROTECTED_CATEGORIES = (
+    'observer track', 'alumni', 'administrative', 'teaching assistants', 'content help',
+    'projects', 'information', 'lobby', 'professional development', 'social', 'contest',
+    'diversity', 'python precourse', 'earth expo',
+)
+
 activity_index = {
     'Watch Together': {
         'max': 0,
