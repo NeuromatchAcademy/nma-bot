@@ -41,3 +41,16 @@ def send_embed(mode, title='None', message='None'):
 
     embed.set_author(name="Neuromatch Bot", url="https://neuromatch.io/", icon_url="https://i.imgur.com/CRoluuv.png")
     return embed
+
+
+async def reset_channel(channel, *, embed, view=None, pin=True, limit=200):
+    """Delete the last `limit` messages in `channel`, then post `embed` (with `view`, pinned if `pin`)."""
+    async for message in channel.history(limit=limit):
+        await message.delete()
+    kwargs = {"embed": embed}
+    if view is not None:
+        kwargs["view"] = view
+    msg = await channel.send(**kwargs)
+    if pin:
+        await msg.pin()
+    return msg

@@ -83,9 +83,8 @@ class CleanChannel(discord.ui.Button):
         # local import: administrator imports this module
         from .administrator import CommandDropdownView
 
-        async for message in interaction.channel.history(limit=200):
-            await message.delete()
-        await interaction.channel.send(embed=interact.send_embed('master'), view=CommandDropdownView())
+        await interact.reset_channel(interaction.channel, embed=interact.send_embed('master'),
+                                     view=CommandDropdownView(), pin=False)
 
 
 class AssignUser(discord.ui.Button):

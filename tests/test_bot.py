@@ -357,7 +357,8 @@ async def test_on_ready(w, bot, monkeypatch, snapshot, capsys):
     chans = {n: w.guild.add_text_channel(n) for n in ("command-center", "verify", "activity-center", "bot-log")}
     for n in ("command-center", "verify", "activity-center"):
         chans[n].history_messages = [FakeMessage("old1"), FakeMessage("old2")]
-    await bot.client.on_ready()
+    ready = bot.client.get_cog("CommandCenter")
+    await ready.on_ready()
     assert synced == [1]
     snapshot("on_ready", {n: calls_summary(c) for n, c in chans.items()})
     for n in ("command-center", "verify", "activity-center"):
@@ -411,4 +412,24 @@ def test_start_activity_registered_on_tree(w, bot):
 
 
 async def test_default_extensions(bot):
-    assert bot.NmaBot.EXTENSIONS == ("cogs.verify", "cogs.admin_tools", "cogs.activities", "cogs.db_sync")
+    assert bot.NmaBot.EXTENSIONS == ("cogs.verify", "cogs.admin_tools", "cogs.activities", "cogs.db_sync",
+                                     "cogs.command_center")
+
+
+async def test_on_ready_only_runs_setup_once(w, bot, monkeypatch):
+    synced = []
+
+    async def fake_sync():
+        synced.append(1)
+
+    monkeypatch.setattr(bot.tree, "sync", fake_sync)
+    monkeypatch.setattr(type(bot.client), "guilds", property(lambda self: [w.guild]))
+    monkeypatch.setattr(bot.client._connection, "user", SimpleNamespace(name="nmabot", id=5), raising=False)
+    log = w.guild.add_text_channel("bot-log")
+    cc = w.guild.add_text_channel("command-center")
+    ready = bot.client.get_cog("CommandCenter")
+    ready._ready_once = False  # the cog instance is shared across tests
+    await ready.on_ready()
+    await ready.on_ready()  # simulated reconnect
+    assert synced == [1]
+    assert len(log.sent) == 1 and len(cc.sent) == 1
