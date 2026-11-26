@@ -146,6 +146,12 @@ class FakeChannel(_Fake):
         self.threads.append(t)
         return t
 
+    async def purge(self, limit=None):
+        deleted = list(self.history_messages)
+        for m in deleted:
+            await m.delete()
+        return deleted
+
     async def history(self, limit=None):
         for m in list(self.history_messages):
             yield m
@@ -311,6 +317,14 @@ class _Response:
         self.calls.append(("edit_message", a, kw))
 
 
+class _Followup:
+    def __init__(self):
+        self.calls = []
+
+    async def send(self, *a, **kw):
+        self.calls.append(("send", a, kw))
+
+
 class FakeClient:
     def __init__(self, interaction=None):
         self.queue = []
@@ -331,6 +345,7 @@ class FakeInteraction:
         self.guild = guild
         self.channel = channel
         self.response = _Response()
+        self.followup = _Followup()
         self.client = FakeClient()
         self.client.user = None
         # grab() filters on author/channel; queued messages default to this user/channel

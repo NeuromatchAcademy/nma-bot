@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import json
+import logging
 from types import SimpleNamespace
 
 import discord
@@ -264,6 +265,31 @@ async def test_start_activity_outside_megapod(w, bot):
                                      {"ephemeral": True})]
 
 
+async def test_start_activity_without_category(w, bot):
+    inter = FakeInteraction(user=w.admin, guild=w.guild, channel=w.guild.add_text_channel("loose", None))
+    await cog(bot).start_activity.callback(cog(bot), inter, choice())
+    assert inter.response.calls[0][1][0].startswith("You can only use this in megapod channels")
+
+
+async def test_start_activity_missing_general_channel(w, bot):
+    cat = w.guild.add_category("alpha")
+    here = w.guild.add_text_channel("here", cat)
+    inter = FakeInteraction(user=w.admin, guild=w.guild, channel=here)
+    await cog(bot).start_activity.callback(cog(bot), inter, choice())
+    assert "alpha-general" in inter.response.calls[0][1][0]
+
+
+async def test_start_activity_invite_failure_posts_nothing(w, bot, monkeypatch):
+    async def failing_invite(game, channel_id):
+        raise activities.InviteError("HTTP 403")
+
+    monkeypatch.setattr(activities, "create_activity_invite", failing_invite)
+    _cat, gen, inter, _ = await start(w)
+    await cog(bot).start_activity.callback(cog(bot), inter, choice())
+    assert gen.calls == []
+    assert "would not create" in inter.followup.calls[0][1][0]
+
+
 async def test_start_activity_creates_games_channel(w, bot, monkeypatch):
     async def fake_invite(game, channel_id):
         return "inv"
@@ -306,10 +332,48 @@ def voice_event(w, cat_name="social", name="Study", members=()):
 ])
 async def test_voice_state_update_schedules_deletion(w, bot, monkeypatch, cat, name, members, scheduled):
     tasks = []
-    monkeypatch.setattr(bot.client, "loop", SimpleNamespace(create_task=lambda c: (tasks.append(c), c.close())), raising=False)
+    def create_task(coro):
+        tasks.append(coro)
+        coro.close()
+        return SimpleNamespace(add_done_callback=lambda cb: None, cancel=lambda: None)
+
+    monkeypatch.setattr(bot.client, "loop", SimpleNamespace(create_task=create_task), raising=False)
     before, _vc = voice_event(w, cat, name, members)
     await cog(bot).on_voice_state_update(w.plain, before, SimpleNamespace(channel=None))
     assert bool(tasks) is scheduled
+
+
+async def test_voice_state_update_dedupes_pending_deletions(w, bot, monkeypatch):
+    tasks = []
+
+    def create_task(coro):
+        tasks.append(coro)
+        coro.close()
+        return SimpleNamespace(add_done_callback=lambda cb: None, cancel=lambda: None)
+
+    monkeypatch.setattr(bot.client, "loop", SimpleNamespace(create_task=create_task), raising=False)
+    before, _vc = voice_event(w)
+    for _ in range(3):
+        await cog(bot).on_voice_state_update(w.plain, before, SimpleNamespace(channel=None))
+    assert len(tasks) == 1
+
+
+async def test_voice_state_update_channel_without_category(w, bot):
+    vc = w.guild.add_voice_channel("loose", None)
+    await cog(bot).on_voice_state_update(w.plain, SimpleNamespace(channel=vc), SimpleNamespace(channel=None))
+
+
+async def test_delete_channel_after_tolerates_missing_log_channel_and_already_deleted(w, bot, monkeypatch):
+    async def fake_sleep(s):
+        pass
+
+    async def gone(**kw):
+        raise discord.NotFound(SimpleNamespace(status=404, reason="x"), "gone")
+
+    monkeypatch.setattr(asyncio, "sleep", fake_sleep)
+    _, vc = voice_event(w)
+    monkeypatch.setattr(vc, "delete", gone)
+    await cog(bot).delete_channel_after(vc)  # no bot-log channel, delete raises NotFound
 
 
 async def test_voice_state_update_without_before_channel(w, bot):
@@ -343,7 +407,8 @@ async def test_delete_channel_after_skips_when_repopulated(w, bot, monkeypatch):
     assert vc.calls == [] and len(embeds(log)) == 1
 
 
-async def test_delete_channel_after_user_deleted(w, bot, monkeypatch, capsys):
+async def test_delete_channel_after_user_deleted(w, bot, monkeypatch, caplog):
+    caplog.set_level(logging.INFO)
     async def fake_sleep(s):
         w.guild.channels.remove(vc)
 
@@ -351,30 +416,25 @@ async def test_delete_channel_after_user_deleted(w, bot, monkeypatch, capsys):
     w.guild.add_text_channel("bot-log")
     _, vc = voice_event(w)
     await cog(bot).delete_channel_after(vc)
-    assert vc.calls == [] and "User deleted channel Study" in capsys.readouterr().out
+    assert vc.calls == [] and "User deleted channel Study" in caplog.text
 
 
-async def test_on_ready(w, bot, monkeypatch, snapshot, capsys):
-    synced = []
-
-    async def fake_sync():
-        synced.append(1)
-
-    monkeypatch.setattr(bot.tree, "sync", fake_sync)
+async def test_on_ready(w, bot, monkeypatch, snapshot, caplog):
+    caplog.set_level("INFO")
     monkeypatch.setattr(type(bot.client), "guilds", property(lambda self: [w.guild]))
     monkeypatch.setattr(bot.client._connection, "user", SimpleNamespace(name="nmabot", id=5), raising=False)
     chans = {n: w.guild.add_text_channel(n) for n in ("command-center", "verify", "activity-center", "bot-log")}
     for n in ("command-center", "verify", "activity-center"):
         chans[n].history_messages = [FakeMessage("old1"), FakeMessage("old2")]
     ready = bot.client.get_cog("CommandCenter")
+    ready._ready_once = False
     await ready.on_ready()
-    assert synced == [1]
     snapshot("on_ready", {n: calls_summary(c) for n, c in chans.items()})
     for n in ("command-center", "verify", "activity-center"):
         assert [calls_summary(m) for m in chans[n].history_messages] == [[["delete", [], {}]]] * 2
         assert calls_summary(chans[n].sent[0]) == [["pin", [], {}]]
     assert chans["bot-log"].sent[0].calls == []  # restart notice is not pinned
-    assert "Logged in as\nnmabot\n5" in capsys.readouterr().out
+    assert "Logged in as nmabot (5)" in caplog.text
 
 
 def test_bot_is_commands_bot_with_presence(bot):
@@ -390,10 +450,14 @@ async def test_setup_hook_loads_extensions(bot, monkeypatch):
     async def fake_load(name):
         loaded.append(name)
 
+    async def fake_sync():
+        loaded.append("sync")
+
     monkeypatch.setattr(bot.client, "load_extension", fake_load)
+    monkeypatch.setattr(bot.tree, "sync", fake_sync)
     monkeypatch.setattr(type(bot.client), "EXTENSIONS", ("cogs.a", "cogs.b"))
     await bot.client.setup_hook()
-    assert loaded == ["cogs.a", "cogs.b"]
+    assert loaded == ["cogs.a", "cogs.b", "sync"]
 
 
 async def test_verify_channel_never_runs_commands(w, monkeypatch):
@@ -426,12 +490,6 @@ async def test_default_extensions(bot):
 
 
 async def test_on_ready_only_runs_setup_once(w, bot, monkeypatch):
-    synced = []
-
-    async def fake_sync():
-        synced.append(1)
-
-    monkeypatch.setattr(bot.tree, "sync", fake_sync)
     monkeypatch.setattr(type(bot.client), "guilds", property(lambda self: [w.guild]))
     monkeypatch.setattr(bot.client._connection, "user", SimpleNamespace(name="nmabot", id=5), raising=False)
     log = w.guild.add_text_channel("bot-log")
@@ -440,5 +498,15 @@ async def test_on_ready_only_runs_setup_once(w, bot, monkeypatch):
     ready._ready_once = False  # the cog instance is shared across tests
     await ready.on_ready()
     await ready.on_ready()  # simulated reconnect
-    assert synced == [1]
     assert len(log.sent) == 1 and len(cc.sent) == 1
+
+
+async def test_activities_cog_unload_cancels_pending_deletions(bot):
+    cancelled = []
+    activities_cog = cog(bot)
+    activities_cog._pending[1] = SimpleNamespace(cancel=lambda: cancelled.append(1))
+    try:
+        await activities_cog.cog_unload()
+    finally:
+        activities_cog._pending.clear()
+    assert cancelled == [1]

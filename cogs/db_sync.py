@@ -1,6 +1,10 @@
+import logging
+
 from discord.ext import commands
 
 from utils import db
+
+log = logging.getLogger(__name__)
 
 
 class DbSync(commands.Cog):
@@ -10,7 +14,7 @@ class DbSync(commands.Cog):
         self.bot = bot
 
     async def _wait_for_bot(self):
-        print('db sync waiting for bot...')
+        log.debug('db sync waiting for bot...')
         await self.bot.wait_until_ready()
 
     async def cog_load(self):

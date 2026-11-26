@@ -1,28 +1,29 @@
 import json
+import re
 
 import discord
 
 from .constants import embed_dict
 from .paths import data_path
 
+# (regex searched in the guild name, course name in pods.json); first match wins
+GUILD_COURSES = (
+    (re.compile(r'Climate'), "Computational Tools for Climate Science"),
+    (re.compile(r'(?<![A-Za-z])CN(?![A-Za-z])'), "Computational Neuroscience"),
+    (re.compile(r'(?<![A-Za-z])DL(?![A-Za-z])'), "Deep Learning"),
+    (re.compile(r'NeuroAI'), "NeuroAI"),
+)
+
 
 def guild_pick(obj):
-    # TODO: set this up in config
-    # Is this being used?
-
+    """The pod data for the course this guild belongs to, or 'Invalid Course'."""
     with open(data_path('pods.json')) as f:
         db = json.load(f)
 
-    if 'Climate' in obj.guild.name:
-        return db["Computational Tools for Climate Science"]
-    elif 'CN' in obj.guild.name:
-        return db["Computational Neuroscience"]
-    elif 'DL' in obj.guild.name:
-        return db["Deep Learning"]
-    elif 'NeuroAI' in obj.guild.name:
-        return db["NeuroAI"]
-    else:
-        return 'Invalid Course'
+    for pattern, course in GUILD_COURSES:
+        if pattern.search(obj.guild.name):
+            return db[course]
+    return 'Invalid Course'
 
 
 def send_embed(mode, title='None', message='None'):
@@ -45,8 +46,7 @@ def send_embed(mode, title='None', message='None'):
 
 async def reset_channel(channel, *, embed, view=None, pin=True, limit=200):
     """Delete the last `limit` messages in `channel`, then post `embed` (with `view`, pinned if `pin`)."""
-    async for message in channel.history(limit=limit):
-        await message.delete()
+    await channel.purge(limit=limit)  # bulk-deletes where Discord allows it
     kwargs = {"embed": embed}
     if view is not None:
         kwargs["view"] = view

@@ -16,7 +16,7 @@ MENUS = {
 
 
 class CommandCenter(commands.Cog):
-    """Syncs slash commands and (re)posts the pinned menus when the bot starts."""
+    """(Re)posts the pinned menus when the bot starts."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -29,7 +29,6 @@ class CommandCenter(commands.Cog):
             return
         self._ready_once = True
 
-        await self.bot.tree.sync()
         for guild in self.bot.guilds:
             for channel in guild.channels:
                 if channel.name in MENUS:
@@ -40,11 +39,7 @@ class CommandCenter(commands.Cog):
                 elif channel.name == 'bot-log':
                     await channel.send(embed=interact.send_embed('restart'))
 
-        print("\n==============")
-        print("Logged in as")
-        print(self.bot.user.name)
-        print(self.bot.user.id)
-        print("==============")
+        log.info("Logged in as %s (%s)", self.bot.user.name, self.bot.user.id)
 
 
 async def setup(bot: commands.Bot):

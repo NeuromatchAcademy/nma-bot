@@ -26,15 +26,14 @@ class NmaBot(commands.Bot):
     async def setup_hook(self):
         for extension in self.EXTENSIONS:
             await self.load_extension(extension)
+        await self.tree.sync()  # once per start, not on every gateway reconnect
 
 
 description = "The official NMA Discord Bot."
 intents = discord.Intents(
     messages=True,
     guilds=True,
-    typing=True,
     members=True,
-    presences=True,
     reactions=True,
     message_content=True,
     voice_states=True
@@ -46,4 +45,7 @@ tree = client.tree
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-    client.run(discordToken)
+    if not discordToken:
+        raise SystemExit("DISCORD_TOKEN is not set (put it in .env next to nma-bot.py)")
+    # log_handler=None: logging is configured above, so discord.py doesn't add a second handler
+    client.run(discordToken, log_handler=None)

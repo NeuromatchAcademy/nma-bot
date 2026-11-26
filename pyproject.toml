@@ -1,11 +1,10 @@
 [project]
 name = "nma-bot"
 version = "0.1.0"
-requires-python = "==3.13.18"
+requires-python = ">=3.13"
 dependencies = [
     "aiohttp>=3.14.5",
     "discord-py>=2.7.1",
-    "pandas>=3.1.1",
     "psycopg2-binary>=2.9.13",
     "python-dotenv>=1.2.4",
 ]
