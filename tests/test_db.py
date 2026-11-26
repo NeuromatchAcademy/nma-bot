@@ -177,3 +177,22 @@ def test_connect_to_db_uses_env_and_closes(monkeypatch):
         assert c is conn and not conn.closed
     assert conn.closed
     assert seen == {"host": "h", "port": "5432", "dbname": "d", "user": "u", "password": "p"}
+
+
+def test_query_is_ordered_so_first_seen_role_is_deterministic():
+    conn = FakeConnection([])
+    db.get_pod_data_from_db(conn)
+    assert "ORDER BY c.name, mp.name, cp.name, u.email" in conn.queries[0]
+
+
+def test_describe_changes_summarises_without_emails():
+    old = db.get_pod_data_from_db(FakeConnection([row()]))
+    new = db.get_pod_data_from_db(FakeConnection([
+        row(), row(student=("Zed", "Two", "zed@x.org")),
+        row(pod="Green Owls", student=("Sam", "Student", "Sam@X.org"))]))
+    text = db.describe_changes(old, new)
+    assert "1 users added" in text and "4 pods" in text and "pod structure changed" in text
+    assert "@" not in text
+    assert db.describe_changes(old, old) == "no differences found"
+    assert "course added" in db.describe_changes({}, old)
+    assert "course removed" in db.describe_changes(old, {})
