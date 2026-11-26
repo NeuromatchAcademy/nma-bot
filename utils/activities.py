@@ -1,10 +1,12 @@
 import os
+from datetime import timedelta
+from pathlib import Path
+
 import aiohttp
 import discord
-from .constants import activity_index
-from datetime import timedelta
 from dotenv import load_dotenv
-from pathlib import Path
+
+from .constants import activity_index
 
 # Auth
 current_dir = Path(__file__).resolve().parent
@@ -29,15 +31,14 @@ async def create_activity_invite(activity, channel_id: int):
 
     url = f'https://discord.com/api/v9/channels/{channel_id}/invites'
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers=headers, json=body) as resp:
-            if resp.status == 200:
-                invite = await resp.json()
-                print(f'Invite created: https://discord.gg/{invite["code"]}')
-                return invite["code"]
-            else:
-                e = await resp.json()
-                print(f'Error: {e}')
+    async with aiohttp.ClientSession() as session, session.post(url, headers=headers, json=body) as resp:
+        if resp.status == 200:
+            invite = await resp.json()
+            print(f'Invite created: https://discord.gg/{invite["code"]}')
+            return invite["code"]
+        else:
+            e = await resp.json()
+            print(f'Error: {e}')
 
 
 async def get_activity_channel(

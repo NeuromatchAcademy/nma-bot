@@ -1,0 +1,39 @@
+{
+  "channel": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 16746496,
+          "description": "Assigned sam to ['Shiny Corals', 'windy city'].",
+          "title": "Administrative Notice"
+        }
+      }
+    ]
+  ],
+  "shiny": [
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "send_messages": true,
+        "view_channel": true
+      }
+    ]
+  ],
+  "windy": [
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "send_messages": true,
+        "view_channel": true
+      }
+    ]
+  ]
+}

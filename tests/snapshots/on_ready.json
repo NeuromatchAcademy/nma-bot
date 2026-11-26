@@ -1,0 +1,56 @@
+{
+  "activity-center": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "Click on the dropdown below to select a type of activity you would like to join or start!",
+          "title": "Activity Center"
+        },
+        "view": "View:SocialDropdownView"
+      }
+    ]
+  ],
+  "bot-log": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 16746496,
+          "description": "The bot has started and is now logged in.",
+          "title": "Administrative Notice"
+        }
+      }
+    ]
+  ],
+  "command-center": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "Click on the dropdown below to select a type of command you would like to issue. Buttons will appear that will allow you to go from there.",
+          "title": "Administrative Interface"
+        },
+        "view": "View:CommandDropdownView"
+      }
+    ]
+  ],
+  "verify": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "To unlock access to all channels, please copy and paste the email address with which you log into the portal into this chat.",
+          "title": "Welcome to the course!"
+        }
+      }
+    ]
+  ]
+}

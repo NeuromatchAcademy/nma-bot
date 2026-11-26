@@ -1,0 +1,163 @@
+{
+  "CN": {
+    "structure": {
+      "Alpha": [
+        "Blue Rays",
+        "Green Owls"
+      ],
+      "Beta": [
+        "Red Fox"
+      ]
+    },
+    "users": {
+      "amy@x.org": {
+        "megapods": [
+          "Alpha"
+        ],
+        "name": "Amy Three",
+        "pods": [
+          "Green Owls"
+        ],
+        "role": "student",
+        "timeslot": "3"
+      },
+      "bo@x.org": {
+        "megapods": [
+          "Beta"
+        ],
+        "name": "Bo Four",
+        "pods": [
+          "Red Fox"
+        ],
+        "role": "student",
+        "timeslot": "4"
+      },
+      "lead@x.org": {
+        "megapods": [
+          "Alpha",
+          "Beta"
+        ],
+        "name": "Lee Lead",
+        "pods": [
+          "Blue Rays",
+          "Green Owls",
+          "Red Fox"
+        ],
+        "role": "lead_ta",
+        "timeslot": "4"
+      },
+      "pta@x.org": {
+        "megapods": [
+          "Alpha",
+          "Beta"
+        ],
+        "name": "Pat Proj",
+        "pods": [
+          "Blue Rays",
+          "Green Owls",
+          "Red Fox"
+        ],
+        "role": "project_ta",
+        "timeslot": "4"
+      },
+      "sam@x.org": {
+        "megapods": [
+          "Alpha"
+        ],
+        "name": "Sam Student",
+        "pods": [
+          "Blue Rays"
+        ],
+        "role": "student",
+        "timeslot": "4"
+      },
+      "ta@x.org": {
+        "megapods": [
+          "Alpha"
+        ],
+        "name": "Tia Ta",
+        "pods": [
+          "Blue Rays",
+          "Green Owls"
+        ],
+        "role": "ta",
+        "timeslot": "4"
+      },
+      "tom@x.org": {
+        "megapods": [
+          "Beta"
+        ],
+        "name": "Tom Other",
+        "pods": [
+          "Red Fox"
+        ],
+        "role": "ta",
+        "timeslot": "4"
+      },
+      "zed@x.org": {
+        "megapods": [
+          "Alpha"
+        ],
+        "name": "Zed Two",
+        "pods": [
+          "Blue Rays"
+        ],
+        "role": "student",
+        "timeslot": "4"
+      }
+    }
+  },
+  "DL": {
+    "structure": {
+      "Gamma": [
+        "Pod9"
+      ]
+    },
+    "users": {
+      "cy@x.org": {
+        "megapods": [
+          "Gamma"
+        ],
+        "name": "Cy Five",
+        "pods": [
+          "Pod9"
+        ],
+        "role": "student",
+        "timeslot": "4"
+      },
+      "lead@x.org": {
+        "megapods": [
+          "Gamma"
+        ],
+        "name": "Lee Lead",
+        "pods": [
+          "Pod9"
+        ],
+        "role": "lead_ta",
+        "timeslot": "4"
+      },
+      "pta@x.org": {
+        "megapods": [
+          "Gamma"
+        ],
+        "name": "Pat Proj",
+        "pods": [
+          "Pod9"
+        ],
+        "role": "project_ta",
+        "timeslot": "4"
+      },
+      "ta@x.org": {
+        "megapods": [
+          "Gamma"
+        ],
+        "name": "Tia Ta",
+        "pods": [
+          "Pod9"
+        ],
+        "role": "ta",
+        "timeslot": "4"
+      }
+    }
+  }
+}

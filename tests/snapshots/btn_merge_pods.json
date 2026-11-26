@@ -1,0 +1,131 @@
+{
+  "alpha_gen": [
+    [
+      "set_permissions",
+      [
+        "Member:ta"
+      ],
+      {
+        "send_messages": false,
+        "view_channel": false
+      }
+    ],
+    [
+      "set_permissions",
+      [
+        "Member:stu"
+      ],
+      {
+        "send_messages": false,
+        "view_channel": false
+      }
+    ]
+  ],
+  "alpha_ta": [
+    [
+      "set_permissions",
+      [
+        "Member:ta"
+      ],
+      {
+        "send_messages": false,
+        "view_channel": false
+      }
+    ]
+  ],
+  "beta_gen": [
+    [
+      "set_permissions",
+      [
+        "Member:ta"
+      ],
+      {
+        "send_messages": true,
+        "view_channel": true
+      }
+    ],
+    [
+      "set_permissions",
+      [
+        "Member:stu"
+      ],
+      {
+        "send_messages": true,
+        "view_channel": true
+      }
+    ]
+  ],
+  "beta_ta": [
+    [
+      "set_permissions",
+      [
+        "Member:ta"
+      ],
+      {
+        "send_messages": true,
+        "view_channel": true
+      }
+    ]
+  ],
+  "channel": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "Successfully merged pods shiny-corals and blue-rays. You may delete the old pod's channel now.",
+          "title": "Pods Merged"
+        }
+      }
+    ]
+  ],
+  "new": [
+    [
+      "set_permissions",
+      [
+        "Member:ta"
+      ],
+      {
+        "manage_messages": true,
+        "send_messages": true,
+        "view_channel": true
+      }
+    ],
+    [
+      "set_permissions",
+      [
+        "Member:stu"
+      ],
+      {
+        "manage_messages": false,
+        "send_messages": true,
+        "view_channel": true
+      }
+    ]
+  ],
+  "old": [
+    [
+      "set_permissions",
+      [
+        "Member:ta"
+      ],
+      {
+        "manage_messages": false,
+        "send_messages": false,
+        "view_channel": false
+      }
+    ],
+    [
+      "set_permissions",
+      [
+        "Member:stu"
+      ],
+      {
+        "manage_messages": false,
+        "send_messages": false,
+        "view_channel": false
+      }
+    ]
+  ]
+}

@@ -1,0 +1,22 @@
+[
+  [
+    "Dropdown",
+    null
+  ],
+  [
+    "AssignUser",
+    "Assign User to Pods"
+  ],
+  [
+    "RemoveUser",
+    "Remove User from Pods"
+  ],
+  [
+    "RepodUser",
+    "Repod User"
+  ],
+  [
+    "MergePods",
+    "Merge Pods"
+  ]
+]

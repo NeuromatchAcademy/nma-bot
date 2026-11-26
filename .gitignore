@@ -9,3 +9,6 @@ invite.txt
 discord-ids.json
 *.csv
 .venv/
+.superpowers/
+.coverage
+.pytest_cache/

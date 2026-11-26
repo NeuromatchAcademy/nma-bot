@@ -1,0 +1,157 @@
+{
+  "channel": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "Checking sam's existing pod...",
+          "title": "Repod Notice"
+        }
+      }
+    ],
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "Removing sam from old-pod.",
+          "title": "Repod Notice"
+        }
+      }
+    ],
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "Removing sam from alpha-general.",
+          "title": "Repod Notice"
+        }
+      }
+    ],
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "Added sam to blue-rays.",
+          "title": "Repod Notice"
+        }
+      }
+    ],
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "Added sam to alpha-general.",
+          "title": "Repod Notice"
+        }
+      }
+    ],
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "Repodded sam.",
+          "title": "Repod Notice"
+        }
+      }
+    ]
+  ],
+  "gen": [
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "send_messages": false,
+        "view_channel": false
+      }
+    ],
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "manage_messages": false,
+        "send_messages": true,
+        "view_channel": true
+      }
+    ],
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "student Sam has joined the megapod.",
+          "title": "Megapod Announcement"
+        }
+      }
+    ]
+  ],
+  "old": [
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "send_messages": false,
+        "view_channel": false
+      }
+    ]
+  ],
+  "orphan": [],
+  "pod": [
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "manage_messages": false,
+        "send_messages": true,
+        "view_channel": true
+      }
+    ]
+  ],
+  "social": [],
+  "ta": [
+    [
+      "set_permissions",
+      [
+        "Member:sam"
+      ],
+      {
+        "manage_messages": false,
+        "send_messages": false,
+        "view_channel": false
+      }
+    ]
+  ],
+  "thread": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "student Sam has joined the pod.",
+          "title": "Pod Announcement"
+        }
+      }
+    ]
+  ]
+}

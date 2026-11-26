@@ -1,0 +1,255 @@
+{
+  "channels": [
+    "Alpha",
+    "Alpha-general",
+    "Alpha-ta-chat",
+    "Beta",
+    "Beta-general",
+    "Beta-ta-chat",
+    "Blue-Rays",
+    "Green-Owls",
+    "Red-Fox",
+    "bot-log",
+    "command-center"
+  ],
+  "forums": {
+    "Blue-Rays": [
+      [
+        "set_permissions",
+        [
+          "Role:@everyone"
+        ],
+        {
+          "send_messages": false,
+          "view_channel": false
+        }
+      ],
+      [
+        "create_thread",
+        [],
+        {
+          "content": "This thread is intended for off-topic discussions.",
+          "name": "Off-Topic"
+        }
+      ],
+      [
+        "create_thread",
+        [],
+        {
+          "content": "This thread is intended for coursework discussions.",
+          "name": "Coursework"
+        }
+      ],
+      [
+        "create_thread",
+        [],
+        {
+          "content": "This thread is intended for general discussions.",
+          "name": "General"
+        }
+      ]
+    ],
+    "Green-Owls": [
+      [
+        "set_permissions",
+        [
+          "Role:@everyone"
+        ],
+        {
+          "send_messages": false,
+          "view_channel": false
+        }
+      ],
+      [
+        "create_thread",
+        [],
+        {
+          "content": "This thread is intended for off-topic discussions.",
+          "name": "Off-Topic"
+        }
+      ],
+      [
+        "create_thread",
+        [],
+        {
+          "content": "This thread is intended for coursework discussions.",
+          "name": "Coursework"
+        }
+      ],
+      [
+        "create_thread",
+        [],
+        {
+          "content": "This thread is intended for general discussions.",
+          "name": "General"
+        }
+      ]
+    ],
+    "Red-Fox": [
+      [
+        "set_permissions",
+        [
+          "Role:@everyone"
+        ],
+        {
+          "send_messages": false,
+          "view_channel": false
+        }
+      ],
+      [
+        "create_thread",
+        [],
+        {
+          "content": "This thread is intended for off-topic discussions.",
+          "name": "Off-Topic"
+        }
+      ],
+      [
+        "create_thread",
+        [],
+        {
+          "content": "This thread is intended for coursework discussions.",
+          "name": "Coursework"
+        }
+      ],
+      [
+        "create_thread",
+        [],
+        {
+          "content": "This thread is intended for general discussions.",
+          "name": "General"
+        }
+      ]
+    ]
+  },
+  "guild": [
+    [
+      "create_category",
+      [
+        "Alpha"
+      ],
+      {}
+    ],
+    [
+      "create_text_channel",
+      [
+        "Alpha-general"
+      ],
+      {
+        "category": "Category:Alpha"
+      }
+    ],
+    [
+      "create_text_channel",
+      [
+        "Alpha-ta-chat"
+      ],
+      {
+        "category": "Category:Alpha"
+      }
+    ],
+    [
+      "create_forum",
+      [
+        "Blue-Rays"
+      ],
+      {
+        "category": "Category:Alpha"
+      }
+    ],
+    [
+      "create_forum",
+      [
+        "Green-Owls"
+      ],
+      {
+        "category": "Category:Alpha"
+      }
+    ],
+    [
+      "create_category",
+      [
+        "Beta"
+      ],
+      {}
+    ],
+    [
+      "create_text_channel",
+      [
+        "Beta-general"
+      ],
+      {
+        "category": "Category:Beta"
+      }
+    ],
+    [
+      "create_text_channel",
+      [
+        "Beta-ta-chat"
+      ],
+      {
+        "category": "Category:Beta"
+      }
+    ],
+    [
+      "create_forum",
+      [
+        "Red-Fox"
+      ],
+      {
+        "category": "Category:Beta"
+      }
+    ]
+  ],
+  "log": [
+    {
+      "color": 16746496,
+      "description": "User admin triggered pod initialization.",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Megapod Alpha created!",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Pod Blue Rays created!",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Pod Green Owls created!",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Megapod Beta created!",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Pod Red Fox created!",
+      "title": "Administrative Notice"
+    },
+    {
+      "color": 16746496,
+      "description": "Server initialization complete.",
+      "title": "Administrative Notice"
+    }
+  ],
+  "response": [
+    [
+      "send_message",
+      [],
+      {
+        "embed": {
+          "color": 16746496,
+          "description": "Initializing server. This may take a while!",
+          "title": "Administrative Notice"
+        },
+        "ephemeral": true
+      }
+    ]
+  ]
+}

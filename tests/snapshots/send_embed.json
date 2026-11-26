@@ -1,0 +1,96 @@
+{
+  "custom": {
+    "author": {
+      "icon_url": "https://i.imgur.com/CRoluuv.png",
+      "name": "Neuromatch Bot",
+      "url": "https://neuromatch.io/"
+    },
+    "color": 65322,
+    "description": "World",
+    "flags": 0,
+    "title": "Hello",
+    "type": "rich"
+  },
+  "custom_admin": {
+    "author": {
+      "icon_url": "https://i.imgur.com/CRoluuv.png",
+      "name": "Neuromatch Bot",
+      "url": "https://neuromatch.io/"
+    },
+    "color": 16746496,
+    "description": "x",
+    "flags": 0,
+    "title": "Administrative Notice",
+    "type": "rich"
+  },
+  "custom_defaults": {
+    "author": {
+      "icon_url": "https://i.imgur.com/CRoluuv.png",
+      "name": "Neuromatch Bot",
+      "url": "https://neuromatch.io/"
+    },
+    "color": 65322,
+    "description": "None",
+    "flags": 0,
+    "title": "None",
+    "type": "rich"
+  },
+  "dm": {
+    "author": {
+      "icon_url": "https://i.imgur.com/CRoluuv.png",
+      "name": "Neuromatch Bot",
+      "url": "https://neuromatch.io/"
+    },
+    "color": 65322,
+    "flags": 0,
+    "type": "rich"
+  },
+  "master": {
+    "author": {
+      "icon_url": "https://i.imgur.com/CRoluuv.png",
+      "name": "Neuromatch Bot",
+      "url": "https://neuromatch.io/"
+    },
+    "color": 65322,
+    "description": "Click on the dropdown below to select a type of command you would like to issue. Buttons will appear that will allow you to go from there.",
+    "flags": 0,
+    "title": "Administrative Interface",
+    "type": "rich"
+  },
+  "restart": {
+    "author": {
+      "icon_url": "https://i.imgur.com/CRoluuv.png",
+      "name": "Neuromatch Bot",
+      "url": "https://neuromatch.io/"
+    },
+    "color": 16746496,
+    "description": "The bot has started and is now logged in.",
+    "flags": 0,
+    "title": "Administrative Notice",
+    "type": "rich"
+  },
+  "social": {
+    "author": {
+      "icon_url": "https://i.imgur.com/CRoluuv.png",
+      "name": "Neuromatch Bot",
+      "url": "https://neuromatch.io/"
+    },
+    "color": 65322,
+    "description": "Click on the dropdown below to select a type of activity you would like to join or start!",
+    "flags": 0,
+    "title": "Activity Center",
+    "type": "rich"
+  },
+  "verify": {
+    "author": {
+      "icon_url": "https://i.imgur.com/CRoluuv.png",
+      "name": "Neuromatch Bot",
+      "url": "https://neuromatch.io/"
+    },
+    "color": 65322,
+    "description": "To unlock access to all channels, please copy and paste the email address with which you log into the portal into this chat.",
+    "flags": 0,
+    "title": "Welcome to the course!",
+    "type": "rich"
+  }
+}

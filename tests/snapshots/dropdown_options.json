@@ -1,0 +1,42 @@
+{
+  "admin": {
+    "options": [
+      [
+        "Meta Commands",
+        "Commands that primarily display information.",
+        "ℹ️"
+      ],
+      [
+        "Pod Commands",
+        "Commands that manipulate pod access.",
+        "👥"
+      ],
+      [
+        "Server Commands",
+        "Commands that change the server structure.",
+        "⚠️"
+      ]
+    ],
+    "placeholder": "Choose which commands to display."
+  },
+  "social": {
+    "options": [
+      [
+        "Games",
+        "Start or join a game!",
+        "🕹️"
+      ],
+      [
+        "Activities",
+        "Start or join a study, coding, or hangout group!",
+        "💃"
+      ],
+      [
+        "Discussions",
+        "Want to do a deep dive with like-minded students?",
+        "💬"
+      ]
+    ],
+    "placeholder": "What would you like to do?"
+  }
+}

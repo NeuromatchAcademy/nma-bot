@@ -1,11 +1,14 @@
-import os
-import json
 import asyncio
-import psycopg2
-from pathlib import Path
-from dotenv import load_dotenv
+import json
+import os
 from contextlib import contextmanager
+from pathlib import Path
+
+import psycopg2
 from discord.ext import tasks
+from dotenv import load_dotenv
+
+from .paths import data_path
 
 
 @contextmanager
@@ -143,9 +146,7 @@ def get_pod_data_from_db(connection):
 
 
 def save_data_to_json(data, filename):
-    current_dir = Path(__file__).resolve().parent
-    parent_dir = current_dir.parent
-    file_path = parent_dir / filename
+    file_path = data_path(filename)
     with open(file_path, 'w') as f:
         json.dump(data, f)
 
@@ -156,12 +157,12 @@ async def poll_db():
         try:
             new_data = get_pod_data_from_db(connection)
             print("Polled db")
-            with open('./pods.json', 'r') as f:
+            with open(data_path('pods.json'), 'r') as f:  # noqa: ASYNC230
                 old_data = json.load(f)
             if old_data != new_data:
                 print("Pod data has been changed")
                 save_data_to_json(new_data, 'pods.json')
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             print(f"Error occurred while getting data: {e}")
 
 

@@ -1,0 +1,33 @@
+{
+  "channel": [
+    [
+      "send",
+      [],
+      {
+        "embed": {
+          "color": 65322,
+          "description": "**Name:** Sam\n**Email:**: sam@x.org\n**Role:** student\n**Pods:** ['Blue Rays']\n**Timezone:** 4\n\nInfo requested by admin.",
+          "title": "User Lookup"
+        }
+      }
+    ]
+  ],
+  "msg": [
+    [
+      "delete",
+      [],
+      {}
+    ]
+  ],
+  "prompt": [
+    [
+      "send_message",
+      [
+        "Tag the user you would like to check."
+      ],
+      {
+        "ephemeral": true
+      }
+    ]
+  ]
+}

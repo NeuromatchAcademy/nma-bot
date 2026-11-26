@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --group dev --locked
+      - name: Lint
+        run: uv run ruff check .
+      - name: Tests
+        run: uv run pytest --cov=utils --cov=nma_bot --cov-report=term-missing
