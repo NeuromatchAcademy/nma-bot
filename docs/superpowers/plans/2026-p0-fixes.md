@@ -46,7 +46,7 @@
 - [ ] Implement `_load_pods(path) -> dict` (missing/invalid → `{}`); move `connect_to_db()` inside `try`.
 - [ ] Commit `fix: poll_db survives missing pods.json and DB outages`.
 
-### Task 3: CI coverage target
+### Task 3: (DROPPED) CI coverage target — verified `--cov=nma_bot` already measures nma-bot.py
 
 **Files:** Modify `.github/workflows/ci.yml`, `README.md`
 

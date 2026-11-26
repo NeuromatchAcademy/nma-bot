@@ -17,7 +17,10 @@ To use this bot, you need to have Python installed in your system. Python 3.13.1
 This bot uses environmental variables stored in a .env file. You need to create this file and store your bot token as follows:
 ```env
 DISCORD_TOKEN=<Your Bot Token>
+ADMIN_USER_IDS=<comma-separated Discord user IDs>   # optional
 ```
+Admin buttons are available to members with the `Organizers` role or whose ID is in `ADMIN_USER_IDS`.
+**Graduate Server** (destructive) requires the user's ID to be in `ADMIN_USER_IDS`; the role alone is not enough.
 
 ## Contest Instructions
 If you're forking this repository to participate in the NMA bot contest, here's some guidance to help you navigate the code:
