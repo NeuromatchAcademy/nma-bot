@@ -100,3 +100,13 @@
 - [ ] Remove dead code: `administrator.rollcallGen`, commented-out dropdown block, `buttons` commented loader at the top.
 - [ ] CI and README: add `--cov=cogs`; README "How to add a command" shows a cog example and how to register it in `EXTENSIONS`.
 - [ ] Commit `refactor: thin entrypoint, docs`.
+
+### Task 8: Installable package layout (after Task 7)
+
+**Files:** Move `nma-bot.py` → `nma_bot/__main__.py` + `nma_bot/bot.py`; move `utils/`, `cogs/` into `nma_bot/`; Modify `pyproject.toml`, `tests/conftest.py`, README, CI
+
+- [ ] Add `[build-system]` and `[project.scripts] nma-bot = "nma_bot.__main__:main"`; keep a tiny `nma-bot.py` shim calling `main()` so the systemd unit keeps working until updated.
+- [ ] Update imports, drop the `load_bot()` loader hack, use `--cov=nma_bot`.
+- [ ] Not for PyPI/distribution: this is an application, deployed from a checkout.
+
+> Note: moved tests for Tasks 2-6 stay in `tests/test_bot.py` (shared `w` fixture) instead of per-cog files.

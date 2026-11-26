@@ -75,7 +75,7 @@ async def start_activity(interaction: discord.Interaction, activity: app_command
 
 # Actual Discord bot.
 class NmaBot(commands.Bot):
-    EXTENSIONS: tuple[str, ...] = ()
+    EXTENSIONS: tuple[str, ...] = ("cogs.verify",)
 
     async def setup_hook(self):
         for extension in self.EXTENSIONS:
@@ -118,11 +118,8 @@ class NmaBot(commands.Bot):
 
             if isinstance(message.channel, discord.DMChannel):  # DMs are ignored.
                 return
-            if message.channel.name == 'verify' and '@' in message.content:  # If the user sent an email in #verify...
-                await users.verify_user(message)  # ...Attempt verification.
-                await message.delete()  # ...Then delete the message.
-            elif message.channel.name == 'verify':
-                await message.delete()  # ...Then delete the message.
+            if message.channel.name == 'verify':  # Handled by cogs.verify.
+                return
             else:  # If the user is not verifying...
                 msg_cmd = message.content.split(' ')  # ...Split the message.
 

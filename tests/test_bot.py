@@ -7,7 +7,7 @@ import pytest
 from discord import app_commands
 from discord.ext import commands
 
-from tests.conftest import load_bot
+from tests.conftest import dispatch_message, ensure_extensions, load_bot
 from tests.fakes import (
     FakeChannel,
     FakeDM,
@@ -37,12 +37,13 @@ class W:
 
     async def send(self, content, author=None, channel=None):
         msg = FakeMessage(content, author=author or self.admin, channel=channel or self.chan, guild=self.guild)
-        await self.bot.client.on_message(msg)
+        await dispatch_message(self.bot, msg)
         return msg
 
 
 @pytest.fixture
-def w(bot, data_dir):
+async def w(bot, data_dir):
+    await ensure_extensions(bot)
     w = W()
     w.bot = bot
     w.guild = FakeGuild("CN Test", roles=[FakeRole(r) for r in ROLE_NAMES])
@@ -362,6 +363,7 @@ async def test_on_ready(w, bot, monkeypatch, snapshot, capsys):
 
 async def test_setup_hook_starts_db_poll(bot, monkeypatch):
     started = []
+    monkeypatch.setattr(type(bot.client), "EXTENSIONS", ())
     monkeypatch.setattr(bot.db.poll_db, "start", lambda: started.append(1))
     await bot.client.setup_hook()
     assert started == [1]
@@ -385,3 +387,23 @@ async def test_setup_hook_loads_extensions(bot, monkeypatch):
     monkeypatch.setattr(type(bot.client), "EXTENSIONS", ("cogs.a", "cogs.b"))
     await bot.client.setup_hook()
     assert loaded == ["cogs.a", "cogs.b"]
+
+
+async def test_verify_channel_never_runs_commands(w, monkeypatch):
+    verify = w.guild.add_text_channel("verify")
+
+    async def fake_verify(m):
+        pass
+
+    monkeypatch.setattr(w.bot.users, "verify_user", fake_verify)
+    msg = await w.send("--nma auth me@x.org", author=w.admin, channel=verify)
+    assert calls_summary(msg) == [["delete", [], {}]]
+    assert verify.calls == []  # no "auth status" reply
+
+
+async def test_bot_own_message_not_verified(w, bot, monkeypatch):
+    verify = w.guild.add_text_channel("verify")
+    me = FakeMember("bot", 99)
+    monkeypatch.setattr(bot.client._connection, "user", me, raising=False)
+    msg = await w.send("me@x.org", author=me, channel=verify)
+    assert msg.calls == []

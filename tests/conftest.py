@@ -59,3 +59,19 @@ def load_bot():
     sys.modules["nma_bot"] = mod
     spec.loader.exec_module(mod)
     return mod
+
+
+async def ensure_extensions(bot_module):
+    """Load every extension the bot would load in setup_hook (idempotent across tests)."""
+    client = bot_module.client
+    for name in client.EXTENSIONS:
+        if name not in client.extensions:
+            await client.load_extension(name)
+
+
+async def dispatch_message(bot_module, message):
+    """Deliver a message to the bot's own on_message and to every cog listener, like discord.py does."""
+    client = bot_module.client
+    await client.on_message(message)
+    for listener in list(client.extra_events.get("on_message", [])):
+        await listener(message)
